@@ -1296,7 +1296,8 @@ const getDataToPolicy = (req, res) => {
         firebirdQuerys.getDataToPolicyTest('PAEZ', date1, date2),
         firebirdQuerys.getDataToPolicyTest('COLIMA', date1, date2),
         firebirdQuerys.getDataToPolicyTest('VILLA', date1, date2),
-        firebirdQuerys.getDataToPolicyTest('COLINAS', date1, date2)
+        firebirdQuerys.getDataToPolicyTest('COLINAS', date1, date2),
+        firebirdQuerys.getDataToPolicyTest('CHAVEZC', date1, date2)
     ]).then((values) => {
         let data = [];
         let fails =  ''
