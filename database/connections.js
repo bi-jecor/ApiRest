@@ -320,12 +320,12 @@ const CHAVEZC = {
         // POLIZA DATA
         roleKeyProviderId : 49,
         conceptCpId : 51,
-        iva16: 3381,
-        tasa0: 3376,
-        ieps8: 3385,
-        ieps6: 3389,
-        ieps30: 3059918,
-        exento: 3384,
+        iva16: 11524,
+        tasa0: 12604,
+        ieps8: 12606,
+        ieps6: 13379,
+        ieps30: 13392,
+        exento: 13375,
         keysArticlesIds : '17,18,288'
 }
 module.exports = {
