@@ -1,0 +1,1821 @@
+var firebird = require('node-firebird');
+const Cryptr = require('cryptr');
+const cryptr = new Cryptr('myTotalySecretKey');
+const fir_password = process.env.FIR_PASSWORD
+const conections =  require('../database/connections');
+const warehouses =  require('../database/warehouses');
+const formatDate = require('../helpers/formatDate');
+
+
+const getDataToPolicyTest = (conection, date1, date2) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[conection], function (err, db) {
+            // console.log(conections[conection]);
+            if (err) {
+                console.log('CONECT', conection);
+                const error = {
+                    ok: false,
+                    conection: conection,
+                    msg : err
+                }
+                reject(error)
+                return
+            }
+            db.execute(
+                // `
+                // select f.DOCTO_CM_ID,
+                // d.CLAVE_PROV,
+                // c.NOMBRE,
+                // f.FOLIO_PROV
+                // ,(b.importe ) as SUBTOTAL,
+                // f.DSCTO_IMPORTE,
+                // b.impuesto as TOTAL_IMPUESTOS,
+                // C.CUENTA_CXP
+                // ,(b.importe+b.impuesto) as total_neto
+                // ,iif((select k.importe from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].ieps8}' )is
+                // null,0,(select k.importe from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].ieps8}' )) as
+                // BASEIEPS
+                // ,iif((select k.importe from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].tasa0}' )is
+                // null,0,(select k.importe from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].tasa0}' )) as
+                // basecerooriginal
+                // ,iif((select k.importe from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].iva16}' )is
+                // null,0,(select k.importe from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].iva16}' )) as
+                // baseiva
+                // ,(b.importe-iif(((select k.importe from  importes_doctos_cp_imptos k
+                // where k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].iva16}'
+                // ) )is null,0,((select k.importe from  importes_doctos_cp_imptos k
+                // where k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].iva16}'
+                // ) ))) as BASEXENTO
+                // ,iif((select k.impuesto from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id in ('${conections[conection].ieps8}', '${conections[conection].ieps6}' ) )is
+                // null,0,(select k.impuesto from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id in ('${conections[conection].ieps8}', '${conections[conection].ieps6}') )) as
+                // impuestoieps
+                // ,iif((select k.impuesto from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].tasa0}' )is
+                // null,0,(select k.impuesto from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].tasa0}' )) as
+                // impuestoexento
+                // ,iif((select k.impuesto from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].iva16}' )is
+                // null ,0,(select k.impuesto from  importes_doctos_cp_imptos k  where
+                // k.impte_docto_cp_id=b.impte_docto_cp_id and k.impuesto_id='${conections[conection].iva16}' )) as
+                // impuestoiva,a.concepto_cp_id
+                
+                // from doctos_cp a
+                // left join importes_doctos_cp b on(a.docto_cp_id=b.docto_cp_id)
+                // left join proveedores c on(a.proveedor_id=c.proveedor_id)
+                // left join claves_proveedores d on (c.proveedor_id=d.proveedor_id)
+                // left join doctos_entre_sis e on(a.docto_cp_id=e.docto_dest_id)
+                // left join doctos_cm f on(e.docto_fte_id=f.docto_cm_id)
+                // where  a.fecha between '${date1}' and '${date2}' and a.cancelado='N'
+                // and e.clave_sis_dest='CP'  and a.concepto_cp_id='51' and d.rol_clave_prov_id='49'
+                // group by  d.clave_prov,c.nombre,b.impuesto,a.folio,C.cuenta_cxp,f.importe_neto,b.impte_docto_cp_id,f.folio_prov,f.DOCTO_CM_ID,f.dscto_importe
+                // ,f.total_impuestos,b.importe,b.impuesto ,a.concepto_cp_id
+                // `
+                ` select f.DOCTO_CM_ID,
+                d.CLAVE_PROV,
+                c.NOMBRE,
+                f.FOLIO_PROV
+                ,(b.importe ) as SUBTOTAL,
+                 f.DSCTO_IMPORTE,
+                b.impuesto as TOTAL_IMPUESTOS,
+                C.CUENTA_CXP
+                ,(b.importe+b.impuesto) as total_neto
+                ,sum(coalesce(ie8.importe,0) + coalesce(ie6.importe,0) + coalesce(ie30.importe,0)) as BASEIEPS
+                ,sum(coalesce(b0.importe,0)+ coalesce(bex.impuesto,0)) as basecerooriginal
+                ,sum(coalesce(i.importe,0)) as baseiva
+                ,sum((b.importe- coalesce(i.importe,0))) as BASEXENTO
+                ,sum(coalesce(ie8.impuesto,0) + coalesce(ie6.impuesto,0) + coalesce(ie30.impuesto,0)) as impuestoieps
+                ,sum(coalesce(b0.impuesto,0) + coalesce(bex.impuesto,0) ) as impuestoexento
+                ,sum(coalesce(i.impuesto,0)) as impuestoiva
+                ,a.concepto_cp_id
+                from doctos_cp a
+                left join importes_doctos_cp b on(a.docto_cp_id=b.docto_cp_id)
+                left join proveedores c on(a.proveedor_id=c.proveedor_id)
+                left join claves_proveedores d on (c.proveedor_id=d.proveedor_id)
+                left join doctos_entre_sis e on(a.docto_cp_id=e.docto_dest_id)
+                left join doctos_cm f on(e.docto_fte_id=f.docto_cm_id)
+                LEFT JOIN   importes_doctos_cp_imptos ie8  on
+                ie8.impte_docto_cp_id=b.impte_docto_cp_id and ie8.impuesto_id in('${conections[conection].ieps8 }')  --BASEIEPS 8
+                LEFT JOIN   importes_doctos_cp_imptos ie6  on
+                ie6.impte_docto_cp_id=b.impte_docto_cp_id and ie6.impuesto_id in('${conections[conection].ieps6}')  --BASEIEPS 6
+                LEFT JOIN   importes_doctos_cp_imptos ie30  on
+                ie30.impte_docto_cp_id=b.impte_docto_cp_id and ie30.impuesto_id in('${conections[conection].ieps30}')  --BASEIEPS 30
+                left join  importes_doctos_cp_imptos b0
+                on b0.impte_docto_cp_id=b.impte_docto_cp_id and b0.impuesto_id='${conections[conection].tasa0}' -- BASE 0
+                left join  importes_doctos_cp_imptos bex
+                on bex.impte_docto_cp_id=b.impte_docto_cp_id and bex.impuesto_id='${conections[conection].exento}' -- BASE EXCENTO
+                left join  importes_doctos_cp_imptos i
+                on i.impte_docto_cp_id=b.impte_docto_cp_id and i.impuesto_id='${conections[conection].iva16}' -- BASEIVA
+                where a.fecha between '${date1}' and '${date2}' and a.cancelado='N'
+                and a.concepto_cp_id='51' and d.rol_clave_prov_id='49'
+                group by  d.clave_prov,c.nombre,b.impuesto,a.folio,C.cuenta_cxp,f.importe_neto,b.impte_docto_cp_id,f.folio_prov,f.DOCTO_CM_ID,f.dscto_importe
+                ,f.total_impuestos,b.importe,b.impuesto ,a.concepto_cp_id`
+
+            ,function (err, data) {
+                    if (err) {
+                        console.log('err', err);
+                        const error = {
+                            ok: false,
+                            conection: conection,
+                            msg : err
+                        }
+                        reject(error)
+                    }
+                    
+                    let catalogo = []
+                    console.log(data);
+                    if (data) {
+                        data.forEach(element => {
+
+                            const newElement = {
+                                docto_cm_id: element[0],
+                                clave_prov: element[1],
+                                nombre: element[2],
+                                folio_prov: element[3]  = element[3] !== null ? Number(element[3].toString('utf8')) : 'Null',
+                                subtotal: element[4],
+                                dscto_importe: element[5],
+                                total_importe: element[6],
+                                // location: '------------',
+                                cuenta_cxp: element[7]  = element[7] !== null ? element[7].toString('utf8') : 'Null',
+                                total_neto: element[8],
+                                baseieps: element[9],
+                                basecerooriginal: element[10],
+                                baseiva: element[11],
+                                basexento: element[12],
+                                impuestoieps: element[13],
+                                impuestoexento: element[14],
+                                impuestoiva: element[15],
+                                concepto_cp_id: element[16],
+
+                            }
+
+                            catalogo.push(newElement)
+                            // catalogo.push(newElement)
+                        });
+                        console.log('Catalogo',catalogo);
+                        // IMPORTANT: close the connection
+                        data = {
+                            conection,
+                            catalogo
+                        }
+                        resolve(data);
+                        db.detach();
+
+                    }
+
+                });
+        });
+    });
+
+}
+const getDataToPolicyByDay = (conection, date1, date2) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[conection], function (err, db) {
+            if (err) {
+                console.log('CONECT', conection);
+                const error = {
+                    ok: false,
+                    conection: conection,
+                    msg : err
+                }
+                reject(error)
+                return
+            }
+            db.execute(
+                `select
+                SUM(b.importe+b.impuesto) as TOTAL ,
+                f.fecha
+                from doctos_cp a
+                left join importes_doctos_cp b on(a.docto_cp_id=b.docto_cp_id)
+                left join proveedores c on(a.proveedor_id=c.proveedor_id)
+                left join claves_proveedores d on (c.proveedor_id=d.proveedor_id)
+                left join doctos_entre_sis e on(a.docto_cp_id=e.docto_dest_id)
+                left join doctos_cm f on(e.docto_fte_id=f.docto_cm_id)
+                LEFT JOIN   importes_doctos_cp_imptos ie8  on
+                ie8.impte_docto_cp_id=b.impte_docto_cp_id and ie8.impuesto_id in('${conections[conection].ieps8 }')  --BASEIEPS 8
+                LEFT JOIN   importes_doctos_cp_imptos ie6  on
+                ie6.impte_docto_cp_id=b.impte_docto_cp_id and ie6.impuesto_id in('${conections[conection].ieps6}')  --BASEIEPS 6
+                LEFT JOIN   importes_doctos_cp_imptos ie30  on
+                ie30.impte_docto_cp_id=b.impte_docto_cp_id and ie30.impuesto_id in('${conections[conection].ieps30}')  --BASEIEPS 30
+                left join  importes_doctos_cp_imptos b0
+                on b0.impte_docto_cp_id=b.impte_docto_cp_id and b0.impuesto_id='${conections[conection].tasa0}' -- BASE 0
+                left join  importes_doctos_cp_imptos bex
+                on bex.impte_docto_cp_id=b.impte_docto_cp_id and bex.impuesto_id='${conections[conection].exento}' -- BASE EXCENTO
+                left join  importes_doctos_cp_imptos i
+                on i.impte_docto_cp_id=b.impte_docto_cp_id and i.impuesto_id='${conections[conection].iva16}' -- BASEIVA
+                where a.fecha between '${date1}' and '${date2}' and a.cancelado='N'
+                and a.concepto_cp_id='51' and d.rol_clave_prov_id='49'
+                group by f.fecha
+                `
+            ,function (err, data) {
+                    if (err) {
+                        console.log('err', err);
+                        const error = {
+                            ok: false,
+                            conection: conection,
+                            msg : err
+                        }
+                        reject(error)
+                    }
+                    
+                    let totals = data.map(e => {
+                        return {
+                            total : e[0],
+                            date : formatDate.formatDateToString(e[1])
+                        }
+                    });
+                    data = {
+                        conection,
+                        totals
+                    }
+                    resolve(data)
+                   
+                    
+
+
+                });
+        });
+    });
+
+}
+const getCustomersBalances = (conection, date) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                console.log(err);
+            }
+                db.query(
+                    `
+                    SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
+                    FROM cargos_cliente_jgb('${date}', '${date}', 'N', 'N') A
+                    LEFT JOIN DOCTOS_CC B
+                    ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
+                    LEFT JOIN clientes
+                    ON B.cliente_id = clientes.cliente_id
+                    Left Join condiciones_pago
+                    on clientes.cond_pago_id = condiciones_pago.cond_pago_id
+                    LEFT JOIN CONCEPTOS_CC C
+                    ON B.CONCEPTO_CC_ID = C.CONCEPTO_CC_ID
+                    JOIN doctos_ve F
+                    on B.folio = F.folio
+                    left join dirs_clientes dc
+                    on f.dir_consig_id = DC.dir_cli_id
+                    left join conceptos_cc cc
+                    on b.cond_pago_id = cc.concepto_cc_id
+                    Left Join condiciones_pago fp
+                    on F.cond_pago_id = fp.cond_pago_id
+                    ORDER BY CLIENTES.nombre
+                    `, async function(err, cargos ) {
+                        console.log(err);
+                        console.log(cargos);
+                        let cargosPorCliente = [];
+                        cargos.forEach( (cargo) => {
+                            data = {
+                                docto_cc_id : cargo.DOCTO_CC_ID,
+                                fecha_vencimiento : formatDate.formatDateToString(cargo.FECHA_VENCIMIENTO),
+                                concepto_cc_id : cargo.CONCEPTO_CC_ID,
+                                // folio : cargo.FOLIO,
+                                atraso : cargo.ATRASO  <= 0 ? 0 : cargo.ATRASO, 
+                                importe_cargo : cargo.IMPORTE_CARGO,
+                                saldo : cargo.SALDO_CARGO,
+                                fecha : formatDate.formatDateToString(cargo.FECHA),
+                                // descripcion : cargo.DESCRIPCION != null ? cargo.DESCRIPCION.toString('utf8') : 'Sin Descripcion',
+                                nombre_abrev: cargo.NOMBRE_ABREV.toString('utf8'),
+                                folio : cargo.FOLIO.toString('utf8'),
+                                rfc : cargo.RFC.toString('utf8'),
+                                cond_pago :  cargo.COND_FT != null ? cargo.COND_FT.toString('utf8') : 'Sin Condicion de Pago'
+                            }
+                            let exist =  cargosPorCliente.find(item => item.cliente_id === cargo.CLIENTE_ID);
+                            if ( exist !== undefined ) {
+                                let i = cargosPorCliente.findIndex(item => item.cliente_id === cargo.CLIENTE_ID);
+                                cargosPorCliente[i].cargos.push(data);
+                                cargosPorCliente[i].cliente_saldo += cargo.SALDO_CARGO;
+                                cargosPorCliente[i].cliente_saldo_vencido +=  cargo.ATRASO > 0 ?  cargo.SALDO_CARGO : 0;
+                                cargosPorCliente[i].atraso =  cargo.ATRASO > cargosPorCliente[i].atraso ?  cargo.ATRASO : cargosPorCliente[i].atraso ;
+                                cargosPorCliente[i].cond_pago =   cargo.COND_PAGO != null ? cargo.COND_PAGO.toString('utf8') : 'Sin Condicion de Pago'
+
+                            } else {
+                                newItem = {
+                                    cliente : cargo.NOMBRE,
+                                    cliente_id : cargo.CLIENTE_ID,
+                                    cliente_saldo : cargo.SALDO_CARGO,
+                                    cliente_saldo_vencido : cargo.ATRASO > 0 ?  cargo.SALDO_CARGO : 0,
+                                    cliente_mayor_atraso : cargo.ATRASO > 0 ?  cargo.ATRASO : 0,
+                                    clienteBdd : conection,
+                                    cargos : [data]
+                                }
+                                cargosPorCliente.push(newItem);
+                            }
+                        });
+                        resolve(cargosPorCliente);
+                        return
+                    }
+                ); 
+        });
+    });
+}
+const getCustomersBalancesToday = (conection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                console.log(err);
+            }
+                db.query(
+                    `
+                    SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
+                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    LEFT JOIN DOCTOS_CC B
+                    ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
+                    LEFT JOIN clientes
+                    ON B.cliente_id = clientes.cliente_id
+                    Left Join condiciones_pago
+                    on clientes.cond_pago_id = condiciones_pago.cond_pago_id
+                    LEFT JOIN CONCEPTOS_CC C
+                    ON B.CONCEPTO_CC_ID = C.CONCEPTO_CC_ID
+                    JOIN doctos_ve F
+                    on B.folio = F.folio
+                    left join dirs_clientes dc
+                    on f.dir_consig_id = DC.dir_cli_id
+                    left join conceptos_cc cc
+                    on b.cond_pago_id = cc.concepto_cc_id
+                    Left Join condiciones_pago fp
+                    on F.cond_pago_id = fp.cond_pago_id
+                    ORDER BY CLIENTES.nombre
+                    `, async function(err, cargos ) {
+                        console.log(err);
+                        console.log(cargos);
+                        let cargosPorCliente = [];
+                        cargos.forEach( (cargo) => {
+                            data = {
+                                docto_cc_id : cargo.DOCTO_CC_ID,
+                                fecha_vencimiento : formatDate.formatDateToString(cargo.FECHA_VENCIMIENTO),
+                                concepto_cc_id : cargo.CONCEPTO_CC_ID,
+                                // folio : cargo.FOLIO,
+                                atraso : cargo.ATRASO  <= 0 ? 0 : cargo.ATRASO, 
+                                importe_cargo : cargo.IMPORTE_CARGO,
+                                saldo : cargo.SALDO_CARGO,
+                                fecha : formatDate.formatDateToString(cargo.FECHA),
+                                // descripcion : cargo.DESCRIPCION != null ? cargo.DESCRIPCION.toString('utf8') : 'Sin Descripcion',
+                                nombre_abrev: cargo.NOMBRE_ABREV.toString('utf8'),
+                                folio : cargo.FOLIO.toString('utf8'),
+                                rfc : cargo.RFC.toString('utf8'),
+                                cond_pago :  cargo.COND_FT != null ? cargo.COND_FT.toString('utf8') : 'Sin Condicion de Pago'
+                            }
+                            let exist =  cargosPorCliente.find(item => item.cliente_id === cargo.CLIENTE_ID);
+                            if ( exist !== undefined ) {
+                                let i = cargosPorCliente.findIndex(item => item.cliente_id === cargo.CLIENTE_ID);
+                                cargosPorCliente[i].cargos.push(data);
+                                cargosPorCliente[i].cliente_saldo += cargo.SALDO_CARGO;
+                                cargosPorCliente[i].cliente_saldo_vencido +=  cargo.ATRASO > 0 ?  cargo.SALDO_CARGO : 0;
+                                cargosPorCliente[i].atraso =  cargo.ATRASO > cargosPorCliente[i].atraso ?  cargo.ATRASO : cargosPorCliente[i].atraso ;
+                                cargosPorCliente[i].cond_pago =   cargo.COND_PAGO != null ? cargo.COND_PAGO.toString('utf8') : 'Sin Condicion de Pago'
+
+    
+                            } else {
+                                newItem = {
+                                    cliente : cargo.NOMBRE,
+                                    cliente_id : cargo.CLIENTE_ID,
+                                    cliente_saldo : cargo.SALDO_CARGO,
+                                    cliente_saldo_vencido : cargo.ATRASO > 0 ?  cargo.SALDO_CARGO : 0,
+                                    cliente_mayor_atraso : cargo.ATRASO > 0 ?  cargo.ATRASO : 0,
+                                    clienteBdd : conection,
+                                    cargos : [data]
+                                }
+                                cargosPorCliente.push(newItem);
+                            }
+                        });
+                        resolve(cargosPorCliente);
+                        return
+                    }
+                ); 
+        });
+    });
+}
+const getCmTotal = (conection, date1, date2) => {
+    console.log(conection, date1, date2);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                console.log('err1',err);
+            }
+                db.query(
+                    `
+                    select sum(doctos_cm.importe_neto) as importe, sum(doctos_cm.total_impuestos) as impuestos
+                    from doctos_cm
+                    where doctos_cm.fecha between '${date1}' and '${date2}'
+                    and doctos_cm.estatus = 'N'
+                    and doctos_cm.tipo_docto = 'C'
+                    
+                    `, async function(err, cargos ) {
+                        if (err) {
+                            console.log('err2',err);
+                        }
+
+                        const total = {
+                            conection,
+                            total : cargos[0].IMPORTE + cargos[0].IMPUESTOS
+                        }
+
+                        console.log(total);
+                        resolve(total);
+                        return
+                    }
+                ); 
+        });
+    });
+}
+const getLastFolioVe = (conection, serie) => {
+    console.log('getLastFolioVe',conection, serie);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                console.log('error1');
+                reject(err)
+            }
+            console.log(serie,conection);
+                db.query(
+                    `
+                    SELECT CONSECUTIVO AS consecutive, SERIE
+                    FROM FOLIOS_VENTAS
+                    WHERE FOLIOS_VENTAS.serie = '${serie}'
+                    `, async function(err, data ) {
+                        if (err) {
+                console.log('error1');
+
+                            reject(err)
+                        }
+                        console.log(data);
+                        resolve(data[0]);
+                    }
+                ); 
+        });
+    });
+}
+const updateLastFolioP = (conection, folioId, consecutive ) => {
+
+    console.log('updateLastFolioP',conection, folioId, consecutive);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                reject(err)
+            }
+
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                transaction.query(
+                    `
+                    UPDATE FOLIOS_VENTAS
+                    SET 
+                        CONSECUTIVO = ${consecutive}
+                    WHERE (FOLIO_VENTAS_ID = ${folioId});
+                    `, async function(err, data ) {
+                        if (err) {
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                                db.detach();
+                                resolve(data);
+                        });
+                    }
+                ); 
+            });
+                
+        });
+    });
+}
+const createDoctoVe = (conection, data) => {
+    const warehouse = warehouses['almacenPrueba'];
+    console.log('fdsfds',conection);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                reject(err)
+            }
+                db.query(
+                    `
+                    INSERT INTO
+                    DOCTOS_VE (DOCTO_VE_ID, TIPO_DOCTO, SUBTIPO_DOCTO, SUCURSAL_ID, FOLIO, FECHA, HORA, CLAVE_CLIENTE, CLIENTE_ID, DIR_CLI_ID, DIR_CONSIG_ID, ALMACEN_ID, LUGAR_EXPEDICION_ID, MONEDA_ID, TIPO_CAMBIO, TIPO_DSCTO, DSCTO_PCTJE, DSCTO_IMPORTE, ESTATUS, APLICADO, FECHA_VIGENCIA_ENTREGA, ORDEN_COMPRA, FECHA_ORDEN_COMPRA, FOLIO_RECIBO_MERCANCIA, FECHA_RECIBO_MERCANCIA, DESCRIPCION, IMPORTE_NETO, FLETES, OTROS_CARGOS, TOTAL_IMPUESTOS, TOTAL_RETENCIONES, TOTAL_ANTICIPOS, PESO_EMBARQUE, FORMA_EMITIDA, CONTABILIZADO, ACREDITAR_CXC, SISTEMA_ORIGEN, COND_PAGO_ID, FECHA_DSCTO_PPAG, PCTJE_DSCTO_PPAG, VENDEDOR_ID, PCTJE_COMIS, VIA_EMBARQUE_ID, IMPORTE_COBRO, DESCRIPCION_COBRO, IMPUESTO_SUSTITUIDO_ID, IMPUESTO_SUSTITUTO_ID, USUARIO_CREADOR, ES_CFD, MODALIDAD_FACTURACION, ENVIADO, FECHA_HORA_ENVIO, EMAIL_ENVIO, CFD_ENVIO_ESPECIAL, USO_CFDI, CFDI_CERTIFICADO, METODO_PAGO_SAT, CFDI_FACT_DEVUELTA_ID, FECHA_HORA_CREACION, USUARIO_ULT_MODIF, USUARIO_AUT_CREACION, FECHA_HORA_ULT_MODIF, CARGAR_SUN, USUARIO_AUT_MODIF, USUARIO_CANCELACION, FECHA_HORA_CANCELACION, USUARIO_AUT_CANCELACION)
+                    VALUES
+                    (-1, 'P', 'N', ${data.brancheId}, '${data.folio}', '${data.date}', '${data.time}', '${data.customerCode}',${data.customerId} , ${data.addrCustomerId}, ${data.addrConsigneeId}, ${data.warehouseId}, NULL, 1, 1, 'P', 0, 0, 'P', 'S', '${data.date}', NULL, NULL, NULL, NULL, 'Creado desde App Web', ${data.total}, 0, 0, ${data.totalTaxes}, 0, 0, 0, 'S', 'N', 'N', 'VE', ${data.condPaymentId}, NULL, 0, NULL, 0, ${data.wayShipmentId}, 0, NULL, NULL, NULL, '${data.user}', 'N', NULL, 'N', NULL, NULL, 'N', NULL, 'N', NULL, NULL, '${data.dateAndTime}', '${data.user}', NULL, '${data.dateAndTime}', 'S', NULL, NULL, NULL, NULL) RETURNING DOCTO_VE_ID;
+                    `, 
+                    async function(err, data ) {
+                        if (err) {
+                            console.log('err', err);
+                            reject(err)
+                        }
+                        resolve(data.DOCTO_VE_ID);
+                    }
+                ); 
+        });
+    });
+}
+const insertDoctoVeDet = (conection, docto_ve_id ,data) => {
+    const warehouse = warehouses['almacenPrueba'];
+    console.log('doctoId',docto_ve_id);
+    console.log('data',data);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                reject(err)
+            }
+            data.forEach(element => {
+                const queryOptional = conection == 'test' ? ', UMED, NOMBRE_ARTICULO' : ' ';
+                const valuesOptional = conection == 'test' ? `, '${element.umedSale}', '${element.name}' ` : ' ';
+                db.query(
+                    `INSERT INTO DOCTOS_VE_DET (DOCTO_VE_DET_ID, DOCTO_VE_ID, CLAVE_ARTICULO, ARTICULO_ID, UNIDADES, UNIDADES_COMPROM, UNIDADES_SURT_DEV, UNIDADES_A_SURTIR, PRECIO_UNITARIO, PCTJE_DSCTO, DSCTO_ART, PCTJE_DSCTO_CLI, DSCTO_EXTRA, PCTJE_DSCTO_VOL, PCTJE_DSCTO_PROMO, PRECIO_TOTAL_NETO, PCTJE_COMIS, ROL, NOTAS, POSICION ${queryOptional})
+                    VALUES (-1, ${docto_ve_id}, '${element.code}', ${element.id}, ${element.unities}, 0, 0, 0, ${element.priceWithoutTax}, 0, 0, 0, 0, 0, 0, ${element.total}, 0, 'N', NULL, ${element.index} ${valuesOptional} );` , 
+                    function(err, result) {
+                        console.log('resultado',result);
+                        if (err) {
+                            console.log(err);
+                            // return res.json({
+                            //     ok:false,
+                            //     msg: 'Error al insertar datos'
+                            // });
+                            reject(err)
+                        }
+                        console.log(element.index, data.length);
+                        if(element.index == data.length){
+                            console.log('termino');
+                            db.detach();
+                            resolve(result)
+                            // return res.json({
+                            //     result: 'Insercion de datos correcta'
+                            // });
+                        }
+                });
+            })
+        });
+    });
+}
+const getArticlesByFolioVe = (conection, folio) => {
+    const warehouse = warehouses['almacenPrueba'];
+    console.log(folio, conection);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                reject(err)
+            }
+                db.query(
+                    `
+                    select doctos_ve_det.articulo_id, doctos_ve_det.clave_articulo, articulos.nombre, doctos_ve_det.unidades, doctos_ve_det.precio_unitario,  articulos.unidad_compra ,  doctos_ve_det.posicion,  doctos_ve_det.precio_total_neto, articulos.contenido_unidad_compra,doctos_ve.total_impuestos
+                    from doctos_ve_det
+                    inner join doctos_ve
+                    on doctos_ve_det.docto_ve_id = doctos_ve.docto_ve_id
+                    inner join articulos
+                    on doctos_ve_det.articulo_id = articulos.articulo_id
+                    where doctos_ve.folio = '${folio}'
+                    `, 
+                    async function(err, data ) {
+                        if (err) {
+                            reject(err)
+                        }
+                        console.log(data);
+                        data = data.map(e => {
+                            return  {
+                                articleId : e.ARTICULO_ID,
+                                code : e.CLAVE_ARTICULO,
+                                name : e.NOMBRE.toString('utf-8'),
+                                unities : e.UNIDADES/e.CONTENIDO_UNIDAD_COMPRA,
+                                price : e.PRECIO_UNITARIO * e.CONTENIDO_UNIDAD_COMPRA ,
+                                umed : e.UNIDAD_COMPRA !== null ? e.UNIDAD_COMPRA.toString('utf-8') : 'null',
+                                index : e.POSICION,
+                                total : e.PRECIO_TOTAL_NETO,
+                                total_impt : e.TOTAL_IMPUESTOS,
+                                cont_umed : e.CONTENIDO_UNIDAD_COMPRA,
+                            }
+                        })
+                        resolve(data);
+                    }
+                ); 
+        });
+    });
+}
+const getLastFolioCm = (conection, type, serie) => {
+    console.log(conection);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                console.log(err);
+                reject(err)
+            }
+            db.query(
+                `
+                select folios_compras.consecutivo, folios_compras.serie
+                from folios_compras
+                where folios_compras.tipo_docto = '${type}'
+                and folios_compras.serie = '${serie}'
+                `, 
+                async function(err, data ) {
+                    if (err) {
+                        console.log(err);
+                        reject(err)
+                    }
+                    console.log(data);
+                    resolve(data[0]);
+                }
+            ); 
+        });
+    });
+}
+const insertDoctoCm = (conection, data ) => {
+    console.log(data);
+    const {date, dateAndTime, folio, user, total, total_impt, warehouseId, brancheId ,provKey, provId, provFolio, condPaymentId} = data
+    const {} = warehouses['almacenPrueba'];
+    console.log('data',brancheId);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                console.log(err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                transaction.query(
+                    `
+                    INSERT INTO DOCTOS_CM
+                    (DOCTO_CM_ID, TIPO_DOCTO, SUBTIPO_DOCTO, SUCURSAL_ID, FOLIO, FECHA, CLAVE_PROV, PROVEEDOR_ID, FOLIO_PROV, FACTURA_DEV, CONSIG_CM_ID, ALMACEN_ID, PEDIMENTO_ID, MONEDA_ID, TIPO_CAMBIO, TIPO_DSCTO, DSCTO_PCTJE, DSCTO_IMPORTE, ESTATUS, APLICADO, FECHA_ENTREGA, DESCRIPCION, IMPORTE_NETO, FLETES, OTROS_CARGOS, TOTAL_IMPUESTOS, TOTAL_RETENCIONES, GASTOS_ADUANALES, OTROS_GASTOS, FORMA_EMITIDA, CONTABILIZADO, ACREDITAR_CXP, SISTEMA_ORIGEN, COND_PAGO_ID, FECHA_DSCTO_PPAG, PCTJE_DSCTO_PPAG, VIA_EMBARQUE_ID, IMPUESTO_SUSTITUIDO_ID, IMPUESTO_SUSTITUTO_ID, CARGAR_SUN, ENVIADO, FECHA_HORA_ENVIO, EMAIL_ENVIO, TIENE_CFD, USUARIO_CREADOR, FECHA_HORA_CREACION, USUARIO_AUT_CREACION, USUARIO_ULT_MODIF, FECHA_HORA_ULT_MODIF, USUARIO_AUT_MODIF, USUARIO_CANCELACION, FECHA_HORA_CANCELACION, USUARIO_AUT_CANCELACION)
+                    VALUES
+                    (-1, 'O', 'N', ${brancheId}, '${folio}', '${date}', '${provKey}', ${provId}, '${provFolio}', NULL, NULL, ${warehouseId}, NULL, 1, 1, 'P', 0, 0, 'N', 'S', NULL, NULL, ${total}, 0, 0, ${total_impt}, 0, 0, 0, 'S', 'N', 'N', 'CM', ${condPaymentId}, NULL, 0, NULL, NULL, NULL, 'S', 'N', '${dateAndTime}', NULL, 'N', '${user}', '${dateAndTime}', NULL, '${user}', '${dateAndTime}', NULL, NULL, NULL, NULL) RETURNING DOCTO_CM_ID
+                    `, async function(err, data ) {
+                        console.log('data',data);
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                            console.log(data);
+                                db.detach();
+                                resolve(data.DOCTO_CM_ID);
+                        });
+                    }
+                ); 
+            });
+        });
+    });
+}
+const updateLastFolioCm = (conection, folioId, consecutive ) => {
+    console.log('folio',folioId, consecutive);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                reject(err)
+            }
+
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                transaction.query(
+                    `
+                    UPDATE FOLIOS_COMPRAS
+                    SET CONSECUTIVO = ${consecutive}
+                    WHERE (FOLIO_COMPRAS_ID = ${folioId});
+                    `, async function(err, data ) {
+                        console.log('data',data);
+                        if (err) {
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                                db.detach();
+                                resolve(data);
+                        });
+                    }
+                ); 
+            });
+                
+        });
+    });
+}
+const insertDoctoCmDet = (conection, docId, data) => {
+    const warehouse = warehouses['almacenPrueba'];
+    console.log('ff',docId, conection);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            data.forEach(element => {
+                db.query(
+                    `
+                    INSERT INTO DOCTOS_CM_DET (DOCTO_CM_DET_ID, DOCTO_CM_ID, CLAVE_ARTICULO, ARTICULO_ID, UNIDADES, UNIDADES_REC_DEV, UNIDADES_A_REC, UMED, CONTENIDO_UMED, PRECIO_UNITARIO, PCTJE_DSCTO, PCTJE_DSCTO_PRO, PCTJE_DSCTO_VOL, PCTJE_DSCTO_PROMO, DSCTO_ART, DSCTO_EXTRA, PRECIO_TOTAL_NETO, PCTJE_ARANCEL, NOTAS, POSICION)
+                    VALUES (-1, ${docId}, '${element.code}', ${element.articleId}, ${element.unities}, 0, 0, '${element.umed}', ${element.cont_umed}, ${element.price}, 0, 0, 0, 0, 0, 0, ${element.total}, 0, NULL, ${element.index});
+                    ` , 
+                    function(err, result) {
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                        console.log(element.index, data.length);
+                        if(element.index == data.length){
+                            console.log('termino');
+                            db.detach();
+                            resolve(result)
+                        }
+                });
+            });
+        });
+    });
+}
+const getProviders = (conection, min, max) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                reject(err)
+            }
+                db.query(
+                    `
+                    select arts.proveedor from xtjec_articulosanear arts
+                    where arts.proveedor is not null
+                    group by arts.proveedor
+                    ` , 
+                    function(err, result) {
+                        if (err) {
+                            reject(err)
+                        }
+                            db.detach();
+                            let articles = result.map(r => r.PROVEEDOR !== null ? r.PROVEEDOR.toString('utf-8') : '')
+                            resolve(articles)
+                });
+        });
+    });
+}
+const getArticlesToHealer = (conection, min, max, provider='') => {
+    let query =  'select * from xtjec_articulosanear';
+    console.log(provider.length);
+    query = provider === 'none' ? query : `${query} where PROVEEDOR = '${provider}'`
+    console.log(query);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+                db.query(
+                    `
+                    ${query}
+                    ` , 
+                    function(err, result) {
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                            db.detach();
+                            let articles = []
+                            console.log(result);
+                            result.forEach( (article, i ) => {
+                                i += 1;
+                                if (i >= min  && i <= max && article.SANEADO.toString('utf-8') === 'N') {
+                                    articles.push(  
+                                        {
+                                            key : article.CLAVE.toString('utf-8'),
+                                            name : article.NOMBRE.toString('latin1'),
+                                            status : article.ESTATUS.toString('utf-8'),
+                                            departament : article.DEP.toString('utf-8'),
+                                            category : article.CAT.toString('utf-8'),
+                                            subcategory : article.SUB_CAT.toString('utf-8'),
+                                            umv : article.UMV = article.UMV !== null ? article.UMV.toString('utf-8') : '',
+                                            umc : article.UMC = article.UMC !== null ? article.UMC.toString('utf-8') : '',
+                                            satKey : article.CLAVE_SAT = article.CLAVE_SAT !== null ? article.CLAVE_SAT.toString('utf-8') : '',
+                                            provider : article.PROVEEDOR = article.PROVEEDOR!== null ?  article.PROVEEDOR.toString('utf-8') : 'NULL',
+                                            barcode : article.CLAVE_BARRAS.toString('utf-8'),
+                                            kretzKey : article.CLAVE_BASCULA !== null ?  article.CLAVE_BASCULA.toString('utf-8') : '',
+                                            iva : article.IVA.toString('utf-8'),
+                                            ieps : article.IEPS.toString('utf-8'),
+                                            mark : article.MARCA = article.MARCA !== null ? article.MARCA.toString('utf-8') : '',
+                                            deliveryType : article.TIPO_ENTREGA = article.TIPO_ENTREGA !== null ? article.TIPO_ENTREGA.toString('utf-8') : '',
+                                            recGdl : article.REC_GDL = article.REC_GDL !== null ? article.REC_GDL.toString('utf-8') : '',
+                                            seasonal : article.TEMPORADA = article.TEMPORADA !== null ? article.TEMPORADA.toString('utf-8') : '',
+                                            
+                                            saneado : article.SANEADO.toString('utf-8'),
+                                        }   
+                                    )
+                                } 
+                            });
+                            console.log(articles);
+                            resolve(articles)
+                });
+        });
+    });
+}
+const getMarks = (connection ) => {
+    console.log(connection);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections.AC , async function(err, db) {
+            if (err) {
+                console.log(err);
+                reject(err)
+            }
+                db.query(
+                    `
+                    Select *
+                    From clasificadores_cat_valores 
+                    Where clasificadores_cat_valores.clasificador_id = 27013463
+                    Order By valor;                    
+                    `, 
+                    function(err, result) {
+                        if (err) {
+                            reject(err)
+                        }
+                            db.detach();
+                            const marks = result.map( mark => {
+                                return  {
+                                    value : mark.VALOR_CLASIF_ID,
+                                    name : mark.VALOR
+                                }
+                            })
+                            resolve(marks)
+                });
+        });
+    });
+}
+const getStockByArticle = (conection, code) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+                db.query(
+                    `
+                    select * from exival_art_ur2('ALMACEN GENERAL CEDIS', current_date, 'N', 'S','S','S')
+                    left join claves_articulos
+                    on exival_art_ur2.articulo_id = claves_articulos.articulo_id
+                    where claves_articulos.clave_articulo = '${code}'
+                    ` , 
+                    function(err, data) {
+                        if (err) {
+                            reject(error)
+                        }
+                        let article = {
+                            name : data[0].NOMBRE.toString('utf-8'),
+                            stock : data[0].EXISTENCIA
+                        }
+                        console.log(article);
+                        db.detach();
+                        resolve(article)
+                });
+        });
+    });
+}
+const getArticleIdByCode = (conection, code) => {
+    console.log(conection);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+                db.query(
+                    `
+                    select claves_articulos.articulo_id from claves_articulos  where claves_articulos.clave_articulo = '${code}';
+                    ` , 
+                    function(err, data) {
+                        if (err) {
+                            reject(error)
+                        }
+                        if (data.length === 0) {
+                            reject('No se encontro articulo con esa clave')
+                        } else {
+                            db.detach();
+                            resolve(data[0].ARTICULO_ID)
+                        }
+                        
+                });
+        });
+    });
+}
+const getCategoryIdByName = (conection, categoryName) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+                db.query(
+                    `
+                    select lineas_articulos.linea_articulo_id from lineas_articulos  where lineas_articulos.nombre = '${categoryName}';
+                    ` , 
+                    function(err, data) {
+                        if (err) {
+                            reject(error)
+                        }
+                        if (data.length === 0) {
+                            console.log('category2',data);
+                            reject('No se encontro esta categoria')
+                        }else {
+                            db.detach();
+                            resolve(data[0].LINEA_ARTICULO_ID)
+                        }
+
+                });
+        });
+    });
+}
+const getTaxIdByName = (conection, taxName) => {
+    console.log('tax', taxName);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+                db.query(
+                    `
+                    select impuesto_id from impuestos where impuestos.nombre like '${taxName}%';
+                    ` , 
+                    function(err, data) {
+                        if (err) {
+                            reject(error)
+                        }
+                        console.log('tax', data);
+                        db.detach();
+                        resolve(data[0].IMPUESTO_ID)
+                });
+        });
+    });
+}
+const updateArticle = (conection, article) => {
+    const {articleId,categoryId,name,status,umc,umv,content} = article
+    console.log(article);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                transaction.query(
+                    `
+                    UPDATE ARTICULOS
+                        SET
+                            NOMBRE = '${name}' ,
+                            ESTATUS = '${status}',
+                            UNIDAD_VENTA = '${umv}',
+                            UNIDAD_COMPRA = '${umc}',
+                            CONTENIDO_UNIDAD_COMPRA = ${content},
+                            LINEA_ARTICULO_ID = ${categoryId},
+                            FECHA_HORA_ULT_MODIF = current_time
+                        WHERE (ARTICULO_ID = ${articleId});
+                    `, 
+                    async function(err, data ) {
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                                db.detach();
+                                resolve('Article updated');
+                        });
+                    }
+                ); 
+            });
+        });
+
+    });
+}
+const updateArticleSatKey = (conection, article) => {
+    const {articleId, satKey} = article
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                transaction.query(
+                    `
+                    UPDATE DATOS_ADICIONALES
+                    SET CLAVE = '${satKey}'
+                    WHERE (DATOS_ADICIONALES_ID = ${articleId});
+                    `, 
+                    async function(err, data ) {
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                                db.detach();
+                                resolve('Key Sat updated');
+                        });
+                    }
+                ); 
+            });
+        });
+
+    });
+}
+const updateArticlePurchase = (conection, article) => {
+    console.log(article);
+    const {articleId, content, umc } = article
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                transaction.query(
+                    `
+                    UPDATE PRECIOS_COMPRA
+                    SET
+                        CONTENIDO_UNIDAD_COMPRA = ${ content },
+                        UNIDAD_COMPRA = '${ umc }'
+                    WHERE (ARTICULO_ID = ${ articleId });
+                    `, 
+                    async function(err, data ) {
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                                db.detach();
+                                resolve('Purchase Prices updated');
+                        });
+                    }
+                ); 
+            });
+        });
+
+    });
+}
+const deleteArticleTaxes = (conection, article) => {
+    const { articleId } = article
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                if (err) {
+                    console.log(err);
+                }
+                transaction.query(
+                    `
+                    DELETE FROM impuestos_articulos
+                    WHERE articulo_id = ${articleId};
+                    `, 
+                    async function(err, data ) {
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                                db.detach();
+                                resolve('Taxes deleted');
+                        });
+                    }
+                ); 
+            });
+        });
+
+    });
+}
+const getTaxesIds = (conection, taxes) => {
+    let query = '';
+    console.log(taxes);
+    taxes.forEach((tax, i) => {
+        if (i === 0) {
+            query += `= '${tax}' `
+        }
+        query += ` or impuestos.nombre = '${tax}'`
+    });
+
+    console.log(query);
+
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+                db.query(
+                    `
+                    select impuesto_id from impuestos where impuestos.nombre ${query};
+                    ` , 
+                    function(err, data) {
+                        if (err) {
+                            reject(err)
+                        }
+                        console.log('tax', data);
+                        db.detach();
+                        resolve(data)
+                });
+        });
+    });
+}
+const insertArticleTaxes = (conection, articleId, ids = []) => {
+    console.log('ids',ids);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                ids.forEach((id, i) => {
+                    console.log(ids.length, i);
+                    transaction.query(
+                        `
+                        INSERT
+                        INTO IMPUESTOS_ARTICULOS (IMPUESTO_ART_ID, ARTICULO_ID, IMPUESTO_ID, UNIDADES_IMPUESTO, TIPO_SELECCION, CONJUNTO_SUCURSALES_ID)
+                        VALUES (-1, ${articleId}, ${id.IMPUESTO_ID}, 0, 'T', NULL)
+                        `, 
+                        async function(err, data ) {
+                            if (err) {
+                                console.log(err);
+                                reject(err)
+                            }
+                            transaction.commit(function(err) {
+                                if (err) {
+                                    transaction.rollback();
+                                }
+                                else{
+                                    db.detach();
+                                }
+                            });
+                        }
+                    ); 
+                });
+                resolve('Taxes inserted');
+            });
+        });
+
+    });
+}
+const deleteArticleKeys = (conection, article) => {
+    const { articleId } = article
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                if (err) {
+                    console.log(err);
+                }
+                transaction.query(
+                    `
+                    DELETE FROM claves_articulos
+                    WHERE articulo_id = ${articleId} and claves_articulos.rol_clave_art_id != 17 and claves_articulos.rol_clave_art_id != 670044;
+                    `, 
+                    async function(err, data ) {
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                                db.detach();
+                                resolve('Keys deleted');
+                        });
+                    }
+                ); 
+            });
+        });
+
+    });
+}
+const getArticleRolesId = (conection, ids) => {
+    let query = '';
+    console.log(ids);
+    ids.forEach((id, i) => {
+        if (i === 0) {
+            query += `= '${id}' `
+        }
+        query += ` or roles_claves_articulos.nombre = '${id}'`
+    });
+
+    console.log(query);
+
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+                db.query(
+                    `
+                    select ROL_CLAVE_ART_ID, Nombre
+                    from roles_claves_articulos
+                    where roles_claves_articulos.nombre ${query};
+                    ` , 
+                    function(err, data) {
+                        if (err) {
+                            reject(err)
+                        }
+                        console.log('id', data); 
+                        const roles_ids = data.map(e => {
+                            return {
+                                name : e.NOMBRE.toString('utf-8'),
+                                rolId : e.ROL_CLAVE_ART_ID
+                            }
+                        })
+                        db.detach();
+                        resolve(roles_ids)
+                });
+        });
+    });
+}
+const insertArticleKeys = (conection, data = []) => {
+    console.log('data',data);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED,  function(err, transaction) {
+                for (let index = 0; index < data.length; index++) {
+                    transaction.query(
+                        `
+                        INSERT INTO CLAVES_ARTICULOS (CLAVE_ARTICULO_ID, CLAVE_ARTICULO, ARTICULO_ID, ROL_CLAVE_ART_ID, CONTENIDO_EMPAQUE)
+                        VALUES (-1, '${data[index].key}', ${data[index].articleId}, ${data[index].rolId}, 1);
+
+                        `, 
+                        async function(err, result ) {
+                            if (err) {
+                                console.log(err);
+                                reject(err)
+                            }
+
+                            console.log('result',result);
+                            transaction.commit(function(err) {
+                                if (err) {
+                                    transaction.rollback();
+                                }
+                                else{
+                                    console.log('entro');
+                                    console.log(data.length, index);
+                                        db.detach();
+                                }
+                            });
+                        }
+                    ); 
+                };
+                resolve('Keys inserted');
+            });
+        });
+
+    });
+}
+const deleteArticleSubcategories = (conection, article) => {
+    const { articleId } = article
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                if (err) {
+                    console.log(err);
+                }
+                transaction.query(
+                    `
+                    delete from elementos_cat_clasif 
+                    where elementos_cat_clasif.elemento_id = ${articleId}
+                    and elementos_cat_clasif.valor_clasif_id != 175
+                    and elementos_cat_clasif.valor_clasif_id != 211
+                    and elementos_cat_clasif.valor_clasif_id != 212
+                    and elementos_cat_clasif.valor_clasif_id != 213
+                    and elementos_cat_clasif.valor_clasif_id != 214
+                    and elementos_cat_clasif.valor_clasif_id != 215
+                    and elementos_cat_clasif.valor_clasif_id != 216
+                    and elementos_cat_clasif.valor_clasif_id != 217
+                    and elementos_cat_clasif.valor_clasif_id != 218
+                    and elementos_cat_clasif.valor_clasif_id != 1036
+                    and elementos_cat_clasif.valor_clasif_id != 1041
+                    and elementos_cat_clasif.valor_clasif_id != 1042
+                    and elementos_cat_clasif.valor_clasif_id != 1043
+                    and elementos_cat_clasif.valor_clasif_id != 1044
+                    and elementos_cat_clasif.valor_clasif_id != 1045
+                    `, 
+                    async function(err, data ) {
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                                db.detach();
+                                resolve('Subcategories deleted');
+                        });
+                    }
+                ); 
+            });
+        });
+
+    });
+}
+const getArticleSubcategoryId = (conection, article) => {
+    console.log('article',article);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+                db.query(
+                    `
+                    Select VALOR_CLASIF_ID 
+                    From clasificadores_cat_valores 
+                    Where clasificadores_cat_valores.valor = '${article.subcategory}' 
+                    And  clasificadores_cat_valores.clasificador_id = 23892786;
+                    ` , 
+                    function(err, data) {
+                        if (err) {
+                            reject(err)
+                        }
+                        db.detach();
+                        resolve(data[0].VALOR_CLASIF_ID)
+                });
+        });
+    });
+}
+const insertArticleSubcategory = (conection, subcategoriesData) => {
+    console.log(subcategoriesData);
+    let query = '';
+    subcategoriesData.values.forEach( item => {
+        query += `INSERT INTO ELEMENTOS_CAT_CLASIF (ELEMENTO_ID, VALOR_CLASIF_ID) VALUES (${subcategoriesData.articleId}, ${item}); `;
+    });
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                if (err) {
+                    console.log(err);
+                }
+                transaction.query(
+                    `
+                    execute block as
+                    declare variable cnt2 integer = 0;
+                    begin
+                        while (cnt2 < 2) do
+                        begin
+                            ${query}
+                            cnt2 = cnt2 + 1;
+                        end
+                    end
+                    `, 
+                    // `
+                    // INSERT INTO ELEMENTOS_CAT_CLASIF (ELEMENTO_ID, VALOR_CLASIF_ID) VALUES (${articleId}, ${subcategoryId});
+                    // `, 
+                    async function(err, data ) {
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                                db.detach();
+                                resolve('Subcategories inserted');
+                        });
+                    }
+                ); 
+            });
+        });
+
+    });
+}
+const updateArticleToHealer = (conection,article,user) => {
+    const {
+         departament,
+         category,
+         subcategory,
+         umv,
+         umc,
+         iva,
+         ieps,
+         satKey,
+         barcode,
+         kretzKey,
+         seasonal,
+         recGdl,
+         mark,
+         deliveryType,
+         key
+        } = article
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+            db.transaction(firebird.ISOLATION_READ_COMMITED, function(err, transaction) {
+                transaction.query(
+                    `
+                    UPDATE XTJEC_ARTICULOSANEAR
+                    SET 
+                        DEP = '${departament}',
+                        CAT = '${category}',
+                        SUB_CAT = '${subcategory}',
+                        UMV = '${umv}',
+                        UMC = '${umc}',
+                        IVA = '${iva}',
+                        IEPS = '${ieps}',
+                        CLAVE_SAT = '${satKey}',
+                        CLAVE_BARRAS = '${barcode}',
+                        CLAVE_BASCULA = '${kretzKey}',
+                        SANEADO = 'S',
+                        USUARIO = '${user}',
+                        TEMPORADA = '${seasonal}',
+                        REC_GDL = '${recGdl}',
+                        MARCA = '${mark}',
+                        TIPO_ENTREGA = '${deliveryType}'
+                    WHERE (CLAVE = '${key}');
+                    `, 
+                    async function(err, data ) {
+                        if (err) {
+                            console.log(err);
+                            reject(err)
+                        }
+                        transaction.commit(function(err) {
+                            if (err)
+                                transaction.rollback();
+                            else
+                                db.detach();
+                                resolve('Articleupdated');
+                        });
+                    }
+                ); 
+            });
+        });
+
+    });
+}
+const getArticleStockByWarehouse = (conection, articleId, warehouseId, warehouseName) => {
+    //console.log(articleId, warehouseId);
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                const error = {
+                    ok: false,
+                    conection: conection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.query(
+                    // `
+                    // SELECT CLAVE_ARTICULO, NOMBRE, EXISTENCIA 
+                    // FROM EXISTENCIA_ARTICULO_JGB(${warehouseId}, '${articleId}');
+                    // ` 
+                    `
+                    SELECT A.CLAVE_ARTICULO, A.NOMBRE, A.EXISTENCIA, DA.clave CLAVE_SAT FROM (
+                            SELECT CLAVE_ARTICULO, NOMBRE, EXISTENCIA FROM EXISTENCIA_ARTICULO_JGB (${warehouseId}, '${articleId}')
+                        ) A
+                        INNER JOIN CLAVES_ARTICULOS CA ON A.CLAVE_ARTICULO = CA.clave_articulo
+                        INNER JOIN DATOS_ADICIONALES DA ON CA.articulo_id = DA.elem_id
+                    `
+                    , 
+                    function(err, data) {
+                        //console.log("Valores consulta:");
+                        //console.log(data, warehouseName);
+                        if (err) {
+                            reject(err)
+                        }
+                        if (data.length === 0) {
+                            data = [{
+                                EXISTENCIA : null,
+                                CLAVE_SAT : null
+                            }]
+                        }
+                        let article = data.map(element => {
+                            return {
+                                existencia : element.EXISTENCIA,
+                                almacen : warehouseName,
+                                clave_sat: element.CLAVE_SAT = element.CLAVE_SAT !== null ? element.CLAVE_SAT.toString('latin1') : 'Null',
+                                //clave_sat : element.CLAVE_SAT
+                            }
+                        });
+
+                        db.detach();
+                        resolve(article[0])
+                });
+        });
+    });
+}
+
+const getJecStockListExisByWarehouse = (conection, warehouseId, warehouseIdSQL) => {
+    let almacen_id = 0;
+    almacen_id = warehouseIdSQL;
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                const error = {
+                    ok: false,
+                    conection: conection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.query(
+                    `
+                    SELECT
+                        CAST(CURRENT_DATE AS DATE) AS FECHA,
+                        EX.CLAVE_ARTICULO,
+                        coalesce(EX.EXISTENCIA,0) as EXISTENCIA
+                    FROM EXIVAL_ART_UR (${warehouseId}, CURRENT_DATE ,'S') EX
+                    WHERE EX.EXISTENCIA > 0
+                    `
+                    , 
+                    function(err, data) {
+                        if (err) {
+                            reject(err)
+                        }
+
+                        let catalogo = []
+                        //console.log(data);
+                        if (data) {
+                            data.forEach(element => {
+
+                                const newElement = {
+                                    almacen_id : almacen_id,
+                                    fecha : formatDate.formatDateToString(element.FECHA),
+                                    clave : element.CLAVE_ARTICULO = element.CLAVE_ARTICULO !== null ? element.CLAVE_ARTICULO.toString('latin1') : 'Null',
+                                    existencia: element.EXISTENCIA,
+                                }
+                                catalogo.push(newElement)
+                            });
+
+                            data = {
+                                conection,
+                                catalogo
+                            }
+                            resolve(data);
+                            db.detach();
+                        }
+                });
+        });
+    });
+}
+
+const getJecStockListGraphByWarehouse = (conection, warehouseId, warehouseIdSQL) => {
+    
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] ,function(err, db) {
+            if (err) {
+                const error = {
+                    ok: false,
+                    conection: conection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.query(
+                    `
+                    SELECT
+                        ESTATUS,
+                        COUNT(ESTATUS) AS ARTICULOS
+                    FROM ARTICULOS
+                    GROUP BY ESTATUS
+                    `
+                    , 
+                    function(err, data) {
+                        if (err) {
+                            reject(err)
+                        }
+
+                        let catalogo = []
+                        //console.log(data);
+                        if (data) {
+                            data.forEach(element => {
+
+                                const newElement = {
+                                    almacen_id : warehouseIdSQL,
+                                    estatus : element.ESTATUS = element.ESTATUS !== null ? element.ESTATUS.toString('latin1') : 'Null',
+                                    articulos: element.ARTICULOS,
+                                }
+                                catalogo.push(newElement)
+                            });
+
+                            data = {
+                                conection,
+                                catalogo
+                            }
+                            resolve(data);
+                            db.detach();
+                        }
+                });
+        });
+    });
+}
+
+const getSalesCalculateIeps = (connection, date1, date2) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[connection] ,function(err, db) {
+            console.log('db', connection,err);
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.execute(
+                    `
+                    select * from get_jec_impts_ventas('${date1}', '${date2}' )
+                    ` , 
+                    function(err, data) {
+                        if (err) {
+                            reject(err)
+                        }
+                        let count = data.map(element => {
+                            return {
+                                docto_id : element[0].toString('latin1'),
+                                clave_cliente : element[1] !== null ? element[1].toString('latin1') : '',
+                                nombre_cliente : element[2].toString('latin1'),
+                                fecha :  formatDate.formatDateToString(element[3].toString('latin1')),
+                                factura : element[4].toString('latin1'),
+                                contado : element[5],
+                                base : element[6],
+                                descuento : element[7],
+                                subtotal : element[8],
+                                credito : element[9],
+                                modulo : element[10].toString('latin1'),
+                                vtas_0 : element[11],
+                                vtas_16 : element[12],
+                                vtas_8 : element[13],
+                                vtas_6 : element[14],
+                                vtas_30 : element[15],
+                                tasa_0 : element[16],
+                                tasa_16 : element[17],
+                                ieps_8 : element[18],
+                                ieps_6 : element[19],
+                                ieps_30 : element[20],
+                                tienda : connection
+                            }
+                        });
+                        
+                        db.detach();
+                        console.log('data', connection,count);
+                        resolve(count)
+                });
+        });
+    });
+}
+
+const frkOrdenCompra = (connection, data) => {
+    const {claveProveedor, importeNeto, condPagoId, usuarioCreador, tiempoEntrega} = data;
+    let proveedorId = 0
+    console.log(connection);
+    console.log(claveProveedor, importeNeto, condPagoId, usuarioCreador, tiempoEntrega);
+    return new Promise( (resolve, reject) => {
+        firebird.attach( conections[connection] ,function(err, db) {
+            
+            if (err) {
+                console.log('Error',err);
+                reject(err)
+            }
+                db.query(
+                    `
+                    select prov.proveedor_id, c.clave_prov from proveedores prov
+                    left join claves_proveedores c
+                    on c.proveedor_id = prov.proveedor_id and c.rol_clave_prov_id=49
+                    where prov.nombre = '${data.claveProveedor}';
+                    ` , 
+                    function(err, data) {
+                        if (err) {
+                            reject(err)
+                        }
+                        console.log('tax', data);
+                        db.detach();
+                        proveedorId = data[0].PROVEEDOR_ID;
+                        firebird.attach( conections[connection] ,function(err, db) {
+                            db.execute(
+                                `
+                                EXECUTE PROCEDURE XSP_FRKORDENCOMPRA  1, current_date , '${proveedorId}', dateadd (${tiempoEntrega} day to current_date), ${importeNeto},  ${condPagoId}, '${usuarioCreador}', current_date
+                                ` , 
+                                function(err, result) {
+                                    if (err) {
+                                        console.log(err);
+                                        reject(err)
+                                    }
+            
+                                    console.log(result);
+            
+                                    db.detach();
+                                    resolve({folio : result[1].toString("utf-8"), doctoId : result[0], claveProveedor :  result[2] })
+                            });
+                        });
+                });
+        });
+
+    });
+}
+
+const frkOrdenCompraDet = (connection, data) => {
+    console.log(data);
+    return new Promise( (resolve, reject) => {
+        data.forEach( (articulo,i) => {
+            firebird.attach( conections[connection] ,function(err, db) {
+                if (err) {
+                    const error = {
+                        ok: false,
+                        connection: connection,
+                        msg : err
+                    }
+                    return reject(error)
+                }   
+                db.execute(
+                    `
+                    EXECUTE PROCEDURE XSP_FRKORDENCOMPRA 
+                    2, current_date, 0, current_date, 190.02,  179019, 'JAIMEB', current_date, 
+                    ${articulo.doctoId}, '${articulo.claveArticulo}', '${articulo.umed}', ${articulo.unidades}, ${articulo.contUmed}, 
+                    ${articulo.precioUnitario}, ${articulo.precioNeto}, ${i + 1}
+                    ` , 
+                    function(err, result) {
+                        db.detach();
+                        if (err) {
+                            reject(err)
+                        }
+                        if (result && i + 1 === data.length) {
+                            resolve('correcto')
+                        }
+
+                });
+            });
+        });
+    });
+}
+module.exports = { 
+    getDataToPolicyTest,
+    getDataToPolicyByDay,
+    getCustomersBalances,
+    getCustomersBalancesToday,
+    getCmTotal,
+    getLastFolioVe,
+    createDoctoVe,
+    insertDoctoVeDet,
+    updateLastFolioP,
+    getArticlesByFolioVe,
+    getLastFolioCm,
+    insertDoctoCm,
+    updateLastFolioCm,
+    insertDoctoCmDet,
+    getProviders,
+    getArticlesToHealer,
+    getMarks,
+    getStockByArticle,
+    getArticleIdByCode,
+    getCategoryIdByName,
+    getTaxIdByName,
+    updateArticle,
+    updateArticlePurchase,
+    updateArticleSatKey,
+    deleteArticleTaxes,
+    getTaxesIds,
+    insertArticleTaxes,
+    deleteArticleKeys,
+    getArticleRolesId,
+    insertArticleKeys,
+    deleteArticleSubcategories,
+    getArticleSubcategoryId,
+    insertArticleSubcategory,
+    updateArticleToHealer,
+    getArticleStockByWarehouse,
+    getJecStockListExisByWarehouse,
+    getJecStockListGraphByWarehouse,
+    getSalesCalculateIeps,
+    frkOrdenCompra,
+    frkOrdenCompraDet
+}
+
