@@ -1,4 +1,4 @@
-const {response, request} = require('express');
+﻿const {response, request} = require('express');
 var firebird = require('node-firebird');
 const Cryptr = require('cryptr');
 const cryptr = new Cryptr('myTotalySecretKey');
@@ -1514,7 +1514,7 @@ const getDataToPolicyByDay = (req = request, res = response) => {
         firebirdQuerys.getDataToPolicyByDay('COLIMA', date1, date2),
         firebirdQuerys.getDataToPolicyByDay('VILLA', date1, date2),
         firebirdQuerys.getDataToPolicyByDay('COLINAS', date1, date2),
-        firebirdQuerys.getDataToPolicyByDay('CHAVEZ', date1, date2)
+        firebirdQuerys.getDataToPolicyByDay('CHAVEZC', date1, date2)
     ]).then((values) => {
         console.log(values);
         let data = [];
