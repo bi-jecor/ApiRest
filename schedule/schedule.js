@@ -70,11 +70,5 @@ const startRutines = () => {
     schedule.scheduleJob('25 22 * * *', async function(){
         await MIGRATION.INSERT_ARTICULOS_EXISTENCIA();
     })
-
-    /* Prueba de codigo */
-    schedule.scheduleJob('25 22 * * *', async function(){
-        await MIGRATION.INSERT_ARTICULOS_EXISTENCIA();  
-    })
-    
 }
 module.exports = { startRutines }
