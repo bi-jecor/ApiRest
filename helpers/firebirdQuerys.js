@@ -290,7 +290,7 @@ const getCustomersBalances = (conection, date) => {
                                 // descripcion : cargo.DESCRIPCION != null ? cargo.DESCRIPCION.toString('utf8') : 'Sin Descripcion',
                                 nombre_abrev: cargo.NOMBRE_ABREV.toString('utf8'),
                                 folio : cargo.FOLIO.toString('utf8'),
-                                rfc : cargo.RFC.toString('utf8'),
+                                rfc : cargo.RFC != null ? cargo.RFC.toString('utf8') : 'Sin RFC', 
                                 cond_pago :  cargo.COND_FT != null ? cargo.COND_FT.toString('utf8') : 'Sin Condicion de Pago'
                             }
                             let exist =  cargosPorCliente.find(item => item.cliente_id === cargo.CLIENTE_ID);
