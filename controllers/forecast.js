@@ -360,7 +360,7 @@ const frkOrdenCompra = (req, res = response) => {
     const conection = req.params.conection;
     console.log('head', req.body);
     try {
-        firebirdQuerys.frkOrdenCompra('test', req.body).then(resp => {
+        firebirdQuerys.frkOrdenCompra('AC', req.body).then(resp => {
             console.log('encabezado guardado');
             return res.json({
                 ok: true,
@@ -376,7 +376,7 @@ const frkOrdenCompraDet = (req, res = response) => {
     const conection = req.params.conection;
     console.log('det', req.body);
     try {
-        firebirdQuerys.frkOrdenCompraDet('test', req.body).then(resp => {
+        firebirdQuerys.frkOrdenCompraDet('AC', req.body).then(resp => {
             return res.json({
                 ok: true,
                 ...resp
