@@ -82,7 +82,6 @@ const sendEmail = async (req = request, res = response) => {
     </div>
     </body>`
   };
-
   transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
           console.log(error);
@@ -95,6 +94,8 @@ const sendEmail = async (req = request, res = response) => {
   });
     
 }
+
+
 module.exports = {
     sendEmail
 }

@@ -811,6 +811,7 @@ const getArticlesToHealer = (conection, min, max, provider='') => {
         });
     });
 }
+
 const getMarks = (connection ) => {
     console.log(connection);
     return new Promise((resolve, reject) => {
@@ -842,6 +843,7 @@ const getMarks = (connection ) => {
         });
     });
 }
+
 const getStockByArticle = (conection, code) => {
     return new Promise((resolve, reject) => {
         firebird.attach( conections[conection] ,function(err, db) {
@@ -871,6 +873,7 @@ const getStockByArticle = (conection, code) => {
         });
     });
 }
+
 const getArticleIdByCode = (conection, code) => {
     console.log(conection);
     return new Promise((resolve, reject) => {
@@ -898,6 +901,7 @@ const getArticleIdByCode = (conection, code) => {
         });
     });
 }
+
 const getCategoryIdByName = (conection, categoryName) => {
     return new Promise((resolve, reject) => {
         firebird.attach( conections[conection] ,function(err, db) {
@@ -925,6 +929,7 @@ const getCategoryIdByName = (conection, categoryName) => {
         });
     });
 }
+
 const getTaxIdByName = (conection, taxName) => {
     console.log('tax', taxName);
     return new Promise((resolve, reject) => {
@@ -948,6 +953,7 @@ const getTaxIdByName = (conection, taxName) => {
         });
     });
 }
+
 const updateArticle = (conection, article) => {
     const {articleId,categoryId,name,status,umc,umv,content} = article
     console.log(article);
@@ -990,6 +996,7 @@ const updateArticle = (conection, article) => {
 
     });
 }
+
 const updateArticleSatKey = (conection, article) => {
     const {articleId, satKey} = article
     return new Promise((resolve, reject) => {
@@ -1024,6 +1031,7 @@ const updateArticleSatKey = (conection, article) => {
 
     });
 }
+
 const updateArticlePurchase = (conection, article) => {
     console.log(article);
     const {articleId, content, umc } = article
@@ -1061,6 +1069,7 @@ const updateArticlePurchase = (conection, article) => {
 
     });
 }
+
 const deleteArticleTaxes = (conection, article) => {
     const { articleId } = article
     return new Promise((resolve, reject) => {
@@ -1097,6 +1106,7 @@ const deleteArticleTaxes = (conection, article) => {
 
     });
 }
+
 const getTaxesIds = (conection, taxes) => {
     let query = '';
     console.log(taxes);
@@ -1130,6 +1140,7 @@ const getTaxesIds = (conection, taxes) => {
         });
     });
 }
+
 const insertArticleTaxes = (conection, articleId, ids = []) => {
     console.log('ids',ids);
     return new Promise((resolve, reject) => {
@@ -1169,6 +1180,7 @@ const insertArticleTaxes = (conection, articleId, ids = []) => {
 
     });
 }
+
 const deleteArticleKeys = (conection, article) => {
     const { articleId } = article
     return new Promise((resolve, reject) => {
@@ -1205,6 +1217,7 @@ const deleteArticleKeys = (conection, article) => {
 
     });
 }
+
 const getArticleRolesId = (conection, ids) => {
     let query = '';
     console.log(ids);
@@ -1246,6 +1259,7 @@ const getArticleRolesId = (conection, ids) => {
         });
     });
 }
+
 const insertArticleKeys = (conection, data = []) => {
     console.log('data',data);
     return new Promise((resolve, reject) => {
@@ -1285,9 +1299,9 @@ const insertArticleKeys = (conection, data = []) => {
                 resolve('Keys inserted');
             });
         });
-
     });
 }
+
 const deleteArticleSubcategories = (conection, article) => {
     const { articleId } = article
     return new Promise((resolve, reject) => {
@@ -1336,9 +1350,9 @@ const deleteArticleSubcategories = (conection, article) => {
                 ); 
             });
         });
-
     });
 }
+
 const getArticleSubcategoryId = (conection, article) => {
     console.log('article',article);
     return new Promise((resolve, reject) => {
@@ -1364,6 +1378,7 @@ const getArticleSubcategoryId = (conection, article) => {
         });
     });
 }
+
 const insertArticleSubcategory = (conection, subcategoriesData) => {
     console.log(subcategoriesData);
     let query = '';
@@ -1414,6 +1429,7 @@ const insertArticleSubcategory = (conection, subcategoriesData) => {
 
     });
 }
+
 const updateArticleToHealer = (conection,article,user) => {
     const {
          departament,
@@ -1480,6 +1496,7 @@ const updateArticleToHealer = (conection,article,user) => {
 
     });
 }
+
 const getArticleStockByWarehouse = (conection, articleId, warehouseId, warehouseName) => {
     //console.log(articleId, warehouseId);
     return new Promise((resolve, reject) => {
@@ -1588,7 +1605,6 @@ const getJecStockListExisByWarehouse = (conection, warehouseId, warehouseIdSQL) 
 }
 
 const getJecStockListGraphByWarehouse = (conection, warehouseId, warehouseIdSQL) => {
-    
     return new Promise((resolve, reject) => {
         firebird.attach( conections[conection] ,function(err, db) {
             if (err) {
@@ -1776,6 +1792,7 @@ const frkOrdenCompraDet = (connection, data) => {
         });
     });
 }
+
 module.exports = { 
     getDataToPolicyTest,
     getDataToPolicyByDay,
