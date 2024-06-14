@@ -1,4 +1,4 @@
-const { response } = require('express');
+const { response, request } = require('express');
 const Inventory = require('../models/inventory');
 
 const createInventory = async (req, res) => {

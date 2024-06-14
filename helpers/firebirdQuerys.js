@@ -1793,6 +1793,427 @@ const frkOrdenCompraDet = (connection, data) => {
     });
 }
 
+
+
+const getCustomersCharges = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[connection] ,function(err, db) {
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.execute(
+                    `
+                    SELECT
+                        f.fecha as docDate,
+                        a.fecha_vencimiento as docDueDate,
+                        CLIENTES.nombre as cardName,
+                        b.folio numAtCard,
+                        f.importe_neto as lineTotal,
+                        f.total_impuestos,
+                        i.total,
+                        dirs.rfc_curp,
+                        case
+                            when i.nombre = 'IVA TASA 16%' then 'VIVA16'
+                            when i.nombre = 'TASA CERO' then 'VIVA0'
+                            when i.nombre = 'IEPS 8%' then 'VIEPS8'
+                            when i.nombre = 'IEPS 6%' then 'VIEPS6'
+                        end as taxCode
+                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    LEFT JOIN DOCTOS_CC B
+                    ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
+                    LEFT JOIN clientes
+                    ON B.cliente_id = clientes.cliente_id
+                    JOIN doctos_ve F
+                    on B.folio = F.folio
+                    left join (
+                        select v.folio, i.* from (
+                            select
+                            im.docto_ve_id,
+                            i.nombre,
+                            i.impuesto_id,
+                            sum(im.importe_impuesto_bruto) as total
+                        
+                            from impuestos_doctos_ve_det im
+                            left join impuestos i
+                            on i.impuesto_id = im.impuesto_id
+                            group by i.nombre, i.tipo_impto_id, im.docto_ve_id,  i.impuesto_id
+                        ) as i
+                        left join doctos_ve  v
+                        on i.docto_ve_id = v.docto_ve_id
+                    ) i
+                    on i.folio = f.folio
+                    left join dirs_clientes dirs
+                    on clientes.cliente_id = dirs.cliente_id and dirs.es_dir_ppal = 'S'
+                    ORDER BY CLIENTES.nombre          
+                    ` , 
+                    function(err, customersDB) {
+                        console.log('err',err);
+                        if (err) {
+                            reject(err)
+                        }
+                        let customers = customersDB.map(customer => {
+                            return {
+                                docDate : formatDate.formatDateToString(customer[0]),
+                                docDueDate : formatDate.formatDateToString(customer[1]),
+                                cardname : customer[2],
+                                numCard : customer[3] !== null ? customer[3].toString('latin1') : '',
+                                lineTotal: customer[4],
+                                taxesTotal: customer[5],
+                                tax : customer[6] ,
+                                taxcode: customer[8] !== null ? customer[8].toString('latin1') : '',
+                                rfc : customer[7] !== null ? customer[7].toString('latin1') : '',
+                            }
+                        })
+                        db.detach();
+                        resolve(customers)
+                });
+        });
+    });
+}
+
+const getCustomersToSap = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[connection] ,function(err, db) {
+            console.log('db', connection,err);
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.execute(
+                    `
+                    select
+                        c.cliente_id,
+                        trim(c.nombre) as nombre,
+                        trim('C') as serie ,
+                        trim(iif(cond.nombre != 'CONTADO', 'CREDITO', 'CONTADO')) as Grupo,
+                        COALESCE(pre.nombre, '') as lista_precios,
+                        iif(cond.nombre != 'CONTADO', trim(substring(cond.nombre from 9 for 15)), 'CONTADO') as cond_pago,
+                        c.rfc_curp as rfc,
+                        trim('104-101-000') as cuenta,
+                        trim(COALESCE(c.clave_regimen_fiscal, '')) as clave_regimen_fiscal,
+                        c.calle,
+                        c.colonia,
+                        c.codigo_postal,
+                        c.ciudad,
+                        c.poblacion,
+                        trim(c.pais),
+                        c.estado,
+                        c.num_exterior,
+                        c.num_interior
+            
+                    from (
+                                            SELECT
+                                                c.nombre,
+                                                c.cliente_id,
+                                                c.cond_pago_id,
+                                                d.rfc_curp,
+                                                d.clave_regimen_fiscal,
+                                                d.calle, d.colonia,
+                                                d.codigo_postal,
+                                                ci.nombre as ciudad,
+                                                d.poblacion,
+                                                e.nombre as estado,
+                                                'MEXICO' AS pais,
+                                                d.num_exterior,
+                                                d.num_interior
+                                            FROM doctos_ve ve
+                                            left join clientes c
+                                            on c.cliente_id = ve.cliente_id
+                                            left join dirs_clientes d
+                                            on c.cliente_id = d.cliente_id and d.es_dir_ppal = 'S'
+                                            left join ciudades ci
+                                            on ci.ciudad_id = d.ciudad_id
+                                            left join estados e
+                                            on e.estado_id = d.estado_id
+                                            where ve.fecha > '01.01.2023'
+                                            and c.estatus = 'A'
+                                            group by c.nombre, c.cliente_id, c.cond_pago_id, d.rfc_curp,  d.clave_regimen_fiscal, d.calle, d.colonia, d.codigo_postal, ciudad, d.poblacion, estado, pais, d.num_exterior, d.num_interior
+                                            union
+                                            SELECT
+                                                c.nombre,
+                                                c.cliente_id,
+                                                c.cond_pago_id,
+                                                d.rfc_curp,
+                                                d.clave_regimen_fiscal,
+                                                d.calle,
+                                                d.colonia,
+                                                d.codigo_postal,
+                                                ci.nombre as ciudad,
+                                                d.poblacion,
+                                                e.nombre as estado,
+                                                'MEXICO' as pais,
+                                                d.num_exterior,
+                                                d.num_interior
+                                            FROM doctos_pv pv
+                                            left join clientes c
+                                            on c.cliente_id = pv.cliente_id
+                                            left join dirs_clientes d
+                                            on c.cliente_id = d.cliente_id and d.es_dir_ppal = 'S'
+                                            left join ciudades ci
+                                            on ci.ciudad_id = d.ciudad_id
+                                            left join estados e
+                                            on e.estado_id = ci.estado_id
+                                            where pv.fecha > '01.01.2023'
+                                            and c.estatus = 'A'
+                                            group by c.nombre, c.cliente_id, c.cond_pago_id, d.rfc_curp, d.clave_regimen_fiscal, d.calle, d.colonia, d.codigo_postal, ciudad, d.poblacion, estado, pais, d.num_exterior, d.num_interior
+                                        ) c
+                    join RFCS_LCO fis
+                    on c.rfc_curp = fis.rfc
+                    join condiciones_pago  cond
+                    on cond.cond_pago_id = c.cond_pago_id
+                    left join precios_cli_cli p
+                    on p.cliente_id = c.cliente_id
+                    left join precios_empresa pre
+                    on p.precio_empresa_id = pre.precio_empresa_id           
+                    ` , 
+                    function(err, customersDB) {
+                        console.log('err',err);
+                        console.log('DB',customersDB);
+                        if (err) {
+                            reject(err)
+                        }
+                        let customers = customersDB.map(customer => {
+                            return {
+                                name : customer[1],
+                                serie : customer[2],
+                                group : customer[3],
+                                list : customer[4],
+                                cond: customer[5],
+                                rfc: customer[6].toString('latin1'),
+                                account: customer[7],
+                                cfdi : 'G03',
+                                fiscal: customer[8],
+                                street :  customer[9] !== null ? customer[9].toString('latin1').split("\n").join(" ").split("\r").join("") : '',
+                                block : customer[10] !== null ? customer[10].toString('latin1') : '',
+                                zipCode : customer[11]  !== null ? customer[11].toString('latin1') : '',
+                                city : customer[12]  !== null ? customer[12].toString('latin1') : '',
+                                county : customer[13]  !== null ? customer[13].toString('latin1') : '',
+                                country : customer[14]  !== null  ? customer[14].toString('latin1') : '',
+                                state : customer[15]  !== null  ? customer[15].toString('latin1') : '',
+                                buildingFloorRoom : customer[16]  !== null  ? customer[16].toString('latin1') : '',
+                                streetNo : customer[17]  !== null  ? customer[17].toString('latin1') : '',
+                                connection : connection
+                                // folio : charge[5] !== null ? charge[5].toString('latin1') : '',
+                            }
+                        })
+
+                        // let data = {
+                        //     customers,
+                        //     connection
+                        // }
+
+                        db.detach();
+                        resolve(customers.sort((a, b) => a.name - b.name))
+                });
+        });
+    });
+}
+
+const getProvidersToSap = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[connection] ,function(err, db) {
+            console.log('db', connection,err);
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.execute(
+                    `
+                    select distinct
+                        '' as cardCode,
+                        p.nombre as cardName,
+                        trim('P') as serie,
+                        '' as cardType,
+                        trim('Compras') as GroupCode,
+                        p.telefono1 as phone1,
+                        p.telefono2 as phone2,
+                        p.fax,
+                        cast(p.email as varchar(100)) as email,
+                        cast(cond.nombre as varchar(50))  as payTerms,
+                        cast(p.rfc_curp as varchar(50)) as FederalTax,
+                        trim('201-101-000 - PROVEEDORES NACIONALES') as creditorAccount,
+                        trim('Lista de precios compra') as listname,
+                        '' as wTCode,
+                        '' as VatGroupLatinAmerica,
+                        '' as properties1,
+                        '' as properties2,
+                        '' as properties3,
+                        '' as properties4,
+                        '' as properties5,
+                        '' as properties6,
+                        '' as properties7,
+                        '' as properties8,
+                        '' as properties9,
+                        '' as properties10,
+                        '' as properties11,
+                        '' as properties12,
+                        '' as properties13,
+                        '' as properties14,
+                        '' as properties15,
+                        '' as properties16,
+                        '' as properties17,
+                        '' as properties18,
+                        '' as properties19,
+                        '' as regimen,
+                        trim('Otros' ) as providerType,
+                        trim('Nacional' ) as Nationality,
+                        trim('Transferencia') as payment,
+                        trim('G01') as cfdi_a_doctos_proc_cancel, 
+                        p.limite_credito
+                    from DOCTOS_CM cm
+                    join proveedores p
+                    on p.PROVEEDOR_ID = cm.proveedor_id
+                    left join condiciones_pago_cp cond
+                    on cond.cond_pago_id = p.cond_pago_id
+                    WHERE cm.fecha > '01.01.2023'         
+                    ` , 
+                    function(err, providersDB) {
+                        if (err) {
+                            reject(err)
+                        }
+                        console.log(connection,providersDB);
+                        const providers = providersDB.map(provider => {
+                            return {
+                                cardCode : provider[0],
+                                cardName : provider[1],
+                                serie : provider[2],
+                                cardType : provider[3],
+                                groupCode : provider[4],
+                                phone1 : provider[5] !== null ? provider[5].toString('latin1') : '',
+                                phone2 : provider[6] !== null ? provider[6].toString('latin1') : '',
+                                fax : provider[7] !== null ? provider[7].toString('latin1') : '',
+                                email : provider[8] !== null ? provider[8].toString('latin1') : '',
+                                payterms : provider[9] !== null ? provider[9].toString('latin1') : '',
+                                federalTax : provider[10] !== null ? provider[10].toString('latin1') : '',
+                                creditorAccount : provider[11] !== null ? provider[11].toString('latin1') : '',
+                                listname : provider[12] !== null ? provider[12].toString('latin1') : '',
+                                wTCode : provider[13] !== null ? provider[13].toString('latin1') : '',
+                                vatGroupLatinAmerica :  provider[14] !== null ? provider[14].toString('latin1') : '',
+                                properties1 :  provider[15] !== null ? provider[15].toString('latin1') : '',
+                                properties2 :  provider[16] !== null ? provider[16].toString('latin1') : '',
+                                properties3 :  provider[17] !== null ? provider[17].toString('latin1') : '',
+                                properties4 :  provider[18] !== null ? provider[18].toString('latin1') : '',
+                                properties5 :  provider[19] !== null ? provider[19].toString('latin1') : '',
+                                properties6 :  provider[20] !== null ? provider[20].toString('latin1') : '',
+                                properties7 :  provider[21] !== null ? provider[21].toString('latin1') : '',
+                                properties8 :  provider[22] !== null ? provider[22].toString('latin1') : '',
+                                properties9 :  provider[23] !== null ? provider[23].toString('latin1') : '',
+                                properties10 :  provider[24] !== null ? provider[24].toString('latin1') : '',
+                                properties11 :  provider[25] !== null ? provider[25].toString('latin1') : '',
+                                properties12 :  provider[26] !== null ? provider[26].toString('latin1') : '',
+                                properties13 :  provider[27] !== null ? provider[27].toString('latin1') : '',
+                                properties14 :  provider[28] !== null ? provider[28].toString('latin1') : '',
+                                properties15 :  provider[29] !== null ? provider[29].toString('latin1') : '',
+                                properties16 :  provider[30] !== null ? provider[30].toString('latin1') : '',
+                                properties17 :  provider[31] !== null ? provider[31].toString('latin1') : '',
+                                properties18 :  provider[32] !== null ? provider[32].toString('latin1') : '',
+                                properties19 :  provider[33] !== null ? provider[33].toString('latin1') : '',
+                                regimen :  provider[34] !== null ? provider[34].toString('latin1') : '',
+                                providerType :  provider[35],
+                                nationality :  provider[36],
+                                payment :  provider[37],
+                                cfdi :  provider[38],
+                                limit :  provider[39],
+                                db :  connection,
+                            } 
+                        });
+                        db.detach();
+                        resolve(providers)
+                });
+        });
+    });
+}
+
+// fUNCION PARA OBTENER CARGO DELOS PROVEEDORES
+const getProvidersChargesCxp = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[connection] ,function(err, db) {
+            console.log('db', connection,err);
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.query(
+                    `
+                    SELECT A.*,  B.FOLIO, B.FECHA, B.PROVEEDOR_ID, B.DESCRIPCION, C.NOMBRE_ABREV, cm.fecha as fecha_compra, '' as fecha_recepcion,cm.folio as folio_cm , clp.clave_prov, p.nombre as nombre_provedor, p.rfc_curp,  ALM.nombre as almacen, ccp.NOMBRE AS cond_pago, cm.importe_neto, tp.nombre
+                    FROM CARGOS_proveedores_JGB(current_date , current_date, 'N') A
+                    LEFT JOIN DOCTOS_CP B
+                    ON A.DOCTO_CP_ID = B.DOCTO_CP_ID
+                    LEFT JOIN CONCEPTOS_CP C
+                    ON B.CONCEPTO_CP_ID = C.CONCEPTO_CP_ID
+                    LEFT JOIN DOCTOS_CM CM
+                    ON b.proveedor_id = cm.proveedor_id and b.folio =   cm.folio_prov  and cm.tipo_docto = 'C' and cm.estatus = 'N'
+                    LEFT join ALMACENES ALM
+                    ON ALM.almacen_id = CM.almacen_id
+                    left join proveedores p
+                    on p.proveedor_id = cm.proveedor_id
+                    left join claves_proveedores clp
+                    on clp.proveedor_id = p.proveedor_id
+                    left join condiciones_pago_cp ccp
+                    on ccp.cond_pago_id = cm.cond_pago_id
+                    left join tipos_prov tp
+                    on tp.tipo_prov_id = p.tipo_prov_id
+                    ORDER BY FECHA
+                    ` , 
+                    function(err, chargesDB) {
+                        if (err) {
+                            reject(err)
+                        }
+                        console.log(chargesDB[0]);
+                        let charges = chargesDB.map(charge => {
+                            return {
+                                docDueDate : charge.FECHA_VENCIMIENTO !== null ? charge.FECHA_VENCIMIENTO : '',
+                                atraso : charge.ATRASO !== null ? charge.ATRASO : '',
+                                importe_cargo : charge.IMPORTE_CARGO !== null ? charge.IMPORTE_CARGO : '',
+                                saldo_cargo : charge.SALDO_CARGO !== null ? charge.SALDO_CARGO : '',
+                                numAtCard : charge.FOLIO !== null ? charge.FOLIO.toString('latin1') : '',
+                                docDate : charge.FECHA_COMPRA !== null ? charge.FECHA_COMPRA : '',
+                                // proveedor_id : charge[8] !== null ? charge[8] : '',
+                                fecha_compra :  charge.FECHA_COMPRA !== null ? charge.FECHA_COMPRA : '',
+                                fecha_recepcion :  charge.FECHA_RECEPCION !== null ? charge.FECHA_RECEPCION.toString('latin1') : '',
+                                folio_cm :  charge.FOLIO_CM !== null ? charge.FOLIO_CM.toString('latin1') : '',
+                                clave_prov :  charge.CLAVE_PROV !== null ? charge.CLAVE_PROV.toString('latin1') : '',
+                                cardName :  charge. NOMBRE_PROVEDOR !== null ? charge.NOMBRE_PROVEDOR.toString('latin1') : '',
+                                rfc :  charge.NOMBRE_PROVEDOR !== null ? charge. NOMBRE_PROVEDOR.toString('latin1') : '',
+                                almacen :  charge.ALMACEN !== null ? charge.ALMACEN.toString('latin1') : '',
+                                cond_pago : charge.COND_PAGO !== null ? charge.COND_PAGO.toString('latin1') : '',
+                                importe_neto : charge.IMPORTE_NETO !== null ? charge.IMPORTE_NETO: '',
+                                // tipo_provedor : charge[20] !== null ? charge[20].toString('latin1') : '',
+                            }
+                        })
+
+                        console.log('cargos',charges[0]);
+
+                        let data = {
+                            charges,
+                            connection
+                        }
+
+                        db.detach();
+                        resolve(data)
+                });
+        });
+    });
+}
+
+
 module.exports = { 
     getDataToPolicyTest,
     getDataToPolicyByDay,
@@ -1833,6 +2254,13 @@ module.exports = {
     getJecStockListGraphByWarehouse,
     getSalesCalculateIeps,
     frkOrdenCompra,
-    frkOrdenCompraDet
+    frkOrdenCompraDet,
+
+    // Microsip - SAP
+    getCustomersCharges,
+    getCustomersToSap,
+    getProvidersToSap,
+    getProvidersChargesCxp
+    
 }
 

@@ -21,6 +21,7 @@ dbConnection();
 // Rutas
 // ============================================================
 app.use('/jecor/api/auth', require('./routes/auth'));
+app.use('/jecor/api/connections', require('./routes/connections'));
 app.use('/jecor/api/users', require('./routes/users'));
 app.use('/jecor/api/applications', require('./routes/applications'));
 app.use('/jecor/api/permissions', require('./routes/permissions'));

@@ -78,9 +78,138 @@ const getSalesCalculateIeps = (req, res=response) => {
      })
 }
 
+const getCustomersCharges = (req, res=response) => {
+    const all = Promise.allSettled([
+       firebirdQuerys.getCustomersCharges('G32'), 
+       // firebirdQuerys.getCustomersCharges('AC'), 
 
+    ]).then( (values) => {
+       let data = [];
+       let dataUnify = [];
+       let fails =  ''
+       console.log('data',data);
+       values.forEach(element => {
+           if (element.status !== 'rejected') {
+               data = [...data, ...element.value]
+           } else {
+               console.log(element);
+              fails = fails + ' ' + element.reason.connection;
+           }
+       });
+       return res.json({
+           data,
+           fails: fails.trim(),
+       });
+    })
+}
+
+const getCustomersToSap = (req, res=response) => {
+    const all = Promise.allSettled([
+       firebirdQuerys.getCustomersToSap('G32'), 
+       firebirdQuerys.getCustomersToSap('AC'), 
+       firebirdQuerys.getCustomersToSap('COLIMA'), 
+       firebirdQuerys.getCustomersToSap('VILLA'), 
+       firebirdQuerys.getCustomersToSap('COLINAS'), 
+       firebirdQuerys.getCustomersToSap('TURCIO'), 
+       firebirdQuerys.getCustomersToSap('PAEZ'), 
+    ]).then( (values) => {
+       let data = [];
+       let dataUnify = [];
+       let fails =  ''
+       values.forEach(element => {
+           if (element.status !== 'rejected') {
+               data = [...data, ...element.value]
+           } else {
+               console.log(element);
+              fails = fails + ' ' + element.reason.connection;
+           }
+       });
+
+       data.forEach(customer => {
+           const exist = dataUnify.find( item => item.name === customer.name && item.rfc === customer.rfc );
+
+           if (exist === undefined) {
+               dataUnify.push(customer)
+           }
+       })
+       return res.json({
+           data: dataUnify,
+           fails: fails.trim(),
+       });
+    });
+}
+
+const getProvidersToSap = (req, res=response) => {
+    const all = Promise.allSettled([
+       firebirdQuerys.getProvidersToSap('AC'),
+       firebirdQuerys.getProvidersToSap('G32'), 
+       firebirdQuerys.getProvidersToSap('COLIMA'), 
+       firebirdQuerys.getProvidersToSap('VILLA'), 
+       firebirdQuerys.getProvidersToSap('COLINAS'), 
+       firebirdQuerys.getProvidersToSap('TURCIO'), 
+       // firebirdQuerys.getProvidersToSap('PAEZ'),
+    ]).then( (values) => {
+       console.log(values);
+       let data = [];
+       let dataUnify = [];
+       let fails =  ''
+       values.forEach(element => {
+           if (element.status !== 'rejected') {
+               data = [...data, ...element.value]
+           } else {
+               console.log(element);
+              fails = fails + ' ' + element.reason.connection;
+           }
+       });
+       data.forEach(provider => {
+           const exist = dataUnify.find( item => item.cardName === provider.cardName);
+           if (exist === undefined) {
+               dataUnify.push(provider)
+           }
+       });
+       return res.json({
+           data : dataUnify,
+           fails: fails.trim(),
+       });
+    });
+}
+
+const getAllProvidersChargesCxp = (req, res) => {
+    const all = Promise.allSettled([
+        firebirdQuerys.getProvidersChargesCxp('G32'),
+        // firebirdQuerys.getProvidersChargesCxp('AC'),
+        // firebirdQuerys.getProvidersChargesCxp('COLIMA'),
+        // firebirdQuerys.getProvidersChargesCxp('VILLA'),
+        // firebirdQuerys.getProvidersChargesCxp('COLINAS'),
+    ]).then((values) => {
+
+        let data = [];
+        let fails =  ''
+        let emptys =  ''
+        values.forEach(element => {
+            
+            if (element.status !== 'rejected') {
+                data = [...data, ...element.value.charges]
+                if(element.value.charges.length === 0){
+                    emptys = emptys + ' ' + element.value.connection
+                }
+            } else {
+               fails = fails + ' ' + element.reason.connection;
+            }
+        });
+        return res.json({
+            data,
+            fails: fails.trim(),
+            emptys: emptys.trim()
+        });
+    });
+}
 
 module.exports = { 
     getAllProvidersCharges,
-    getSalesCalculateIeps
+    getSalesCalculateIeps,
+    getCustomersCharges,
+    getCustomersToSap,
+    getProvidersToSap,
+    getAllProvidersChargesCxp
 }
