@@ -177,10 +177,13 @@ const getProvidersToSap = (req, res=response) => {
 const getAllProvidersChargesCxp = (req, res) => {
     const all = Promise.allSettled([
         firebirdQuerys.getProvidersChargesCxp('G32'),
-        // firebirdQuerys.getProvidersChargesCxp('AC'),
-        // firebirdQuerys.getProvidersChargesCxp('COLIMA'),
-        // firebirdQuerys.getProvidersChargesCxp('VILLA'),
-        // firebirdQuerys.getProvidersChargesCxp('COLINAS'),
+        firebirdQuerys.getProvidersChargesCxp('AC'),
+        firebirdQuerys.getProvidersChargesCxp('COLIMA'),
+        firebirdQuerys.getProvidersChargesCxp('VILLA'),
+        firebirdQuerys.getProvidersChargesCxp('COLINAS'),
+        firebirdQuerys.getProvidersChargesCxp('TURCIO'),
+        firebirdQuerys.getProvidersChargesCxp('PAEZ'),
+        firebirdQuerys.getProvidersChargesCxp('CHAVEZC'),
     ]).then((values) => {
 
         let data = [];
