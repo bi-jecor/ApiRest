@@ -2191,7 +2191,7 @@ const getProvidersChargesCxp = (connection) => {
                                 folio_cm :  charge.FOLIO_CM !== null ? charge.FOLIO_CM.toString('latin1') : '',
                                 clave_prov :  charge.CLAVE_PROV !== null ? charge.CLAVE_PROV.toString('latin1') : '',
                                 cardName :  charge. NOMBRE_PROVEDOR !== null ? charge.NOMBRE_PROVEDOR.toString('latin1') : '',
-                                rfc :  charge.NOMBRE_PROVEDOR !== null ? charge. NOMBRE_PROVEDOR.toString('latin1') : '',
+                                rfc :  charge.RFC_CURP !== null ? charge. RFC_CURP.toString('latin1') : '',
                                 almacen :  charge.ALMACEN !== null ? charge.ALMACEN.toString('latin1') : '',
                                 cond_pago : charge.COND_PAGO !== null ? charge.COND_PAGO.toString('latin1') : '',
                                 importe_neto : charge.IMPORTE_NETO !== null ? charge.IMPORTE_NETO: '',
