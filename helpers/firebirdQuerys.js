@@ -2164,8 +2164,11 @@ const getProvidersChargesCxp = (connection) => {
                     ON ALM.almacen_id = CM.almacen_id
                     left join proveedores p
                     on p.proveedor_id = cm.proveedor_id
-                    left join claves_proveedores clp
-                    on clp.proveedor_id = p.proveedor_id
+                    left join (
+                         SELECT P.proveedor_id, coalesce(CP1.clave_prov, CP2.clave_prov) AS clave_prov FROM PROVEEDORES P
+                            LEFT JOIN claves_proveedores CP1 ON P.proveedor_id = CP1.proveedor_id AND CP1.rol_clave_prov_id = 49
+                            LEFT JOIN claves_proveedores CP2 ON P.proveedor_id = CP2.proveedor_id AND CP2.rol_clave_prov_id = 50
+                    ) clp on p.proveedor_id = clp.proveedor_id
                     left join condiciones_pago_cp ccp
                     on ccp.cond_pago_id = cm.cond_pago_id
                     left join tipos_prov tp
