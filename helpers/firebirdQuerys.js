@@ -351,7 +351,7 @@ const getCustomersBalancesToday = (conection) => {
                     ORDER BY CLIENTES.nombre
                     `, async function(err, cargos ) {
                         console.log(err);
-                        console.log(cargos);
+                        //console.log(cargos);
                         let cargosPorCliente = [];
                         cargos.forEach( (cargo) => {
                             data = {
@@ -392,6 +392,7 @@ const getCustomersBalancesToday = (conection) => {
                                 cargosPorCliente.push(newItem);
                             }
                         });
+                        console.log("[CUENTAS POR COBRAR] EJECUTADO CORRECTAMENTE EN " + conection);
                         resolve(cargosPorCliente);
                         return
                     }
@@ -2141,7 +2142,7 @@ const getProvidersToSap = (connection) => {
 const getProvidersChargesCxp = (connection) => {
     return new Promise((resolve, reject) => {
         firebird.attach( conections[connection] ,function(err, db) {
-            console.log('db', connection,err);
+            //console.log('db', connection,err);
             if (err) {
                 const error = {
                     ok: false,
@@ -2179,7 +2180,7 @@ const getProvidersChargesCxp = (connection) => {
                         if (err) {
                             reject(err)
                         }
-                        console.log(chargesDB[0]);
+                        //console.log(chargesDB[0]);
                         let charges = chargesDB.map(charge => {
                             return {
                                 docDueDate : charge.FECHA_VENCIMIENTO !== null ? charge.FECHA_VENCIMIENTO : '',
@@ -2202,13 +2203,13 @@ const getProvidersChargesCxp = (connection) => {
                             }
                         })
 
-                        console.log('cargos',charges[0]);
+                        //console.log('cargos',charges[0]);
 
                         let data = {
                             charges,
                             connection
                         }
-
+                        console.log("[CUENTAS POR PAGAR] EJECUTADO CORRECTAMENTE EN " + connection);
                         db.detach();
                         resolve(data)
                 });
