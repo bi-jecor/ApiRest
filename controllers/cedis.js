@@ -1498,7 +1498,7 @@ const getCustomersBalancesToday = (req = request, res = response) => {
         firebirdQuerys.getCustomersBalancesToday('AC'),
         firebirdQuerys.getCustomersBalancesToday('G32'),
         firebirdQuerys.getCustomersBalancesToday('TURCIO'),
-        firebirdQuerys.getCustomersBalancesToday('PAEZ'),
+        //firebirdQuerys.getCustomersBalancesToday('PAEZ'),
         firebirdQuerys.getCustomersBalancesToday('COLIMA'),
         firebirdQuerys.getCustomersBalancesToday('VILLA'),
         firebirdQuerys.getCustomersBalancesToday('COLINAS'),
