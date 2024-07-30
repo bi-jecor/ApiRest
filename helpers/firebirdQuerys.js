@@ -255,7 +255,7 @@ const getCustomersBalances = (conection, date) => {
                 db.query(
                     `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
-                    FROM cargos_cliente_jgb('${date}', '${date}', 'N', 'N') A
+                    FROM XSP_CARGOS_CLIENTE('${date}', '${date}', 'N', 'N') A
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -331,7 +331,7 @@ const getCustomersBalancesToday = (conection) => {
                 db.query(
                     `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
-                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    FROM XSP_CARGOS_CLIENTE(current_date, current_date, 'N', 'N') A
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -1824,7 +1824,7 @@ const getCustomersCharges = (connection) => {
                             when i.nombre = 'IEPS 8%' then 'VIEPS8'
                             when i.nombre = 'IEPS 6%' then 'VIEPS6'
                         end as taxCode
-                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    FROM XSP_CARGOS_CLIENTE(current_date, current_date, 'N', 'N') A
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -2154,7 +2154,7 @@ const getProvidersChargesCxp = (connection) => {
                 db.query(
                     `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.PROVEEDOR_ID, B.DESCRIPCION, C.NOMBRE_ABREV, cm.fecha as fecha_compra, '' as fecha_recepcion,cm.folio as folio_cm , clp.clave_prov, p.nombre as nombre_provedor, p.rfc_curp,  ALM.nombre as almacen, ccp.NOMBRE AS cond_pago, cm.importe_neto, tp.nombre
-                    FROM CARGOS_proveedores_JGB(current_date , current_date, 'N') A
+                    FROM XSP_CARGOS_PROVEEDORES(current_date , current_date, 'N') A
                     LEFT JOIN DOCTOS_CP B
                     ON A.DOCTO_CP_ID = B.DOCTO_CP_ID
                     LEFT JOIN CONCEPTOS_CP C
