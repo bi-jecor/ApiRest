@@ -255,7 +255,7 @@ const getCustomersBalances = (conection, date) => {
                 db.query(
                     `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
-                    FROM cargos_cliente_jgb('${date}', '${date}', 'N', 'N') A
+                    FROM XSP_CARGOS_CLIENTE('${date}', '${date}', 'N', 'N') A
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -392,7 +392,7 @@ const getCustomersBalancesToday = (conection) => {
                 db.query(
                     `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
-                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    FROM XSP_CARGOS_CLIENTE(current_date, current_date, 'N', 'N') A
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -412,7 +412,7 @@ const getCustomersBalancesToday = (conection) => {
                     ORDER BY CLIENTES.nombre
                     `, async function(err, cargos ) {
                         console.log(err);
-                        console.log(cargos);
+                        //console.log(cargos);
                         let cargosPorCliente = [];
                         cargos.forEach( (cargo) => {
                             data = {
@@ -453,6 +453,7 @@ const getCustomersBalancesToday = (conection) => {
                                 cargosPorCliente.push(newItem);
                             }
                         });
+                        console.log("[CUENTAS POR COBRAR] EJECUTADO CORRECTAMENTE EN " + conection);
                         resolve(cargosPorCliente);
                         return
                     }
@@ -1886,7 +1887,7 @@ const getCustomersCharges = (connection) => {
                             when i.nombre = 'IEPS 8%' then 'VIEPS8'
                             when i.nombre = 'IEPS 6%' then 'VIEPS6'
                         end as taxCode
-                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    FROM XSP_CARGOS_CLIENTE(current_date, current_date, 'N', 'N') A
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -2204,7 +2205,7 @@ const getProvidersToSap = (connection) => {
 const getProvidersChargesCxp = (connection) => {
     return new Promise((resolve, reject) => {
         firebird.attach( conections[connection] ,function(err, db) {
-            console.log('db', connection,err);
+            //console.log('db', connection,err);
             if (err) {
                 const error = {
                     ok: false,
@@ -2216,7 +2217,7 @@ const getProvidersChargesCxp = (connection) => {
                 db.query(
                     `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.PROVEEDOR_ID, B.DESCRIPCION, C.NOMBRE_ABREV, cm.fecha as fecha_compra, '' as fecha_recepcion,cm.folio as folio_cm , clp.clave_prov, p.nombre as nombre_provedor, p.rfc_curp,  ALM.nombre as almacen, ccp.NOMBRE AS cond_pago, cm.importe_neto, tp.nombre
-                    FROM CARGOS_proveedores_JGB(current_date , current_date, 'N') A
+                    FROM XSP_CARGOS_PROVEEDORES(current_date , current_date, 'N') A
                     LEFT JOIN DOCTOS_CP B
                     ON A.DOCTO_CP_ID = B.DOCTO_CP_ID
                     LEFT JOIN CONCEPTOS_CP C
@@ -2227,8 +2228,11 @@ const getProvidersChargesCxp = (connection) => {
                     ON ALM.almacen_id = CM.almacen_id
                     left join proveedores p
                     on p.proveedor_id = cm.proveedor_id
-                    left join claves_proveedores clp
-                    on clp.proveedor_id = p.proveedor_id
+                    left join (
+                         SELECT P.proveedor_id, coalesce(CP1.clave_prov, CP2.clave_prov) AS clave_prov FROM PROVEEDORES P
+                            LEFT JOIN claves_proveedores CP1 ON P.proveedor_id = CP1.proveedor_id AND CP1.rol_clave_prov_id = 49
+                            LEFT JOIN claves_proveedores CP2 ON P.proveedor_id = CP2.proveedor_id AND CP2.rol_clave_prov_id = 50
+                    ) clp on p.proveedor_id = clp.proveedor_id
                     left join condiciones_pago_cp ccp
                     on ccp.cond_pago_id = cm.cond_pago_id
                     left join tipos_prov tp
@@ -2239,7 +2243,7 @@ const getProvidersChargesCxp = (connection) => {
                         if (err) {
                             reject(err)
                         }
-                        console.log(chargesDB[0]);
+                        //console.log(chargesDB[0]);
                         let charges = chargesDB.map(charge => {
                             return {
                                 docDueDate : charge.FECHA_VENCIMIENTO !== null ? charge.FECHA_VENCIMIENTO : '',
@@ -2254,7 +2258,7 @@ const getProvidersChargesCxp = (connection) => {
                                 folio_cm :  charge.FOLIO_CM !== null ? charge.FOLIO_CM.toString('latin1') : '',
                                 clave_prov :  charge.CLAVE_PROV !== null ? charge.CLAVE_PROV.toString('latin1') : '',
                                 cardName :  charge. NOMBRE_PROVEDOR !== null ? charge.NOMBRE_PROVEDOR.toString('latin1') : '',
-                                rfc :  charge.NOMBRE_PROVEDOR !== null ? charge. NOMBRE_PROVEDOR.toString('latin1') : '',
+                                rfc :  charge.RFC_CURP !== null ? charge. RFC_CURP.toString('latin1') : '',
                                 almacen :  charge.ALMACEN !== null ? charge.ALMACEN.toString('latin1') : '',
                                 cond_pago : charge.COND_PAGO !== null ? charge.COND_PAGO.toString('latin1') : '',
                                 importe_neto : charge.IMPORTE_NETO !== null ? charge.IMPORTE_NETO: '',
@@ -2262,13 +2266,13 @@ const getProvidersChargesCxp = (connection) => {
                             }
                         })
 
-                        console.log('cargos',charges[0]);
+                        //console.log('cargos',charges[0]);
 
                         let data = {
                             charges,
                             connection
                         }
-
+                        console.log("[CUENTAS POR PAGAR] EJECUTADO CORRECTAMENTE EN " + connection);
                         db.detach();
                         resolve(data)
                 });

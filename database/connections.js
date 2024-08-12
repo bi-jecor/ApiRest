@@ -51,7 +51,7 @@ const G32 = {
 const G32H = {
     user: 'SYSDBA',
     password:  cryptr.decrypt(fir_password),
-    host: 'g32-bgndpcnjpk.dynamic-m.com',
+    host: '192.168.15.200',
     port: 3051,
     database: 'E:/Bases Datos/JECOR 2022 HISTORICA.FDB',
     lowercase_keys: false, 
@@ -292,7 +292,7 @@ const VIVERO = {
 const CIMA = {
     user: 'SYSDBA',
     password:  cryptr.decrypt(fir_password),
-    host: 'g32-bgndpcnjpk.dynamic-m.com',
+    host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/ADI 2020.FDB',
     lowercase_keys: false, 

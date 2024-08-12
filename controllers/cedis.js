@@ -1493,14 +1493,25 @@ const getCustomersBalances = (req = request, res = response) => {
 }
 
 const getCustomersBalancesToday = (req = request, res = response) => {
+    let data = [];
     const all = Promise.all([
         firebirdQuerys.getCustomersBalancesToday('AC'),
-        firebirdQuerys.getCustomersBalancesToday('G32')
-    ]).then(cargosPorCliente => {
-        return res.json({
-            CustomersBalances : [...cargosPorCliente[0], ...cargosPorCliente[1] ]
-        });
-    })
+        firebirdQuerys.getCustomersBalancesToday('G32'),
+        firebirdQuerys.getCustomersBalancesToday('TURCIO'),
+        //firebirdQuerys.getCustomersBalancesToday('PAEZ'),
+        firebirdQuerys.getCustomersBalancesToday('COLIMA'),
+        firebirdQuerys.getCustomersBalancesToday('VILLA'),
+        firebirdQuerys.getCustomersBalancesToday('COLINAS'),
+        firebirdQuerys.getCustomersBalancesToday('CHAVEZC'),
+    ]).then(
+        cargosPorCliente =>{
+            cargosPorCliente.forEach(clienteBalance => {
+                data.push(...clienteBalance);
+            });
+            return res.json({
+                CustomersBalances: data
+            })
+    });
 }
 
 const getDataToPolicyByDay = (req = request, res = response) => {
