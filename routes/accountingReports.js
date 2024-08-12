@@ -1,5 +1,5 @@
 const { Router} = require('express');
-const { getAllProvidersCharges, getSalesCalculateIeps, getCustomersCharges, getCustomersToSap,getProvidersToSap, getAllProvidersChargesCxp} = require('../controllers/accountingReports')
+const { getAllProvidersCharges, getSalesCalculateIeps, getCustomersCharges, getCustomersToSap,getProvidersToSap, getAllProvidersChargesCxp,getCustomersBalances} = require('../controllers/accountingReports')
 
 const router = Router();
 router.get('/getAllProvidersCharges/:date', getAllProvidersCharges );
@@ -8,4 +8,5 @@ router.get('/getCustomersCharges', getCustomersCharges );
 router.get('/getCustomersToSap', getCustomersToSap );
 router.get('/getProvidersToSap', getProvidersToSap );
 router.get('/getAllProvidersChargesCxp/', getAllProvidersChargesCxp );
+router.get('/getCustomersBalances/', getCustomersBalances );
 module.exports = router;

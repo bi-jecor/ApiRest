@@ -33,8 +33,7 @@ const createPermission = async (req, res=response) => {
 const getPermissions = async (req, res=response) => {
     try {
 
-        const permissions = await Permission.find()
-        .populate('application', "name")
+        const permissions = await Permission.find();
 
         return res.json({
             ok: true,

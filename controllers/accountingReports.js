@@ -208,11 +208,34 @@ const getAllProvidersChargesCxp = (req, res) => {
     });
 }
 
+const getCustomersBalances = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.getCustomersBalances2('AC', date),
+        firebirdQuerys.getCustomersBalances2('G32', date),
+        firebirdQuerys.getCustomersBalances2('CHAVEZC', date),
+        firebirdQuerys.getCustomersBalances2('TURCIO', date),
+        firebirdQuerys.getCustomersBalances2('PAEZ', date),
+        firebirdQuerys.getCustomersBalances2('COLIMA', date),
+        firebirdQuerys.getCustomersBalances2('VILLA', date),
+        
+    ]).then(cargosPorSucursal => {
+        let cargos = [];
+        const s = cargosPorSucursal.forEach(cargoXC => {
+            cargos = [...cargos, ...cargoXC]
+        })
+        return res.json({
+            CustomersBalances : cargos
+        });
+    })
+}
+
 module.exports = { 
     getAllProvidersCharges,
     getSalesCalculateIeps,
     getCustomersCharges,
     getCustomersToSap,
     getProvidersToSap,
-    getAllProvidersChargesCxp
+    getAllProvidersChargesCxp,
+    getCustomersBalances
 }

@@ -30,7 +30,7 @@ const AC = {
 const G32 = {
     user: 'SYSDBA',
     password:  cryptr.decrypt(fir_password),
-    host: 'g32-bgndpcnjpk.dynamic-m.com',
+    host: '192.168.15.200',
     port: 3051,
     database: 'E:/Bases Datos/JECOR 2020.FDB',
     lowercase_keys: false, 

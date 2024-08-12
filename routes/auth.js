@@ -4,7 +4,6 @@ const { check } = require('express-validator');
 const { validarCampos } = require('../middlewares/validar-campos');
 const router = Router();
 
-
 router.post('/',
     [
         check('user', 'User is required').not().isEmpty(),
@@ -13,6 +12,5 @@ router.post('/',
     ],  
     login
 );
-
 
 module.exports = router;

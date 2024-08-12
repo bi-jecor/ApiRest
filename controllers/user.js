@@ -12,7 +12,8 @@ const getUsers = async (req, res) => {
         .populate('store', "name")
         .populate('departament', "name key")
         .populate('role', "name")
-                                
+        .populate('permission')
+                   
         res.json({
             ok:true,
             users: users
@@ -54,20 +55,20 @@ const getUsersByDepartament = async (req, res) => {
 // Obtener Usuario por Id
 // ============================================================
 const getUser = async (req, res) => {
-
     try {
         const userId = req.params.userId
         const userDB = await User.findOne({ _id: userId, active: true })
         .populate('store', "name")
         .populate('departament', "name key")
         .populate('role', "name applications permissions")
-
+        .populate('permissions')
+        .populate('applications')
         res.json({
             ok: true,
             user: userDB === null ? false : userDB
         });
-
     } catch (error) {
+        console.log(error);
         res.status(500).json({
             ok:false,
             msg: 'Consulte con su administrador de sistema'

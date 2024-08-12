@@ -6,12 +6,10 @@ const { createApplication, getApplications, getApplication, updateApplication, d
 const router = Router();
 
 router.post('/',
-
-    [
-        check('name', 'Name is required').not().isEmpty(),
-        validarCampos
-    ],
-
+    // [
+    //     check('name', 'Name is required').not().isEmpty(),
+    //     validarCampos
+    // ],
     createApplication
 );
 

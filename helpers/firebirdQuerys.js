@@ -322,9 +322,70 @@ const getCustomersBalances = (conection, date) => {
         });
     });
 }
+
+const getCustomersBalances2 = (conection, date) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[conection] , async function(err, db) {
+            if (err) {
+                console.log(err);
+            }
+                db.query(
+                    `
+                    SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
+                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    LEFT JOIN DOCTOS_CC B
+                    ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
+                    LEFT JOIN clientes
+                    ON B.cliente_id = clientes.cliente_id
+                    Left Join condiciones_pago
+                    on clientes.cond_pago_id = condiciones_pago.cond_pago_id
+                    LEFT JOIN CONCEPTOS_CC C
+                    ON B.CONCEPTO_CC_ID = C.CONCEPTO_CC_ID
+                    JOIN doctos_ve F
+                    on B.folio = F.folio
+                    left join dirs_clientes dc
+                    on f.dir_consig_id = DC.dir_cli_id
+                    left join conceptos_cc cc
+                    on b.cond_pago_id = cc.concepto_cc_id
+                    Left Join condiciones_pago fp
+                    on F.cond_pago_id = fp.cond_pago_id
+                    ORDER BY CLIENTES.nombre
+                    `, async function(err, cargos ) {
+                        console.log(err);
+                        
+                        let cargs = cargos.map( (cargo) => {
+                            return  {
+                                sucursal : conection,
+                                rfc : cargo.RFC != null ? cargo.RFC.toString('utf8') : 'Sin RFC', 
+                                folio : cargo.FOLIO.toString('utf8'),
+                                cuenta_cliente : '',
+                                cliente : cargo.NOMBRE,
+                                fecha : formatDate.formatDateToString(cargo.FECHA),
+                                fecha_vencimiento : formatDate.formatDateToString(cargo.FECHA_VENCIMIENTO),
+                                cond_pago :  cargo.COND_FT != null ? cargo.COND_FT.toString('utf8') : 'Sin Condicion de Pago',
+                                importe_cargo : cargo.IMPORTE_CARGO,
+                                saldo : cargo.SALDO_CARGO,
+                                atraso : cargo.ATRASO  <= 0 ? 0 : cargo.ATRASO, 
+                                // concepto_cc_id : cargo.CONCEPTO_CC_ID,
+                                // folio : cargo.FOLIO,
+                                // descripcion : cargo.DESCRIPCION != null ? cargo.DESCRIPCION.toString('utf8') : 'Sin Descripcion',
+                                // nombre_abrev: cargo.NOMBRE_ABREV.toString('utf8'),
+                            }
+                        });
+                        db.detach();
+                        resolve(cargs)
+                        return
+                    }
+                ); 
+        });
+    });
+}
+
+
 const getCustomersBalancesToday = (conection) => {
     return new Promise((resolve, reject) => {
         firebird.attach( conections[conection] , async function(err, db) {
+            console.log('db',db);
             if (err) {
                 console.log(err);
             }
@@ -399,6 +460,8 @@ const getCustomersBalancesToday = (conection) => {
         });
     });
 }
+
+
 const getCmTotal = (conection, date1, date2) => {
     console.log(conection, date1, date2);
     return new Promise((resolve, reject) => {
@@ -2260,7 +2323,8 @@ module.exports = {
     getCustomersCharges,
     getCustomersToSap,
     getProvidersToSap,
-    getProvidersChargesCxp
+    getProvidersChargesCxp,
+    getCustomersBalances2
     
 }
 

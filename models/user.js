@@ -62,6 +62,14 @@ const UserSchema = Schema({
     settings: {
         type: Object,
         default: null
-    }
+    },
+    applications: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Application',
+    }],
+    permissions: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Permission',
+    }],
 });
 module.exports = model('User', UserSchema);

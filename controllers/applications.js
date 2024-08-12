@@ -5,9 +5,13 @@ const Application = require('../models/application');
 // Crear/Registrar aplicacion
 // ============================================================
 const createApplication = async (req, res=response) => {
+    console.log(req);
     try {
         const application = new Application({
-            ...req.body
+            // ...req.body
+            name : req.body.nombre,
+            url : req.body.url,
+            img : req.body.img,
         });
 
         const applicationDB = await application.save();
@@ -18,6 +22,7 @@ const createApplication = async (req, res=response) => {
         });
         
     } catch (error) {
+        console.log(error);
         return res.status(500).json({
             ok: false,
             msg: 'Error to register Application, check with your system administrator'
@@ -57,7 +62,7 @@ const getApplication = async(req, res=response) => {
 // ============================================================
 const getApplications = async(req, res=response) => {
     try {
-        const applications = await Application.find();
+        const applications = await Application.find().sort('name');
         return res.status(200).json({
             ok: true,
             applications
