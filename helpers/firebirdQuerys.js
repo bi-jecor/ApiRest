@@ -4,7 +4,7 @@ const cryptr = new Cryptr('myTotalySecretKey');
 const fir_password = process.env.FIR_PASSWORD
 const conections =  require('../database/connections');
 const warehouses =  require('../database/warehouses');
-const formatDate = require('../helpers/formatDate');
+const {formatDateToString} = require('../helpers/formatDate');
 
 
 const getDataToPolicyTest = (conection, date1, date2) => {
@@ -2279,6 +2279,69 @@ const getProvidersChargesCxp = (connection) => {
         });
     });
 }
+const obtenerPagos = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[connection] ,function(err, db) {
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.query(
+                    `
+                    SELECT
+                        cc.folio as folio_cxc,
+                        f.folio as folio_f,
+                        clientes.nombre as cliente,
+                        cc.fecha,
+                        icc.importe,
+                        cp.nombre as cond_pago
+                    FROM Doctos_cc cc
+                    left join conceptos_cc c
+                    on c.concepto_cc_id = cc.concepto_cc_id
+                    left join clientes
+                    on clientes.cliente_id = cc.cliente_id
+                    left join importes_doctos_cc icc
+                    on icc.docto_cc_id = cc.docto_cc_id
+                    left join CARGOS_ACREDITADOS_CC(cc.docto_cc_id) f
+                    on f.docto_cc_id = cc.docto_cc_id
+                    inner join
+                        (
+                        Select ve.folio, ve.cond_pago_id from doctos_ve  ve
+                            where ve.fecha >= '01.01.2024'
+                        )  ve
+                    on ve.folio = f.folio
+                    left join condiciones_pago cp
+                    on cp.cond_pago_id = ve.cond_pago_id
+                    where cc.fecha > '01.01.2024'
+                    and c.nombre in ('Pagos', 'Abonos')
+                    and cc.estatus = 'N'
+                    ` , 
+                    function(err, pagosDB) {
+                        if (err) {
+                            reject(err)
+                        }
+                        let pagos = pagosDB.map(charge => {
+                            return {
+                                sucursal : connection,
+                                folio_cxc : charge.FOLIO_CXC !== null ? charge.FOLIO_CXC.toString('latin1') : '',
+                                folio_f : charge.FOLIO_F !== null ? charge.FOLIO_F.toString('latin1') : '',
+                                cliente : charge.CLIENTE !== null ? charge.SALDO_CARGO : '',
+                                fecha : charge.FECHA !== null ? formatDateToString(charge.FECHA) : '',
+                                importe : charge.IMPORTE !== null ? charge.IMPORTE : '',
+                                cond_pago : charge.COND_PAGO !== null ? charge.COND_PAGO.toString('latin1') : '',
+                            }
+                        })
+
+                        db.detach();
+                        resolve(pagos)
+                });
+        });
+    });
+}
 
 
 module.exports = { 
@@ -2328,7 +2391,10 @@ module.exports = {
     getCustomersToSap,
     getProvidersToSap,
     getProvidersChargesCxp,
-    getCustomersBalances2
+    getCustomersBalances2,
+
+    //Contabilidad
+    obtenerPagos
     
 }
 

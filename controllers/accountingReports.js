@@ -229,6 +229,29 @@ const getCustomersBalances = (req = request, res = response) => {
         });
     })
 }
+const obtenerPagos = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.obtenerPagos('AC', date),
+        firebirdQuerys.obtenerPagos('G32', date),
+        firebirdQuerys.obtenerPagos('CHAVEZC', date),
+        firebirdQuerys.obtenerPagos('TURCIO', date),
+        firebirdQuerys.obtenerPagos('PAEZ', date),
+        firebirdQuerys.obtenerPagos('COLIMA', date),
+        firebirdQuerys.obtenerPagos('VILLA', date),
+        
+    ]).then(cargosPorSucursal => {
+        let cargos = [];
+        const s = cargosPorSucursal.forEach(cargoXC => {
+            cargos = [...cargos, ...cargoXC]
+        })
+        return res.json({
+            CustomersBalances : cargos
+        });
+    })
+}
+
+
 
 module.exports = { 
     getAllProvidersCharges,
@@ -237,5 +260,6 @@ module.exports = {
     getCustomersToSap,
     getProvidersToSap,
     getAllProvidersChargesCxp,
-    getCustomersBalances
+    getCustomersBalances,
+    obtenerPagos
 }
