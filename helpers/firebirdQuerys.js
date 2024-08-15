@@ -2316,7 +2316,7 @@ const obtenerPagos = (connection) => {
                     on ve.folio = f.folio
                     left join condiciones_pago cp
                     on cp.cond_pago_id = ve.cond_pago_id
-                    where cc.fecha > '01.01.2024'
+                    where cc.fecha >= '01.01.2024'
                     and c.nombre in ('Pagos', 'Abonos')
                     and cc.estatus = 'N'
                     ` , 

@@ -218,6 +218,7 @@ const getCustomersBalances = (req = request, res = response) => {
         firebirdQuerys.getCustomersBalances2('PAEZ', date),
         firebirdQuerys.getCustomersBalances2('COLIMA', date),
         firebirdQuerys.getCustomersBalances2('VILLA', date),
+        firebirdQuerys.getCustomersBalances2('COLINAS', date),
         
     ]).then(cargosPorSucursal => {
         let cargos = [];
@@ -239,6 +240,7 @@ const obtenerPagos = (req = request, res = response) => {
         firebirdQuerys.obtenerPagos('PAEZ', date),
         firebirdQuerys.obtenerPagos('COLIMA', date),
         firebirdQuerys.obtenerPagos('VILLA', date),
+        firebirdQuerys.obtenerPagos('COLINAS', date),
         
     ]).then(cargosPorSucursal => {
         let cargos = [];
