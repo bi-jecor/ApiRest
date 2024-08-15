@@ -5,6 +5,7 @@ const fir_password = process.env.FIR_PASSWORD
 const conections =  require('../database/connections');
 const warehouses =  require('../database/warehouses');
 const {formatDateToString} = require('../helpers/formatDate');
+const formatDate = require('../helpers/formatDate');
 
 
 const getDataToPolicyTest = (conection, date1, date2) => {
