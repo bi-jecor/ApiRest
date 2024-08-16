@@ -3,7 +3,7 @@ var firebird = require('node-firebird');
 const firebird_connection = {
     user: 'SYSDBA',
     password: "B0l@g3t1tJ",
-    host: '192.168.15.201',
+    host: '192.168.20.200',
     port: 3050,
     database: 'E:/Bases de Datos/JECOR 2020.FDB',
 }
@@ -12,7 +12,7 @@ const AC = {
     name: "AC", 
     user: 'SYSDBA',
     password: "B0l@g3t1tJ",
-    host: '192.168.15.201',
+    host: '192.168.20.200',
     port: 3050,
     database: 'E:/Bases de Datos/JECOR 2020.FDB',
     // database: 'E:/Bases de Datos/JECOR PRUEBAS.FDB', // AC - TESTING
