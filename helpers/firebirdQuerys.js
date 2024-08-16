@@ -362,7 +362,7 @@ const getCustomersBalances2 = (conection, date) => {
                                 cuenta_cliente : '',
                                 cliente : cargo.NOMBRE,
                                 fecha : cargo.RFC != null  ? formatDate.formatDateToString(cargo.FECHA): 'Sin fecha',
-                                fecha_vencimiento : formatDate.ormatDateToString(cargo.FECHA_VENCIMIENTO),
+                                fecha_vencimiento : formatDate.formatDateToString(cargo.FECHA_VENCIMIENTO),
                                 cond_pago :  cargo.COND_FT != null ? cargo.COND_FT.toString('utf8') : 'Sin Condicion de Pago',
                                 importe_cargo : cargo.IMPORTE_CARGO,
                                 saldo : cargo.SALDO_CARGO,
