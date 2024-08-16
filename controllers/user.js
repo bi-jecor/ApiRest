@@ -218,6 +218,26 @@ const getUsersByDepartaments = async (req, res) => {
     }
 }
 
+const updateManyUser = async (req, res) => {
+    // let departament = req.body.departament;
+    // console.log(departament)
+    try {
+        // const users = []
+        // console.log('usersipdaye');
+        const users = await User.updateMany({}, {"applications" : ['5f6a4b023eb95c2004f3d29c']} )                       
+        res.json({
+            ok:true,
+            // users: users
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            ok: false,
+            msg: 'Consulte con su administrador de sistema'
+        });
+    }
+}
+
 
 module.exports = {
     getUsers,
@@ -227,5 +247,6 @@ module.exports = {
     updateUser,
     updatePasswordUser,
     deleteUser,
-    getUsersByDepartaments
+    getUsersByDepartaments,
+    updateManyUser
 }
