@@ -4,7 +4,7 @@ const cryptr = new Cryptr('myTotalySecretKey');
 const fir_password = process.env.FIR_PASSWORD
 const conections =  require('../database/connections');
 const warehouses =  require('../database/warehouses');
-const {formatDateToString} = require('../helpers/formatDate');
+// const {formatDateToString} = require('../helpers/formatDate');
 const formatDate = require('../helpers/formatDate');
 
 
@@ -361,8 +361,8 @@ const getCustomersBalances2 = (conection, date) => {
                                 folio : cargo.FOLIO.toString('utf8'),
                                 cuenta_cliente : '',
                                 cliente : cargo.NOMBRE,
-                                fecha : cargo.RFC != null  ? formatDateToString(cargo.FECHA): 'Sin fecha',
-                                fecha_vencimiento : formatDateToString(cargo.FECHA_VENCIMIENTO),
+                                fecha : cargo.RFC != null  ? formatDate.formatDateToString(cargo.FECHA): 'Sin fecha',
+                                fecha_vencimiento : formatDate.ormatDateToString(cargo.FECHA_VENCIMIENTO),
                                 cond_pago :  cargo.COND_FT != null ? cargo.COND_FT.toString('utf8') : 'Sin Condicion de Pago',
                                 importe_cargo : cargo.IMPORTE_CARGO,
                                 saldo : cargo.SALDO_CARGO,
