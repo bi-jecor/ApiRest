@@ -2204,7 +2204,7 @@ const getProvidersToSap = (connection) => {
 
 // fUNCION PARA OBTENER CARGO DELOS PROVEEDORES
 const getProvidersChargesCxp = (connection) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject ) => {
         firebird.attach( conections[connection] ,function(err, db) {
             //console.log('db', connection,err);
             if (err) {
