@@ -2331,7 +2331,7 @@ const obtenerPagos = (connection) => {
                                 folio_cxc : charge.FOLIO_CXC !== null ? charge.FOLIO_CXC.toString('latin1') : '',
                                 folio_f : charge.FOLIO_F !== null ? charge.FOLIO_F.toString('latin1') : '',
                                 cliente : charge.CLIENTE !== null ? charge.SALDO_CARGO : '',
-                                fecha : charge.FECHA !== null ? formatDateToString(charge.FECHA) : '',
+                                fecha : charge.FECHA !== null ? formatDate.formatDateToString(charge.FECHA) : '',
                                 importe : charge.IMPORTE !== null ? charge.IMPORTE : '',
                                 cond_pago : charge.COND_PAGO !== null ? charge.COND_PAGO.toString('latin1') : '',
                             }
