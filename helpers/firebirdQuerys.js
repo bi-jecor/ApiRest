@@ -2298,15 +2298,13 @@ const obtenerPagos = (connection) => {
                         f.folio as folio_f,
                         clientes.nombre as cliente,
                         cc.fecha,
-                        icc.importe,
+                        f.importe,
                         cp.nombre as cond_pago
                     FROM Doctos_cc cc
                     left join conceptos_cc c
                     on c.concepto_cc_id = cc.concepto_cc_id
                     left join clientes
                     on clientes.cliente_id = cc.cliente_id
-                    left join importes_doctos_cc icc
-                    on icc.docto_cc_id = cc.docto_cc_id
                     left join CARGOS_ACREDITADOS_CC(cc.docto_cc_id) f
                     on f.docto_cc_id = cc.docto_cc_id
                     inner join
