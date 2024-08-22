@@ -982,113 +982,209 @@ const getFullCatalog2 = (req, res) => {
 }
 
 const getFullCatalog3 = (req, res) => {
-    console.log(req.connection);
     firebird.attach(conections.AC, function(err, db) {
-        db.execute(`
-                        select getArtImpt.articulo_id, getArtImpt.clave_articulo, getArtImpt.nombre_articulo,  round(getArtImpt.precio_lista,2),
-                        round( getArtImpt.precio_mayoreo, 2), articulos.unidad_compra, articulos.unidad_venta, articulos.linea_articulo_id,
-                        claves_articulos.rol_clave_art_id   ,  cap.clave_articulo
-                        from get_precios_articulos_con_impto as getArtImpt
-                        left join articulos on getArtImpt.articulo_id = articulos.articulo_id
-                        left join claves_articulos on getArtImpt.clave_articulo = claves_articulos.clave_articulo
-                        left join claves_articulos cap on getArtImpt.articulo_id = cap.articulo_id and cap.rol_clave_art_id=17
-                        where claves_articulos.rol_clave_art_id in (17, 18, 288) 
-                    `,
-            function(err, data) {
+        console.log("GETFULLCATALOG3 IN AC...");
+        if(err){
+            console.log("Error al consultar la base AC: " + err.message);
+            firebird.attach(conections.G32, function(err, db) {
+                console.log("GETFULLCATALOG3 IN G32...");
                 if(err){
-                    console.log('err',err);
-                }
-                // console.log('DATA',data);
-                console.log("[ GETFULLCATALOG3 ] CATALOG WAS REQUEST SUCCESSFULL " + new Date() );
-
-                let catalogo = []
-                if(data){
-                    data.forEach(element => {
-
-                        // element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null'
-                        // console.log(element[2]);
-                        const newElement = {
-                            id: element[0],
-                            code: element[1] = element[1] !== null ? element[1].toString('utf8') : 'Null',
-                            article: element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null',
-                            price: element[3],
-                            // priceOff: element[4],
-                            purchaseUnit: element[5] = element[5] !== null ? element[5].toString('utf8') : 'Null',
-                            saleUnit: element[6] = element[6] !== null ? element[6].toString('utf8') : 'Null',
-                            // location: '------------',
-                            // category: element[7] = element[7] !== null ? element[7] : 'Null',
-                            principal: element[9],
-                        }
-                        
-                        catalogo.push(newElement)
-                        // catalogo.push(newElement)
+                    console.log("Error al consultar la base G32: " + err.message);
+                }else{
+                    db.execute(`
+                                    select getArtImpt.articulo_id, getArtImpt.clave_articulo, getArtImpt.nombre_articulo,  round(getArtImpt.precio_lista,2),
+                                    round( getArtImpt.precio_mayoreo, 2), articulos.unidad_compra, articulos.unidad_venta, articulos.linea_articulo_id,
+                                    claves_articulos.rol_clave_art_id   ,  cap.clave_articulo
+                                    from get_precios_articulos_con_impto as getArtImpt
+                                    left join articulos on getArtImpt.articulo_id = articulos.articulo_id
+                                    left join claves_articulos on getArtImpt.clave_articulo = claves_articulos.clave_articulo
+                                    left join claves_articulos cap on getArtImpt.articulo_id = cap.articulo_id and cap.rol_clave_art_id=17
+                                    where claves_articulos.rol_clave_art_id in (17, 18, 288) 
+                                `,
+                        function(err, data) {
+                            if(err){
+                                console.log('err',err);
+                            }
+                            console.log("[ GETFULLCATALOG3 ] CATALOG WAS REQUEST SUCCESSFULL " + new Date() );
+            
+                            let catalogo = []
+                            if(data){
+                                data.forEach(element => {
+                                    const newElement = {
+                                        id: element[0],
+                                        code: element[1] = element[1] !== null ? element[1].toString('utf8') : 'Null',
+                                        article: element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null',
+                                        price: element[3],
+                                        purchaseUnit: element[5] = element[5] !== null ? element[5].toString('utf8') : 'Null',
+                                        saleUnit: element[6] = element[6] !== null ? element[6].toString('utf8') : 'Null',
+                                        principal: element[9],
+                                    }
+                                    
+                                    catalogo.push(newElement)
+                                });
+                                db.detach();
+                                return res.json({
+                                    data: catalogo
+                                })
+                            }
                     });
-                    // console.log(catalogo);
-                                // IMPORTANT: close the connection
-                    db.detach();
-                    return res.json({
-                        data: catalogo
-                    })
                 }
-                // return res.json({
-                //     data
-                // })
-        });
+            });
+        }else{
+            db.execute(`
+                            select getArtImpt.articulo_id, getArtImpt.clave_articulo, getArtImpt.nombre_articulo,  round(getArtImpt.precio_lista,2),
+                            round( getArtImpt.precio_mayoreo, 2), articulos.unidad_compra, articulos.unidad_venta, articulos.linea_articulo_id,
+                            claves_articulos.rol_clave_art_id   ,  cap.clave_articulo
+                            from get_precios_articulos_con_impto as getArtImpt
+                            left join articulos on getArtImpt.articulo_id = articulos.articulo_id
+                            left join claves_articulos on getArtImpt.clave_articulo = claves_articulos.clave_articulo
+                            left join claves_articulos cap on getArtImpt.articulo_id = cap.articulo_id and cap.rol_clave_art_id=17
+                            where claves_articulos.rol_clave_art_id in (17, 18, 288) 
+                        `,
+                function(err, data) {
+                    if(err){
+                        console.log('err',err);
+                    }
+                    // console.log('DATA',data);
+                    console.log("[ GETFULLCATALOG3 ] CATALOG WAS REQUEST SUCCESSFULL " + new Date() );
+    
+                    let catalogo = []
+                    if(data){
+                        data.forEach(element => {
+    
+                            // element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null'
+                            // console.log(element[2]);
+                            const newElement = {
+                                id: element[0],
+                                code: element[1] = element[1] !== null ? element[1].toString('utf8') : 'Null',
+                                article: element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null',
+                                price: element[3],
+                                // priceOff: element[4],
+                                purchaseUnit: element[5] = element[5] !== null ? element[5].toString('utf8') : 'Null',
+                                saleUnit: element[6] = element[6] !== null ? element[6].toString('utf8') : 'Null',
+                                // location: '------------',
+                                // category: element[7] = element[7] !== null ? element[7] : 'Null',
+                                principal: element[9],
+                            }
+                            
+                            catalogo.push(newElement)
+                            // catalogo.push(newElement)
+                        });
+                        // console.log(catalogo);
+                                    // IMPORTANT: close the connection
+                        db.detach();
+                        return res.json({
+                            data: catalogo
+                        })
+                    }
+                    // return res.json({
+                    //     data
+                    // })
+            });
+        }
     });
 }
 const getCatalogForPriceChecker = (req, res) => {
-    console.log(req.connection);
+    console.log("GETFULLCATALOG_PriceChecker IN AC...");
     firebird.attach(conections.AC, function(err, db) {
-        db.execute(`
-                        select getArtImpt.articulo_id, getArtImpt.clave_articulo, getArtImpt.nombre_articulo, getArtImpt.precio_lista,
-                        getArtImpt.precio_mayoreo, articulos.unidad_compra, articulos.unidad_venta, articulos.linea_articulo_id,
-                        claves_articulos.rol_clave_art_id   ,  cap.clave_articulo
-                        from get_precios_articulos_con_impto as getArtImpt
-                        left join articulos on getArtImpt.articulo_id = articulos.articulo_id
-                        left join claves_articulos on getArtImpt.clave_articulo = claves_articulos.clave_articulo
-                        left join claves_articulos cap on getArtImpt.articulo_id = cap.articulo_id and cap.rol_clave_art_id=17
-                        where claves_articulos.rol_clave_art_id in (17, 18, 288) 
-                    `,
-            function(err, data) {
+        if(err){
+            console.log("Error al consultar la base AC: " + err.message);
+            firebird.attach(conections.G32, function(err, db) {
+                console.log("GETFULLCATALOG_PriceChecker IN G32...");
                 if(err){
-                    console.log('err',err);
-                }
-                // console.log('DATA',data);
-                console.log("[ GETFULLCATALOG3 ] CATALOG WAS REQUEST SUCCESSFULL " + new Date() );
-
-                let catalogo = []
-                if(data){
-                    data.forEach(element => {
-
-                        // element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null'
-                        // console.log(element[2]);
-                        const newElement = {
-                            id: element[0],
-                            code: element[1] = element[1] !== null ? element[1].toString('utf8') : 'Null',
-                            article: element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null',
-                            price: element[3],
-                            priceOff: element[4],
-                            purchaseUnit: element[5] = element[5] !== null ? element[5].toString('utf8') : 'Null',
-                            saleUnit: element[6] = element[6] !== null ? element[6].toString('utf8') : 'Null',
-                            // location: '------------',
-                            // category: element[7] = element[7] !== null ? element[7] : 'Null',
-                            principal: element[9],
-                        }
-                        
-                        catalogo.push(newElement)
-                        // catalogo.push(newElement)
+                    console.log("Error al consultar la base G32: " + err.message);
+                }else{
+                    db.execute(`
+                                    select getArtImpt.articulo_id, getArtImpt.clave_articulo, getArtImpt.nombre_articulo,  round(getArtImpt.precio_lista,2),
+                                    round( getArtImpt.precio_mayoreo, 2), articulos.unidad_compra, articulos.unidad_venta, articulos.linea_articulo_id,
+                                    claves_articulos.rol_clave_art_id   ,  cap.clave_articulo
+                                    from get_precios_articulos_con_impto as getArtImpt
+                                    left join articulos on getArtImpt.articulo_id = articulos.articulo_id
+                                    left join claves_articulos on getArtImpt.clave_articulo = claves_articulos.clave_articulo
+                                    left join claves_articulos cap on getArtImpt.articulo_id = cap.articulo_id and cap.rol_clave_art_id=17
+                                    where claves_articulos.rol_clave_art_id in (17, 18, 288) 
+                                `,
+                        function(err, data) {
+                            if(err){
+                                console.log('err',err);
+                            }
+                            console.log("[ GETFULLCATALOG3 ] CATALOG WAS REQUEST SUCCESSFULL " + new Date() );
+            
+                            let catalogo = []
+                            if(data){
+                                data.forEach(element => {
+                                    const newElement = {
+                                        id: element[0],
+                                        code: element[1] = element[1] !== null ? element[1].toString('utf8') : 'Null',
+                                        article: element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null',
+                                        price: element[3],
+                                        purchaseUnit: element[5] = element[5] !== null ? element[5].toString('utf8') : 'Null',
+                                        saleUnit: element[6] = element[6] !== null ? element[6].toString('utf8') : 'Null',
+                                        principal: element[9],
+                                    }
+                                    
+                                    catalogo.push(newElement)
+                                });
+                                db.detach();
+                                return res.json({
+                                    data: catalogo
+                                })
+                            }
                     });
-                    // console.log(catalogo);
-                                // IMPORTANT: close the connection
-                    db.detach();
-                    return res.json({
-                        data: catalogo
-                    })
                 }
-                // return res.json({
-                //     data
-                // })
-        });
+            });
+        }else{
+            db.execute(`
+                            select getArtImpt.articulo_id, getArtImpt.clave_articulo, getArtImpt.nombre_articulo, getArtImpt.precio_lista,
+                            getArtImpt.precio_mayoreo, articulos.unidad_compra, articulos.unidad_venta, articulos.linea_articulo_id,
+                            claves_articulos.rol_clave_art_id   ,  cap.clave_articulo
+                            from get_precios_articulos_con_impto as getArtImpt
+                            left join articulos on getArtImpt.articulo_id = articulos.articulo_id
+                            left join claves_articulos on getArtImpt.clave_articulo = claves_articulos.clave_articulo
+                            left join claves_articulos cap on getArtImpt.articulo_id = cap.articulo_id and cap.rol_clave_art_id=17
+                            where claves_articulos.rol_clave_art_id in (17, 18, 288) 
+                        `,
+                function(err, data) {
+                    if(err){
+                        console.log('err',err);
+                    }
+                    // console.log('DATA',data);
+                    console.log("[ GETFULLCATALOG3 ] CATALOG WAS REQUEST SUCCESSFULL " + new Date() );
+
+                    let catalogo = []
+                    if(data){
+                        data.forEach(element => {
+
+                            // element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null'
+                            // console.log(element[2]);
+                            const newElement = {
+                                id: element[0],
+                                code: element[1] = element[1] !== null ? element[1].toString('utf8') : 'Null',
+                                article: element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null',
+                                price: element[3],
+                                priceOff: element[4],
+                                purchaseUnit: element[5] = element[5] !== null ? element[5].toString('utf8') : 'Null',
+                                saleUnit: element[6] = element[6] !== null ? element[6].toString('utf8') : 'Null',
+                                // location: '------------',
+                                // category: element[7] = element[7] !== null ? element[7] : 'Null',
+                                principal: element[9],
+                            }
+                            
+                            catalogo.push(newElement)
+                            // catalogo.push(newElement)
+                        });
+                        // console.log(catalogo);
+                                    // IMPORTANT: close the connection
+                        db.detach();
+                        return res.json({
+                            data: catalogo
+                        })
+                    }
+                    // return res.json({
+                    //     data
+                    // })
+            });
+        }
     });
 }
 
