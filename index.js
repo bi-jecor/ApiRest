@@ -54,6 +54,7 @@ app.use('/jecor/api/aisle/', require('./routes/aisleOrder'));
 //All in one
 app.use('/jecor/api/pricesLists', require('./routes/pricesLists'));
 app.use('/jecor/api/pricesListsOrders', require('./routes/pricesListsOrder'));
+app.use('/jecor/api/pricesListsMarkets', require('./routes/pricesListMarkets'));
 app.use('/jecor/api/inventory', require('./routes/inventory'));
 app.use('/jecor/api/lifting', require('./routes/lifting'));
 
