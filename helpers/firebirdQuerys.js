@@ -328,7 +328,20 @@ const getCustomersBalances2 = (conection, date) => {
     return new Promise((resolve, reject) => {
         firebird.attach( conections[conection] , async function(err, db) {
             if (err) {
-                console.log(err);
+                resolve({
+                    sucursal : conection,
+                    rfc : '', 
+                    folio : 'Falla de Conexion',
+                    cuenta_cliente : '',
+                    cliente : 'Favor de reprotarlo al dpto. TI',
+                    fecha : '',
+                    fecha_vencimiento : '',
+                    cond_pago :  '',
+                    importe_cargo : '',
+                    saldo : '',
+                    atraso :'', 
+                })
+                return
             }
                 db.query(
                     `
