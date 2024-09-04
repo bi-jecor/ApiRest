@@ -6,6 +6,7 @@ const conections =  require('../database/connections');
 const warehouses =  require('../database/warehouses');
 // const {formatDateToString} = require('../helpers/formatDate');
 const formatDate = require('../helpers/formatDate');
+const { obtenerSucursalPorFolio } = require('./sucursalPorFolio');
 
 
 const getDataToPolicyTest = (conection, date1, date2) => {
@@ -325,6 +326,8 @@ const getCustomersBalances = (conection, date) => {
 }
 
 const getCustomersBalances2 = (conection, date) => {
+    console.log('2');
+    
     return new Promise((resolve, reject) => {
         firebird.attach( conections[conection] , async function(err, db) {
             if (err) {
@@ -351,7 +354,7 @@ const getCustomersBalances2 = (conection, date) => {
                 db.query(
                     `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
-                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    FROM cargos_cliente_jgb('23.08.2024', '23.08.2024', 'N', 'N') A
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -2298,6 +2301,7 @@ const getProvidersChargesCxp = (connection) => {
         });
     });
 }
+
 const obtenerPagos = (connection) => {
     return new Promise((resolve, reject) => {
         firebird.attach( conections[connection] ,function(err, db) {
@@ -2360,6 +2364,178 @@ const obtenerPagos = (connection) => {
     });
 }
 
+// Obtener la factura de Pv y Ve con estatus normal
+const obtenerDoctosVe = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[connection] ,function(err, db) {
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.query(
+                    `
+                        SELECT
+                                A.DOCTO_PV_ID AS DOCTO_ID,
+                                A.CLAVE_CLIENTE,
+                                D.NOMBRE AS NOMBRE_CLIENTE,
+                                A.FECHA,
+                                trim(replace(substring(a.folio from 1 for 3), '0', ''))  || cast(cast(substring(a.folio from 4 for 9) as int) as varchar(50)) as FACTURA,
+                                (A.IMPORTE_NETO + A.TOTAL_IMPUESTOS) AS CONTADO,
+                                x.base,
+                                x.descuento,
+                                x.base + x.descuento as subtotal,
+                                0 AS CREDITO,
+                                'PV' AS MODULO,
+                                coalesce(i0.venta_neta,0) + coalesce(ie8.importe_impuesto,0) AS Vtas_0,
+                                coalesce(i16.venta_neta,0) AS Vtas_16,
+                                coalesce(IE8.venta_neta,0) as Vtas_8, coalesce(ie6.venta_neta,0) as Vtas_6, coalesce(ie30.venta_neta,0) as Vtas_30,
+                                coalesce(i0.importe_impuesto,0) as Tasa_0,coalesce(i16.importe_impuesto,0) as Tasa_16,
+                                coalesce(ie8.importe_impuesto,0) as Ieps_8, coalesce(ie6.importe_impuesto,0) as Ieps_6,
+                                coalesce(ie30.importe_impuesto,0) as Ieps_30,
+                                trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie,
+                                A.estatus,
+                                A.cfdi_certificado
+                        FROM DOCTOS_PV A
+                        INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
+                        LEFT JOIN (
+                                select ipd.docto_pv_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
+                                from  impuestos_doctos_PV  ipd  inner join  impuestos i
+                                ON ipd.impuesto_id=i.impuesto_id and i.nombre in('IVA 16%','IVA TASA 15','IVA TASA 16%')
+                                group by ipd.docto_pv_id
+                                ) i16 ON A.docto_pv_id=i16.docto_pv_id /* IVA 16% DE DOCUMENTOS */
+                        LEFT JOIN (
+                                select ipd.docto_pv_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
+                                from  impuestos_doctos_PV  ipd  inner join  impuestos i
+                                ON ipd.impuesto_id=i.impuesto_id and i.nombre in('IEPS 8%')
+                                group by ipd.docto_pv_id
+                                ) ie8 ON A.docto_pv_id=ie8.docto_pv_id /* IEPS 8% DE DOCUMENTOS */
+                        LEFT JOIN (
+                                select ipd.docto_pv_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
+                                from  impuestos_doctos_PV  ipd  inner join  impuestos i
+                                ON ipd.impuesto_id=i.impuesto_id and i.nombre IN ('IVA 0%','TASA CERO')
+                                group by ipd.docto_pv_id
+                                ) i0 ON A.docto_pv_id=i0.docto_pv_id /* IVA 0% DE DOCUMENTOS */
+                        LEFT JOIN (
+                                select ipd.docto_pv_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
+                                from  impuestos_doctos_PV  ipd  inner join  impuestos i
+                                ON ipd.impuesto_id=i.impuesto_id and i.nombre IN ('IESP 30%')
+                                group by ipd.docto_pv_id
+                                ) ie30 ON A.docto_pv_id=ie30.docto_pv_id   /* IESP 30% DE DOCUMENTOS */
+                        LEFT JOIN  (
+                                select ipd.docto_pv_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
+                                from  impuestos_doctos_PV  ipd  inner join  impuestos i
+                                ON ipd.impuesto_id=i.impuesto_id and i.nombre IN ('IEPS 6%')
+                                group by ipd.docto_pv_id
+                                ) ie6 ON A.docto_pv_id=ie6.docto_pv_id    /* IEPS 6% DE DOCUMENTOS */
+                        LEFT JOIN (
+                                select  pvd.docto_pv_id, SUM(pvd.precio_total_neto) as base, SUM(pvd.dscto_art) as descuento
+                                FROM doctos_pv_det pvd
+                                WHERE pvd.docto_pv_id = pvd.docto_pv_id
+                                GROUP BY pvd.docto_pv_id
+                            ) AS x on  a.docto_pv_id = x.docto_pv_id
+                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D')  AND A.FECHA  >= '01.01.2024'
+                        UNION ALL
+                        SELECT A.DOCTO_VE_ID AS DOCTO_ID,A.CLAVE_CLIENTE,D.NOMBRE AS NOMBRE_CLIENTE,A.FECHA,
+                        trim(replace(substring(a.folio from 1 for 3), '0', ''))  || cast(cast(substring(a.folio from 4 for 9) as int) as varchar(50)) as FACTURA,
+                        CASE WHEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) = A.IMPORTE_COBRO THEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) ELSE 0 END AS CONTADO,
+                        x.base, x.descuento, x.base + x.descuento as subtotal ,
+                        CASE WHEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) <> A.IMPORTE_COBRO THEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) ELSE 0 END AS CREDITO,
+                        'VE' AS MODULO, coalesce(i0.venta_neta,0) + coalesce(ie8.importe_impuesto,0) AS Vtas_0, coalesce(i16.venta_neta,0) AS Vtas_16 ,
+                        coalesce(IE8.venta_neta,0) as Vtas_8, coalesce(ie6.venta_neta,0) as Vtas_6, coalesce(ie30.venta_neta,0) as Vtas_30,coalesce(i0.importe_impuesto,0) as Tasa_0,
+                        coalesce(i16.importe_impuesto,0) as Tasa_16,coalesce(ie8.importe_impuesto,0) as Ieps_8,
+                        coalesce(ie6.importe_impuesto,0) as Ieps_6, coalesce(ie30.importe_impuesto,0) as Ieps_30,
+                        trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie,
+                                A.estatus,
+                                A.cfdi_certificado
+                        FROM DOCTOS_VE A
+                        LEFT JOIN (
+                                select  ipd.docto_ve_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
+                                from  impuestos_doctos_VE  ipd  inner join  impuestos i
+                                ON ipd.impuesto_id=i.impuesto_id and i.nombre in('IVA 16%','IVA TASA 15','IVA TASA 16%')
+                                group by ipd.docto_ve_id
+                                ) i16 ON A.docto_ve_id=i16.docto_ve_id /* IVA 16% DE DOCUMENTOS */
+                        LEFT JOIN (
+                                select  ipd.docto_ve_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
+                                from  impuestos_doctos_VE  ipd  inner join  impuestos i
+                                ON ipd.impuesto_id=i.impuesto_id and i.nombre in('IEPS 8%')
+                                group by ipd.docto_ve_id
+                                ) ie8 ON A.docto_ve_id=ie8.docto_ve_id  /* IEPS 8% DE DOCUMENTOS */
+                        left join (
+                                select  ipd.docto_ve_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
+                                from  impuestos_doctos_VE  ipd  inner join  impuestos i
+                                ON ipd.impuesto_id=i.impuesto_id and i.nombre in('IVA 0%','TASA CERO')
+                                group by ipd.docto_ve_id
+                                ) i0 ON A.docto_ve_id=i0.docto_ve_id   /* IVA 0% DE DOCUMENTOS */
+                        left join (
+                                select  ipd.docto_ve_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
+                                from  impuestos_doctos_VE  ipd  inner join  impuestos i
+                                ON ipd.impuesto_id=i.impuesto_id and i.nombre in('IESP 30%')
+                                group by ipd.docto_ve_id
+                                )  ie30 ON A.docto_ve_id=ie30.docto_ve_id  /* IESP 30% DE DOCUMENTOS */
+                        left join (
+                                select  ipd.docto_ve_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
+                                from  impuestos_doctos_VE  ipd  inner join  impuestos i
+                                ON ipd.impuesto_id=i.impuesto_id and i.nombre in('IEPS 6%')
+                                group by ipd.docto_ve_id
+                                )  ie6 ON A.docto_ve_id=ie6.docto_ve_id  /* IEPS 6% DE DOCUMENTOS */
+                        LEFT JOIN
+                            (
+                            select  ved.docto_ve_id, SUM(ved.PRECIO_TOTAL_NETO) as base, SUM(ved.dscto_art) as descuento
+                                FROM doctos_ve_det ved
+                                WHERE ved.docto_ve_id = ved.docto_ve_id
+                                GROUP BY ved.docto_ve_id
+                            ) AS x
+                        on  a.docto_ve_id = x.docto_ve_id
+                        INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
+                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D') AND A.FECHA  >= '01.01.2024'
+
+                    ` , 
+                    function(err, doctosVeDB) {
+                        if (err) {
+                            reject(err)
+                        }
+                        console.log(doctosVeDB);
+                        
+                        let doctosVe = doctosVeDB.map(docto => {
+                            return {
+                                doctoId : docto.DOCTO_ID,
+                                clave_cliente : docto.CLAVE_CLIENTE,
+                                nombre_cliente : docto.NOMBRE_CLIENTE,
+                                fecha : formatDate.formatDateToString(docto.FECHA),
+                                factura : docto.FACTURA !== null ? docto.FACTURA.toString('latin1') : '',
+                                contado : docto.CONTADO,
+                                base : docto.BASE,
+                                descuento : docto.DESCUENTO,
+                                subtotal : docto.SUBTOTAL,
+                                modulo : docto.MODULO,
+                                vtas_0 : docto.VTAS_0,
+                                vtas_16 : docto.VTAS_16,
+                                vtas_8 : docto.VTAS_8,
+                                vtas_6 : docto.VTAS_6,
+                                vtas_30 : docto.VTAS_30,
+                                tasa_0 : docto.TASA_0,
+                                tasa_16 : docto.TASA_16,
+                                ieps_8 : docto.IEPS_8,
+                                ieps_6 : docto.IEPS_6,
+                                ieps_30 : docto.IEPS_39,
+                                serie : docto.SERIE !== null ? docto.SERIE.toString('latin1') : '',
+                                estatus : docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
+                                cfdi_certificado : docto.CFDI_CERTIFICADO !== null ? docto.CFDI_CERTIFICADO.toString('latin1') : '',
+                                sucursal : obtenerSucursalPorFolio(docto.SERIE)
+                            }
+                        })
+
+                        db.detach();
+                        resolve(doctosVe)
+                });
+        });
+    });
+}
+
 
 module.exports = { 
     getDataToPolicyTest,
@@ -2411,7 +2587,8 @@ module.exports = {
     getCustomersBalances2,
 
     //Contabilidad
-    obtenerPagos
+    obtenerPagos,
+    obtenerDoctosVe
     
 }
 
