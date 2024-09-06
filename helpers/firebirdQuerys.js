@@ -697,7 +697,7 @@ const getLastFolioCm = (conection, type, serie) => {
             }
             db.query(
                 `
-                select folios_compras.consecutivo, folios_compras.serie
+                select folios_compras.consecutivo, folios_compras.serie,folios_compras.FOLIO_COMPRAS_ID
                 from folios_compras
                 where folios_compras.tipo_docto = '${type}'
                 and folios_compras.serie = '${serie}'
@@ -707,7 +707,7 @@ const getLastFolioCm = (conection, type, serie) => {
                         console.log(err);
                         reject(err)
                     }
-                    console.log(data);
+                    console.log('Aqui:',data[0]);
                     resolve(data[0]);
                 }
             ); 
@@ -1878,8 +1878,6 @@ const frkOrdenCompraDet = (connection, data) => {
         });
     });
 }
-
-
 
 const getCustomersCharges = (connection) => {
     return new Promise((resolve, reject) => {
