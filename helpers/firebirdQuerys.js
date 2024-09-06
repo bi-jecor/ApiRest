@@ -2509,6 +2509,7 @@ const obtenerDoctosVe = (connection) => {
                                 contado : docto.CONTADO,
                                 base : docto.BASE,
                                 descuento : docto.DESCUENTO,
+                                desglobal : docto.DESGLOBAL,
                                 subtotal : docto.SUBTOTAL,
                                 modulo : docto.MODULO,
                                 vtas_0 : docto.VTAS_0,
