@@ -2536,6 +2536,87 @@ const obtenerDoctosVe = (connection) => {
     });
 }
 
+// Obtener detalle de la factura de Pv y Ve con estatus normal
+const obtenerDoctosVeDet = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach( conections[connection] ,function(err, db) {
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.query(
+                    `
+                        SELECT
+                            A.FECHA, A.FOLIO, 'PV' AS MODULO,
+                            A.CLAVE_CLIENTE, D.NOMBRE AS NOMBRE_CLIENTE,
+                            x.clave_articulo, x.unidades,
+                            X.base + x.descuento as subtotal,
+                            trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie
+                        FROM DOCTOS_PV A
+                        INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
+                        LEFT JOIN (
+                                select
+                                    pvd.docto_pv_id, pvd.articulo_id,
+                                    coalesce(CA.clave_articulo, PVD.clave_articulo) clave_articulo,
+                                    pvd.unidades, pvd.precio_total_neto base, pvd.dscto_art descuento
+                                FROM doctos_pv_det pvd
+                                INNER JOIN claves_articulos CA ON PVD.articulo_id = CA.articulo_id AND CA.rol_clave_art_id = 17
+                            ) AS x on  A.docto_pv_id = x.docto_pv_id
+                        WHERE A.TIPO_DOCTO = 'F' AND A.ESTATUS IN ('N','D')
+                            AND A.FECHA  >= '01.01.2024'
+                        UNION ALL
+                        SELECT
+                            A.FECHA, A.FOLIO, 'VE' AS MODULO,
+                            A.CLAVE_CLIENTE, D.NOMBRE AS NOMBRE_CLIENTE,
+                            x.clave_articulo, x.unidades,
+                            x.base + x.descuento as subtotal,
+                            trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie
+                        FROM DOCTOS_VE A
+                        LEFT JOIN
+                            (
+                            select
+                                pve.docto_ve_id, pve.articulo_id,
+                                coalesce(CA.clave_articulo, pve.clave_articulo) clave_articulo,
+                                pve.unidades, pve.precio_total_neto base, pve.dscto_art descuento
+                            FROM doctos_ve_det pve
+                            INNER JOIN claves_articulos CA ON pve.articulo_id = CA.articulo_id AND CA.rol_clave_art_id = 17
+                            ) AS x
+                        on  A.docto_ve_id = x.docto_ve_id
+                        INNER JOIN CLIENTES D ON (A.CLIENTE_ID = D.CLIENTE_ID)
+                        WHERE A.TIPO_DOCTO = 'F' AND A.ESTATUS IN ('N','D')
+                            AND A.FECHA  >= '01.01.2024'
+                    ` , 
+                    function(err, doctosVeDB) {
+                        if (err) {
+                            reject(err)
+                        }
+                        //console.log(doctosVeDB);
+                        
+                        let doctosVe = doctosVeDB.map(docto => {
+                            return {
+                                fecha : formatDate.formatDateToString(docto.FECHA),
+                                folio : docto.FOLIO !== null ? docto.FOLIO.toString('latin1') : '',
+                                modulo : docto.MODULO,
+                                clave_cliente : docto.CLAVE_CLIENTE !== null ? docto.CLAVE_CLIENTE.toString('latin1') : '',
+                                nombre_cliente : docto.NOMBRE_CLIENTE !== null ? docto.NOMBRE_CLIENTE.toString('latin1') : '',
+                                clave_articulo : docto.CLAVE_ARTICULO !== null ? docto.CLAVE_ARTICULO.toString('latin1') : '',
+                                unidades : docto.UNIDADES,
+                                subtotal : docto.SUBTOTAL,
+                                sucursal : obtenerSucursalPorFolio(docto.SERIE)
+                            }
+                        })
+
+                        db.detach();
+                        resolve(doctosVe)
+                });
+        });
+    });
+}
+
 
 module.exports = { 
     getDataToPolicyTest,
@@ -2588,7 +2669,8 @@ module.exports = {
 
     //Contabilidad
     obtenerPagos,
-    obtenerDoctosVe
+    obtenerDoctosVe,
+    obtenerDoctosVeDet
     
 }
 

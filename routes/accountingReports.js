@@ -6,7 +6,8 @@ const { getAllProvidersCharges,
     getAllProvidersChargesCxp,
     getCustomersBalances,
     obtenerPagos,
-    obtenerDoctosVe
+    obtenerDoctosVe,
+    obtenerDoctosVeDet
 } = require('../controllers/accountingReports')
 
 const router = Router();
@@ -20,4 +21,5 @@ router.get('/getCustomersBalances/', getCustomersBalances );
 router.get('/getCustomersBalances/', getCustomersBalances );
 router.get('/pagos/', obtenerPagos );
 router.get('/doctosVe/', obtenerDoctosVe );
+router.get('/doctosVeDet/', obtenerDoctosVeDet );
 module.exports = router;
