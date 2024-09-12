@@ -276,28 +276,6 @@ const obtenerDoctosVe = (req = request, res = response) => {
     })
 }
 
-const obtenerDoctosVeDet = (req = request, res = response) => {
-    const date = req.params.date
-    const all = Promise.all([
-        firebirdQuerys.obtenerDoctosVeDet('AC', date),
-        firebirdQuerys.obtenerDoctosVeDet('G32', date),
-        firebirdQuerys.obtenerDoctosVeDet('CHAVEZC', date),
-        firebirdQuerys.obtenerDoctosVeDet('TURCIO', date),
-        firebirdQuerys.obtenerDoctosVeDet('PAEZ', date),
-        firebirdQuerys.obtenerDoctosVeDet('COLIMA', date),
-        firebirdQuerys.obtenerDoctosVeDet('VILLA', date),
-        firebirdQuerys.obtenerDoctosVeDet('COLINAS', date),       
-        
-    ]).then( doctosPorSucursal => {
-        let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
-        return res.json({
-            doctosVe : doctos
-        });
-    })
-}
 
 
 
@@ -312,5 +290,4 @@ module.exports = {
     getCustomersBalances,
     obtenerPagos,
     obtenerDoctosVe,
-    obtenerDoctosVeDet
 }
