@@ -264,6 +264,29 @@ const obtenerDoctosVe = (req = request, res = response) => {
         firebirdQuerys.obtenerDoctosVe('COLIMA', date),
         firebirdQuerys.obtenerDoctosVe('VILLA', date),
         firebirdQuerys.obtenerDoctosVe('COLINAS', date),
+        firebirdQuerys.obtenerDoctosVe('ESTACIONAMIENTO', date),        
+    ]).then( doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            doctosVe : doctos
+        });
+    })
+}
+
+const obtenerDoctosVeDet = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.obtenerDoctosVeDet('AC', date),
+        firebirdQuerys.obtenerDoctosVeDet('G32', date),
+        firebirdQuerys.obtenerDoctosVeDet('CHAVEZC', date),
+        firebirdQuerys.obtenerDoctosVeDet('TURCIO', date),
+        firebirdQuerys.obtenerDoctosVeDet('PAEZ', date),
+        firebirdQuerys.obtenerDoctosVeDet('COLIMA', date),
+        firebirdQuerys.obtenerDoctosVeDet('VILLA', date),
+        firebirdQuerys.obtenerDoctosVeDet('COLINAS', date),       
         
     ]).then( doctosPorSucursal => {
         let doctos = [];
@@ -279,8 +302,6 @@ const obtenerDoctosVe = (req = request, res = response) => {
 
 
 
-
-
 module.exports = { 
     getAllProvidersCharges,
     getSalesCalculateIeps,
@@ -290,5 +311,6 @@ module.exports = {
     getAllProvidersChargesCxp,
     getCustomersBalances,
     obtenerPagos,
-    obtenerDoctosVe
+    obtenerDoctosVe,
+    obtenerDoctosVeDet
 }
