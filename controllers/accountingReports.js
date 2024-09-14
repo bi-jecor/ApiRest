@@ -253,6 +253,7 @@ const obtenerPagos = (req = request, res = response) => {
         });
     })
 }
+
 const obtenerDoctosVe = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
@@ -264,7 +265,7 @@ const obtenerDoctosVe = (req = request, res = response) => {
         firebirdQuerys.obtenerDoctosVe('COLIMA', date),
         firebirdQuerys.obtenerDoctosVe('VILLA', date),
         firebirdQuerys.obtenerDoctosVe('COLINAS', date),
-        
+        firebirdQuerys.obtenerDoctosVe('ESTACIONAMIENTO', date),        
     ]).then( doctosPorSucursal => {
         let doctos = [];
         const s = doctosPorSucursal.forEach(docto => {
@@ -275,6 +276,7 @@ const obtenerDoctosVe = (req = request, res = response) => {
         });
     })
 }
+
 const obtenerDoctosVeDet = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
@@ -297,9 +299,6 @@ const obtenerDoctosVeDet = (req = request, res = response) => {
         });
     })
 }
-
-
-
 
 
 

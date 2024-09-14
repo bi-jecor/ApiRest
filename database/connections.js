@@ -287,8 +287,6 @@ const VIVERO = {
     keysArticlesIds : '17,18,288'
 }
 
-
-
 const CIMA = {
     user: 'SYSDBA',
     password:  cryptr.decrypt(fir_password),
@@ -328,6 +326,28 @@ const CHAVEZC = {
         exento: 13375,
         keysArticlesIds : '17,18,288'
 }
+
+const ESTACIONAMIENTO = {
+    user: 'SYSDBA',
+    password:  cryptr.decrypt(fir_password),
+    host: '192.168.15.200',
+    port: 3051,
+    database: 'E:/Bases Datos/ESTACIONAMIENTO 2020.FDB',
+    lowercase_keys: false, 
+    role: null,
+    pageSize: 4096,
+        // POLIZA DATA
+    roleKeyProviderId : 49,
+    conceptCpId : 51,
+    iva16: 213981,
+    tasa0: 213974,
+    ieps8: 213988,
+    ieps6: 242250,
+    ieps30: 483274,
+    exento: 231875,
+    keysArticlesIds : '17,18,4185',
+    companyPriceId:3276
+}
 module.exports = {
     AC,
     G32,
@@ -343,5 +363,6 @@ module.exports = {
     VIVERO,
     test,
     CIMA,
-    CHAVEZC
+    CHAVEZC,
+    ESTACIONAMIENTO
 };

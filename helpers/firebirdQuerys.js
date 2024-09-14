@@ -2386,10 +2386,10 @@ const obtenerDoctosVe = (connection) => {
                                 x.base,
                                 x.descuento,
                                 A.dscto_importe as desGlobal,
-                                x.base + x.descuento as subtotal,
+                                x.base + x.descuento  +  A.dscto_importe as subtotal,
                                 0 AS CREDITO,
                                 'PV' AS MODULO,
-                                coalesce(i0.venta_neta,0) + coalesce(ie8.importe_impuesto,0) AS Vtas_0,
+                                coalesce(i0.venta_neta,0) +  coalesce(ie8.importe_impuesto,0) AS Vtas_0,
                                 coalesce(i16.venta_neta,0) AS Vtas_16,
                                 coalesce(IE8.venta_neta,0) as Vtas_8, coalesce(ie6.venta_neta,0) as Vtas_6, coalesce(ie30.venta_neta,0) as Vtas_30,
                                 coalesce(i0.importe_impuesto,0) as Tasa_0,coalesce(i16.importe_impuesto,0) as Tasa_16,
@@ -2441,7 +2441,7 @@ const obtenerDoctosVe = (connection) => {
                         SELECT A.DOCTO_VE_ID AS DOCTO_ID,A.CLAVE_CLIENTE,D.NOMBRE AS NOMBRE_CLIENTE,A.FECHA,
                         trim(replace(substring(a.folio from 1 for 3), '0', ''))  || cast(cast(substring(a.folio from 4 for 9) as int) as varchar(50)) as FACTURA,
                         CASE WHEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) = A.IMPORTE_COBRO THEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) ELSE 0 END AS CONTADO,
-                        x.base, x.descuento, A.dscto_importe as desGlobal, x.base + x.descuento as subtotal ,
+                        x.base, x.descuento, A.dscto_importe as desGlobal, x.base + x.descuento  +  A.dscto_importe as subtotal ,
                         CASE WHEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) <> A.IMPORTE_COBRO THEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) ELSE 0 END AS CREDITO,
                         'VE' AS MODULO, coalesce(i0.venta_neta,0) + coalesce(ie8.importe_impuesto,0) AS Vtas_0, coalesce(i16.venta_neta,0) AS Vtas_16 ,
                         coalesce(IE8.venta_neta,0) as Vtas_8, coalesce(ie6.venta_neta,0) as Vtas_6, coalesce(ie30.venta_neta,0) as Vtas_30,coalesce(i0.importe_impuesto,0) as Tasa_0,
@@ -2536,7 +2536,7 @@ const obtenerDoctosVe = (connection) => {
     });
 }
 
-// Obtener detalle de la factura de Pv y Ve con estatus normal
+// Obtener la factura de Pv y Ve con estatus normal
 const obtenerDoctosVeDet = (connection) => {
     return new Promise((resolve, reject) => {
         firebird.attach( conections[connection] ,function(err, db) {
@@ -2550,64 +2550,60 @@ const obtenerDoctosVeDet = (connection) => {
             }
                 db.query(
                     `
-                        SELECT
-                            A.FECHA, A.FOLIO, 'PV' AS MODULO,
-                            A.CLAVE_CLIENTE, D.NOMBRE AS NOMBRE_CLIENTE,
-                            x.clave_articulo, x.unidades,
-                            X.base + x.descuento as subtotal,
-                            trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie
-                        FROM DOCTOS_PV A
-                        INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
-                        LEFT JOIN (
-                                select
-                                    pvd.docto_pv_id, pvd.articulo_id,
-                                    coalesce(CA.clave_articulo, PVD.clave_articulo) clave_articulo,
-                                    pvd.unidades, pvd.precio_total_neto base, pvd.dscto_art descuento
-                                FROM doctos_pv_det pvd
-                                INNER JOIN claves_articulos CA ON PVD.articulo_id = CA.articulo_id AND CA.rol_clave_art_id = 17
-                            ) AS x on  A.docto_pv_id = x.docto_pv_id
-                        WHERE A.TIPO_DOCTO = 'F' AND A.ESTATUS IN ('N','D')
-                            --AND A.FECHA  >= '01.01.2024'
-				AND A.FECHA BETWEEN '01.08.2024' AND '31.08.2024'
-                        UNION ALL
-                        SELECT
-                            A.FECHA, A.FOLIO, 'VE' AS MODULO,
-                            A.CLAVE_CLIENTE, D.NOMBRE AS NOMBRE_CLIENTE,
-                            x.clave_articulo, x.unidades,
-                            x.base + x.descuento as subtotal,
-                            trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie
-                        FROM DOCTOS_VE A
-                        LEFT JOIN
-                            (
-                            select
-                                pve.docto_ve_id, pve.articulo_id,
-                                coalesce(CA.clave_articulo, pve.clave_articulo) clave_articulo,
-                                pve.unidades, pve.precio_total_neto base, pve.dscto_art descuento
-                            FROM doctos_ve_det pve
-                            INNER JOIN claves_articulos CA ON pve.articulo_id = CA.articulo_id AND CA.rol_clave_art_id = 17
+                    SELECT
+                    A.FECHA,
+                    D.NOMBRE AS NOMBRE_CLIENTE,
+                    trim(replace(substring(a.folio from 1 for 3), '0', ''))  || cast(cast(substring(a.folio from 4 for 9) as int) as varchar(50)) as FACTURA,
+                    'PV' AS MODULO,
+                    trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie,
+                    A.estatus,
+                    A.cfdi_certificado,
+                    x.clave_articulo,
+                    x.unidades
+                    FROM DOCTOS_PV A
+                    INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
+                    INNER JOIN (
+                                SELECT pvd.docto_pv_id,ca.clave_articulo,pvd.unidades
+                                FROM  doctos_pv_det pvd
+                                INNER JOIN claves_articulos ca on pvd.articulo_id=ca.articulo_id and ca.rol_clave_art_id=17
+                                ) AS x on  a.docto_pv_id = x.docto_pv_id
+                    WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D')  AND A.FECHA  >= '01.08.2024'   and  A.FECHA < '01.09.2024'
+                    UNION ALL
+                    SELECT A.FECHA,D.NOMBRE AS NOMBRE_CLIENTE,
+                        trim(replace(substring(a.folio from 1 for 3), '0', ''))  || cast(cast(substring(a.folio from 4 for 9) as int) as varchar(50)) as FACTURA,
+                        'VE' AS MODULO,
+                        trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie,
+                        A.estatus,
+                        A.cfdi_certificado,
+                        x.clave_articulo,
+                        x.unidades
+                    FROM DOCTOS_VE A
+                    LEFT JOIN (
+                            select  ved.docto_ve_id,ca.clave_articulo,ved.unidades
+                            FROM doctos_ve_det ved
+                            inner join claves_articulos ca on ca.articulo_id=ved.articulo_id and ca.rol_clave_art_id=17
                             ) AS x
-                        on  A.docto_ve_id = x.docto_ve_id
-                        INNER JOIN CLIENTES D ON (A.CLIENTE_ID = D.CLIENTE_ID)
-                        WHERE A.TIPO_DOCTO = 'F' AND A.ESTATUS IN ('N','D')
-                            --AND A.FECHA  >= '01.01.2024'
-				AND A.FECHA BETWEEN '01.08.2024' AND '31.08.2024'
+                    on  a.docto_ve_id = x.docto_ve_id
+                    INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
+                    WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D') AND A.FECHA  >= '01.08.2024' and  A.FECHA < '01.09.2024'
                     ` , 
                     function(err, doctosVeDB) {
                         if (err) {
                             reject(err)
                         }
-                        //console.log(doctosVeDB);
+                        console.log(doctosVeDB);
                         
                         let doctosVe = doctosVeDB.map(docto => {
                             return {
-                                fecha : formatDate.formatDateToString(docto.FECHA),
-                                folio : docto.FOLIO !== null ? docto.FOLIO.toString('latin1') : '',
-                                modulo : docto.MODULO,
-                                clave_cliente : docto.CLAVE_CLIENTE !== null ? docto.CLAVE_CLIENTE.toString('latin1') : '',
-                                nombre_cliente : docto.NOMBRE_CLIENTE !== null ? docto.NOMBRE_CLIENTE.toString('latin1') : '',
-                                clave_articulo : docto.CLAVE_ARTICULO !== null ? docto.CLAVE_ARTICULO.toString('latin1') : '',
-                                unidades : docto.UNIDADES,
-                                subtotal : docto.SUBTOTAL,
+                                fecha : formatDate.formatDateToString(docto.FECHA),                               
+                                nombre_cliente : docto.NOMBRE_CLIENTE,                              
+                                factura : docto.FACTURA !== null ? docto.FACTURA.toString('latin1') : '',                               
+                                modulo : docto.MODULO,                              
+                                serie : docto.SERIE !== null ? docto.SERIE.toString('latin1') : '',
+                                estatus : docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
+                                cfdi_certificado : docto.CFDI_CERTIFICADO !== null ? docto.CFDI_CERTIFICADO.toString('latin1') : '',
+                                clave_articulo: docto.clave_articulo !== null ? docto.clave_articulo : '',
+                                clave_articulo: docto.unidades !== null ? docto.unidades : '',
                                 sucursal : obtenerSucursalPorFolio(docto.SERIE)
                             }
                         })
