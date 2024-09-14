@@ -2567,7 +2567,8 @@ const obtenerDoctosVeDet = (connection) => {
                                 INNER JOIN claves_articulos CA ON PVD.articulo_id = CA.articulo_id AND CA.rol_clave_art_id = 17
                             ) AS x on  A.docto_pv_id = x.docto_pv_id
                         WHERE A.TIPO_DOCTO = 'F' AND A.ESTATUS IN ('N','D')
-                            AND A.FECHA  >= '01.01.2024'
+                            --AND A.FECHA  >= '01.01.2024'
+				AND A.FECHA BETWEEN '01.08.2024' AND '31.08.2024'
                         UNION ALL
                         SELECT
                             A.FECHA, A.FOLIO, 'VE' AS MODULO,
@@ -2588,7 +2589,8 @@ const obtenerDoctosVeDet = (connection) => {
                         on  A.docto_ve_id = x.docto_ve_id
                         INNER JOIN CLIENTES D ON (A.CLIENTE_ID = D.CLIENTE_ID)
                         WHERE A.TIPO_DOCTO = 'F' AND A.ESTATUS IN ('N','D')
-                            AND A.FECHA  >= '01.01.2024'
+                            --AND A.FECHA  >= '01.01.2024'
+				AND A.FECHA BETWEEN '01.08.2024' AND '31.08.2024'
                     ` , 
                     function(err, doctosVeDB) {
                         if (err) {
