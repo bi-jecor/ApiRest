@@ -2587,13 +2587,12 @@ const obtenerDoctosVeDet = (connection) => {
                     INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
                     WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D') AND A.FECHA  >= '01.08.2024' and  A.FECHA < '01.09.2024'
                     ` , 
-                    function(err, doctosVeDB) {
+                    function(err, doctosVeDetDB) {
                         if (err) {
                             reject(err)
-                        }
-                        console.log(doctosVeDB);
-                        
-                        let doctosVe = doctosVeDB.map(docto => {
+                        }                     
+                                              
+                        let doctosVeDet = doctosVeDetDB.map(docto => {
                             return {
                                 fecha : formatDate.formatDateToString(docto.FECHA),                               
                                 nombre_cliente : docto.NOMBRE_CLIENTE,                              
@@ -2602,14 +2601,14 @@ const obtenerDoctosVeDet = (connection) => {
                                 serie : docto.SERIE !== null ? docto.SERIE.toString('latin1') : '',
                                 estatus : docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
                                 cfdi_certificado : docto.CFDI_CERTIFICADO !== null ? docto.CFDI_CERTIFICADO.toString('latin1') : '',
-                                clave_articulo: docto.clave_articulo !== null ? docto.clave_articulo : '',
-                                clave_articulo: docto.unidades !== null ? docto.unidades : '',
+                                clave_articulo: docto.CLAVE_ARTICULO !== null ? docto.CLAVE_ARTICULO : '',
+                                unidades: docto.UNIDADES !== null ? docto.UNIDADES : 0.00,
                                 sucursal : obtenerSucursalPorFolio(docto.SERIE)
                             }
                         })
 
                         db.detach();
-                        resolve(doctosVe)
+                        resolve(doctosVeDet)
                 });
         });
     });
