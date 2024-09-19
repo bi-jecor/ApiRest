@@ -248,6 +248,7 @@ const getDataToPolicyByDay = (conection, date1, date2) => {
     });
 
 }
+
 const getCustomersBalances = (conection, date) => {
     return new Promise((resolve, reject) => {
         firebird.attach( conections[conection] , async function(err, db) {
@@ -354,7 +355,7 @@ const getCustomersBalances2 = (conection, date) => {
                 db.query(
                     `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
-                    FROM cargos_cliente_jgb('23.08.2024', '23.08.2024', 'N', 'N') A
+                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -402,7 +403,6 @@ const getCustomersBalances2 = (conection, date) => {
         });
     });
 }
-
 
 const getCustomersBalancesToday = (conection) => {
     return new Promise((resolve, reject) => {
@@ -484,7 +484,6 @@ const getCustomersBalancesToday = (conection) => {
     });
 }
 
-
 const getCmTotal = (conection, date1, date2) => {
     console.log(conection, date1, date2);
     return new Promise((resolve, reject) => {
@@ -518,6 +517,7 @@ const getCmTotal = (conection, date1, date2) => {
         });
     });
 }
+
 const getLastFolioVe = (conection, serie) => {
     console.log('getLastFolioVe',conection, serie);
     return new Promise((resolve, reject) => {
@@ -545,6 +545,7 @@ const getLastFolioVe = (conection, serie) => {
         });
     });
 }
+
 const updateLastFolioP = (conection, folioId, consecutive ) => {
 
     console.log('updateLastFolioP',conection, folioId, consecutive);
@@ -579,6 +580,7 @@ const updateLastFolioP = (conection, folioId, consecutive ) => {
         });
     });
 }
+
 const createDoctoVe = (conection, data) => {
     const warehouse = warehouses['almacenPrueba'];
     console.log('fdsfds',conection);
@@ -605,6 +607,7 @@ const createDoctoVe = (conection, data) => {
         });
     });
 }
+
 const insertDoctoVeDet = (conection, docto_ve_id ,data) => {
     const warehouse = warehouses['almacenPrueba'];
     console.log('doctoId',docto_ve_id);
@@ -644,6 +647,7 @@ const insertDoctoVeDet = (conection, docto_ve_id ,data) => {
         });
     });
 }
+
 const getArticlesByFolioVe = (conection, folio) => {
     const warehouse = warehouses['almacenPrueba'];
     console.log(folio, conection);
@@ -687,6 +691,7 @@ const getArticlesByFolioVe = (conection, folio) => {
         });
     });
 }
+
 const getLastFolioCm = (conection, type, serie) => {
     console.log(conection);
     return new Promise((resolve, reject) => {
@@ -714,6 +719,7 @@ const getLastFolioCm = (conection, type, serie) => {
         });
     });
 }
+
 const insertDoctoCm = (conection, data ) => {
     console.log(data);
     const {date, dateAndTime, folio, user, total, total_impt, warehouseId, brancheId ,provKey, provId, provFolio, condPaymentId} = data
@@ -752,6 +758,7 @@ const insertDoctoCm = (conection, data ) => {
         });
     });
 }
+
 const updateLastFolioCm = (conection, folioId, consecutive ) => {
     console.log('folio',folioId, consecutive);
     return new Promise((resolve, reject) => {
@@ -785,6 +792,7 @@ const updateLastFolioCm = (conection, folioId, consecutive ) => {
         });
     });
 }
+
 const insertDoctoCmDet = (conection, docId, data) => {
     const warehouse = warehouses['almacenPrueba'];
     console.log('ff',docId, conection);
@@ -816,6 +824,7 @@ const insertDoctoCmDet = (conection, docId, data) => {
         });
     });
 }
+
 const getProviders = (conection, min, max) => {
     return new Promise((resolve, reject) => {
         firebird.attach( conections[conection] , async function(err, db) {
@@ -1894,48 +1903,44 @@ const getCustomersCharges = (connection) => {
             }
                 db.execute(
                     `
-                    SELECT
-                        f.fecha as docDate,
-                        a.fecha_vencimiento as docDueDate,
-                        CLIENTES.nombre as cardName,
-                        b.folio numAtCard,
-                        f.importe_neto as lineTotal,
-                        f.total_impuestos,
-                        i.total,
-                        dirs.rfc_curp,
-                        case
-                            when i.nombre = 'IVA TASA 16%' then 'VIVA16'
-                            when i.nombre = 'TASA CERO' then 'VIVA0'
-                            when i.nombre = 'IEPS 8%' then 'VIEPS8'
-                            when i.nombre = 'IEPS 6%' then 'VIEPS6'
-                        end as taxCode
-                    FROM XSP_CARGOS_CLIENTE(current_date, current_date, 'N', 'N') A
-                    LEFT JOIN DOCTOS_CC B
-                    ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
-                    LEFT JOIN clientes
-                    ON B.cliente_id = clientes.cliente_id
-                    JOIN doctos_ve F
-                    on B.folio = F.folio
-                    left join (
-                        select v.folio, i.* from (
-                            select
-                            im.docto_ve_id,
-                            i.nombre,
-                            i.impuesto_id,
-                            sum(im.importe_impuesto_bruto) as total
-                        
-                            from impuestos_doctos_ve_det im
-                            left join impuestos i
-                            on i.impuesto_id = im.impuesto_id
-                            group by i.nombre, i.tipo_impto_id, im.docto_ve_id,  i.impuesto_id
-                        ) as i
-                        left join doctos_ve  v
-                        on i.docto_ve_id = v.docto_ve_id
-                    ) i
-                    on i.folio = f.folio
-                    left join dirs_clientes dirs
-                    on clientes.cliente_id = dirs.cliente_id and dirs.es_dir_ppal = 'S'
-                    ORDER BY CLIENTES.nombre          
+SELECT
+    f.fecha as docDate,
+    a.fecha_vencimiento as docDueDate,
+    CLIENTES.nombre as cardName,
+    b.folio numAtCard,
+    f.importe_neto as lineTotal,
+    f.total_impuestos,
+    i.total,
+    dirs.rfc_curp,
+    case
+        when i.nombre = 'IVA TASA 16%' then 'VIVA16'
+        when i.nombre = 'TASA CERO' then 'VIVA0'
+        when i.nombre = 'IEPS 8%' then 'VIEPS8'
+        when i.nombre = 'IEPS 6%' then 'VIEPS6'
+    end as taxCode
+FROM XSP_CARGOS_CLIENTE(current_date, current_date, 'N', 'N') A
+LEFT JOIN DOCTOS_CC B
+ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
+LEFT JOIN clientes
+ON B.cliente_id = clientes.cliente_id
+JOIN doctos_ve F
+on B.folio = F.folio
+left join (
+        select
+        im.docto_ve_id,
+        i.nombre,
+        i.impuesto_id,
+        sum(im.importe_impuesto_bruto) as total
+        from impuestos_doctos_ve_det im
+        left join impuestos i
+        on i.impuesto_id = im.impuesto_id
+        group by i.nombre, i.tipo_impto_id, im.docto_ve_id,  i.impuesto_id
+
+) i
+on i.docto_ve_id = f.docto_ve_id
+left join dirs_clientes dirs
+on clientes.cliente_id = dirs.cliente_id and dirs.es_dir_ppal = 'S'
+group by f.fecha,  a.fecha_vencimiento,  CLIENTES.nombre,  b.folio, f.importe_neto,  f.total_impuestos, i.total, dirs.rfc_curp, i.nombre       
                     ` , 
                     function(err, customersDB) {
                         console.log('err',err);
@@ -2301,6 +2306,75 @@ const getProvidersChargesCxp = (connection) => {
         });
     });
 }
+// fUNCION PARA OBTENER CARGO DELOS PROVEEDORES
+const getProvidersChargesCxpSap = (connection) => {
+    return new Promise((resolve, reject ) => {
+        firebird.attach( conections[connection] ,function(err, db) {
+            //console.log('db', connection,err);
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg : err
+                }
+                return reject(error)
+            }
+                db.query(
+                    `
+                    SELECT
+                        cp.docto_cp_id,
+                        dcp.fecha,
+                        cp.fecha_vencimiento,
+                        cm.folio_prov,
+                        p.nombre,
+                        cm.folio,
+                        sum(im.importe_impuesto) as total,
+                        i.nombre as impuesto
+                    FROM CARGOS_PROVEEDORES_JGB('13-SEP-2024', '13-SEP-2024', NULL)  cp
+                    inner join doctos_cp dcp
+                    on cp.docto_cp_id = dcp.docto_cp_id
+                    inner join proveedores p
+                    on p.proveedor_id = dcp.proveedor_id
+                    inner join doctos_cm cm
+                    on cm.folio_prov = dcp.folio and cm.proveedor_id = dcp.proveedor_id and cm.tipo_docto = 'C' AND cm.estatus = 'N'
+                    inner join impuestos_doctos_cm_det im
+                    on im.docto_cm_id = cm.docto_cm_id
+                    left join impuestos i
+                    on i.impuesto_id = im.impuesto_id
+                    LEFT join ALMACENES ALM
+                    ON ALM.almacen_id = CM.almacen_id
+                    group by cp.docto_cp_id, cm.folio, dcp.fecha,  p.nombre, i.nombre, cp.fecha_vencimiento, cm.folio_prov
+                    ` , 
+                    function(err, chargesDB) {
+                        if (err) {
+                            reject(err)
+                        }
+                        //console.log(chargesDB[0]);
+                        let charges = chargesDB.map(charge => {
+                            return {
+                                docDate : charge.FECHA !== null ? charge.FECHA : '',
+                                docDueDate : charge.FECHA_VENCIMIENTO !== null ? charge.FECHA_VENCIMIENTO : '',
+                                cardCode : charge.FOLIO_PROV !== null ? charge.FOLIO_PROV.toString('latin1') : '',
+                                cardName : charge.NOMBRE !== null ? charge.NOMBRE.toString('latin1') : '',
+                                numAtCard : charge.FOLIO !== null ? charge.FOLIO.toString('latin1') : '', 
+                                lineTotal : charge.TOTAL, 
+                                taxcode : charge.IMPUESTO !== null ? charge.IMPUESTO.toString('latin1') : '', 
+                            }
+                        })
+
+                        //console.log('cargos',charges[0]);
+
+                        let data = {
+                            charges,
+                            connection
+                        }
+                        console.log("[CUENTAS POR PAGAR] EJECUTADO CORRECTAMENTE EN " + connection);
+                        db.detach();
+                        resolve(data)
+                });
+        });
+    });
+}
 
 const obtenerPagos = (connection) => {
     return new Promise((resolve, reject) => {
@@ -2584,6 +2658,7 @@ module.exports = {
     getCustomersToSap,
     getProvidersToSap,
     getProvidersChargesCxp,
+    getProvidersChargesCxpSap,
     getCustomersBalances2,
 
     //Contabilidad

@@ -207,6 +207,39 @@ const getAllProvidersChargesCxp = (req, res) => {
         });
     });
 }
+const getAllProvidersChargesCxpSap = (req, res) => {
+    const all = Promise.allSettled([
+        firebirdQuerys.getProvidersChargesCxpSap('G32'),
+        firebirdQuerys.getProvidersChargesCxpSap('AC'),
+        firebirdQuerys.getProvidersChargesCxpSap('COLIMA'),
+        firebirdQuerys.getProvidersChargesCxpSap('VILLA'),
+        firebirdQuerys.getProvidersChargesCxpSap('COLINAS'),
+        firebirdQuerys.getProvidersChargesCxpSap('TURCIO'),
+        firebirdQuerys.getProvidersChargesCxpSap('PAEZ'),
+        firebirdQuerys.getProvidersChargesCxpSap('CHAVEZC'),
+    ]).then((values) => {
+
+        let data = [];
+        let fails =  ''
+        let emptys =  ''
+        values.forEach(element => {
+            
+            if (element.status !== 'rejected') {
+                data = [...data, ...element.value.charges]
+                if(element.value.charges.length === 0){
+                    emptys = emptys + ' ' + element.value.connection
+                }
+            } else {
+               fails = fails + ' ' + element.reason.connection;
+            }
+        });
+        return res.json({
+            data,
+            fails: fails.trim(),
+            emptys: emptys.trim()
+        });
+    });
+}
 
 const getCustomersBalances = (req = request, res = response) => {
     const date = req.params.date
@@ -288,6 +321,7 @@ module.exports = {
     getCustomersToSap,
     getProvidersToSap,
     getAllProvidersChargesCxp,
+    getAllProvidersChargesCxpSap,
     getCustomersBalances,
     obtenerPagos,
     obtenerDoctosVe

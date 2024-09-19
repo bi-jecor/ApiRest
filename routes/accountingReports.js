@@ -4,6 +4,7 @@ const { getAllProvidersCharges,
     getCustomersCharges, 
     getCustomersToSap,getProvidersToSap, 
     getAllProvidersChargesCxp,
+    getAllProvidersChargesCxpSap,
     getCustomersBalances,
     obtenerPagos,
     obtenerDoctosVe
@@ -16,6 +17,7 @@ router.get('/getCustomersCharges', getCustomersCharges );
 router.get('/getCustomersToSap', getCustomersToSap );
 router.get('/getProvidersToSap', getProvidersToSap );
 router.get('/getAllProvidersChargesCxp/', getAllProvidersChargesCxp );
+router.get('/getAllProvidersChargesCxpSap/', getAllProvidersChargesCxpSap );
 router.get('/getCustomersBalances/', getCustomersBalances );
 router.get('/getCustomersBalances/', getCustomersBalances );
 router.get('/pagos/', obtenerPagos );
