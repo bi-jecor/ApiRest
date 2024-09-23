@@ -98,7 +98,7 @@ const TIANGUIS = {
     user: 'SYSDBA',
     password: 'masterkey',
     // host: '192.168.1.2',
-    host: '192.168.15.202',
+    host: '192.168.40.200',
     port: 3053,
     database: 'E:/Bases de datos/ADI 2019.FDB',
     lowercase_keys: false, 
