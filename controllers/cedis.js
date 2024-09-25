@@ -1084,6 +1084,7 @@ const getFullCatalog3 = (req, res) => {
         }
     });
 }
+
 const getCatalogForPriceChecker = (req, res) => {
     console.log("GETFULLCATALOG_PriceChecker IN AC...");
     firebird.attach(conections.AC, function(err, db) {
@@ -1239,6 +1240,48 @@ const getFullCatalog = (req, res) => {
                 // return res.json({
                 //     data
                 // })
+        });
+    });
+}
+const obtenerListaPrecios = (req, res) => {
+    firebird.attach(conections.AC, function(err, db) {
+        // console.log('err1',db);
+        db.query(`
+                        select
+                            getArtImpt.articulo_id,
+                            getArtImpt.clave_articulo,
+                            getArtImpt.nombre_articulo,
+                            round(getArtImpt.precio_lista,2) as precio_lista,
+                            round( getArtImpt.precio_mayoreo, 2) as precio_mayoreo,
+                            round( getArtImpt.precio_especial, 2) as precio_especial
+                        from X_PRECIOS_ARTICULOS_CON_IMPTS as getArtImpt
+                        left join articulos on getArtImpt.articulo_id = articulos.articulo_id
+                        left join claves_articulos on getArtImpt.clave_articulo = claves_articulos.clave_articulo
+                        left join claves_articulos cap on getArtImpt.articulo_id = cap.articulo_id and cap.rol_clave_art_id=17
+                        where claves_articulos.rol_clave_art_id in (17, 18, 288)
+                    `,
+            function(err, data) {
+                if(err){
+                    console.log('err',err);
+                }
+                
+                if(data){
+                    let catalogo = data.map(articulo => {
+                        return  {
+                            clave_articulo : articulo.CLAVE_ARTICULO.toString('latin1'),
+                            nombre_articulo : articulo.NOMBRE_ARTICULO.toString('latin1'),
+                            precio_lista : articulo.PRECIO_LISTA,
+                            precio_mayoreo : articulo.PRECIO_MAYOREO,
+                            precio_especial : articulo.PRECIO_ESPECIAL,
+                        }
+                        
+                    });
+                    db.detach();
+                    return res.json({
+                        articulos: catalogo
+                    })
+                }
+
         });
     });
 }
@@ -2232,5 +2275,6 @@ module.exports = {
     updateArticleToHealer,
     getArticleStockByWarehouse,
     getJecStockListExisByWarehouse,
-    getJecStockListGraphByWarehouse
+    getJecStockListGraphByWarehouse,
+    obtenerListaPrecios
 }

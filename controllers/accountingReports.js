@@ -207,6 +207,7 @@ const getAllProvidersChargesCxp = (req, res) => {
         });
     });
 }
+
 const getAllProvidersChargesCxpSap = (req, res) => {
     const all = Promise.allSettled([
         firebirdQuerys.getProvidersChargesCxpSap('G32'),
@@ -286,6 +287,29 @@ const obtenerPagos = (req = request, res = response) => {
         });
     })
 }
+
+const obtenerDoctosPagos = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.obtenerDoctosPagos('AC'),
+        // firebirdQuerys.obtenerDoctosPagos('G32', date),
+        // firebirdQuerys.obtenerDoctosPagos('CHAVEZC', date),
+        // firebirdQuerys.obtenerDoctosPagos('TURCIO', date),
+        // firebirdQuerys.obtenerDoctosPagos('PAEZ', date),
+        // firebirdQuerys.obtenerDoctosPagos('COLIMA', date),
+        // firebirdQuerys.obtenerDoctosPagos('VILLA', date),
+        // firebirdQuerys.obtenerDoctosPagos('COLINAS', date),
+        
+    ]).then( doctosPorSucursal => {
+        let doctos = [];        
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            cargos_clientes : doctos
+        });
+    })
+}
 const obtenerDoctosVe = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
@@ -324,5 +348,6 @@ module.exports = {
     getAllProvidersChargesCxpSap,
     getCustomersBalances,
     obtenerPagos,
-    obtenerDoctosVe
+    obtenerDoctosVe,
+    obtenerDoctosPagos
 }
