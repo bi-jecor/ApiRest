@@ -7,6 +7,7 @@ const conections =  require('../database/connections');
 const firebirdQuerys = require('../helpers/firebirdQuerys');
 const { connections } = require('mongoose');
 const http = require('http');
+const { Console } = require('console');
 
 //Configuracion de la BDD
 var options = {};
@@ -970,7 +971,7 @@ const getFullCatalog2 = (req, res) => {
                         }
                         catalogo.push(newElement)
                     });
-                    console.log(catalogo);
+                   
                                 // IMPORTANT: close the connection
                     db.detach();
                     return res.json({
@@ -1759,11 +1760,12 @@ const getLastFolioCm = (req = request, res = response) => {
     const type = req.params.type;
     const serie = req.params.serie;
     console.log(conection,'dsfd');
-    firebirdQuerys.getLastFolioCm(conection, type, serie).then( (result) => {
+    firebirdQuerys.getLastFolioCm(conection, type, serie).then( (result) => {        
         return res.json({
             ok : true,
             consecutive : result.CONSECUTIVO,
-            serie : result.SERIE.toString('utf-8')
+            serie : result.SERIE.toString('utf-8'),
+            serieId: result.FOLIO_COMPRAS_ID
         });
     });
 }
