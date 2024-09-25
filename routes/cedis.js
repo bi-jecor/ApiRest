@@ -70,6 +70,7 @@ const {
     getArticleStockByWarehouse,
     getJecStockListExisByWarehouse,
     getJecStockListGraphByWarehouse,
+    obtenerListaPrecios
     } = require('../controllers/cedis');
 
 const router = Router();
@@ -146,6 +147,7 @@ router.get('/getStockByArticle/:conection/:code', getStockByArticle);
 router.get('/getArticleStockByWarehouse/:articleCode', getArticleStockByWarehouse);
 router.get('/getJecStockListExisByWarehouse', getJecStockListExisByWarehouse);
 router.get('/getJecStockListGraphByWarehouse', getJecStockListGraphByWarehouse);
+router.get('/listaPrecios', obtenerListaPrecios);
 
 
 
