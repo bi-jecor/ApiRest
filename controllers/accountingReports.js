@@ -208,6 +208,40 @@ const getAllProvidersChargesCxp = (req, res) => {
     });
 }
 
+const getAllProvidersChargesCxpSap = (req, res) => {
+    const all = Promise.allSettled([
+        firebirdQuerys.getProvidersChargesCxpSap('G32'),
+        firebirdQuerys.getProvidersChargesCxpSap('AC'),
+        firebirdQuerys.getProvidersChargesCxpSap('COLIMA'),
+        firebirdQuerys.getProvidersChargesCxpSap('VILLA'),
+        firebirdQuerys.getProvidersChargesCxpSap('COLINAS'),
+        firebirdQuerys.getProvidersChargesCxpSap('TURCIO'),
+        firebirdQuerys.getProvidersChargesCxpSap('PAEZ'),
+        firebirdQuerys.getProvidersChargesCxpSap('CHAVEZC'),
+    ]).then((values) => {
+
+        let data = [];
+        let fails =  ''
+        let emptys =  ''
+        values.forEach(element => {
+            
+            if (element.status !== 'rejected') {
+                data = [...data, ...element.value.charges]
+                if(element.value.charges.length === 0){
+                    emptys = emptys + ' ' + element.value.connection
+                }
+            } else {
+               fails = fails + ' ' + element.reason.connection;
+            }
+        });
+        return res.json({
+            data,
+            fails: fails.trim(),
+            emptys: emptys.trim()
+        });
+    });
+}
+
 const getCustomersBalances = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
@@ -254,6 +288,7 @@ const obtenerPagos = (req = request, res = response) => {
     })
 }
 
+
 const obtenerDoctosVe = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
@@ -273,6 +308,29 @@ const obtenerDoctosVe = (req = request, res = response) => {
         })
         return res.json({
             doctosVe : doctos
+        });
+    })
+}
+
+const obtenerDoctosPagos = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.obtenerDoctosPagos('AC'),
+        // firebirdQuerys.obtenerDoctosPagos('G32', date),
+        // firebirdQuerys.obtenerDoctosPagos('CHAVEZC', date),
+        // firebirdQuerys.obtenerDoctosPagos('TURCIO', date),
+        // firebirdQuerys.obtenerDoctosPagos('PAEZ', date),
+        // firebirdQuerys.obtenerDoctosPagos('COLIMA', date),
+        // firebirdQuerys.obtenerDoctosPagos('VILLA', date),
+        // firebirdQuerys.obtenerDoctosPagos('COLINAS', date),
+        
+    ]).then( doctosPorSucursal => {
+        let doctos = [];        
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            cargos_clientes : doctos
         });
     })
 }
@@ -309,8 +367,10 @@ module.exports = {
     getCustomersToSap,
     getProvidersToSap,
     getAllProvidersChargesCxp,
+    getAllProvidersChargesCxpSap,
     getCustomersBalances,
     obtenerPagos,
-    obtenerDoctosVe,
+    obtenerDoctosVe, 
+    obtenerDoctosPagos,
     obtenerDoctosVeDet
 }
