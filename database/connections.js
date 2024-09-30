@@ -96,7 +96,7 @@ const TURCIO = {
 
 const TIANGUIS = {
     user: 'SYSDBA',
-    password: 'masterkey',
+    password: 'B0l@g3t1tJ',
     // host: '192.168.1.2',
     host: '192.168.40.200',
     port: 3053,
@@ -120,10 +120,9 @@ const TIANGUIS = {
 
 const PAEZ = {
     user: 'SYSDBA',
-    password: 'masterkey',
-    //host: '192.168.30.200',
-    host: '192.168.15.203',
-    // host: '192.168.30.200',
+    password: 'B0l@g3t1tJ',
+    host: '192.168.30.200',
+    //host: '192.168.15.203',    
     port: 3052,
     database: 'E:/Bases de datos/JECOR PAEZ STILLE.FDB',
     lowercase_keys: false, 
@@ -187,7 +186,7 @@ const COLIMAH = {
 
 const VILLA = {
     user: 'SYSDBA',
-    password: 'T1csyst3m@',
+    password: 'B0l@g3t1tJ',
     host: '192.168.60.200',
     // host: '192.168.60.200',
     port: 3055,
@@ -208,7 +207,7 @@ const VILLA = {
 }
 const VILLAH = {
     user: 'SYSDBA',
-    password: 'T1csyst3m@',
+    password: 'B0l@g3t1tJ',
     host: '192.168.60.200',
     // host: '192.168.60.200',
     port: 3055,
