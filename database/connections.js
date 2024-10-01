@@ -8,7 +8,7 @@ const AC = {
     // FIREBIRD CONFIG
     user: 'SYSDBA',
     password:  cryptr.decrypt(fir_password),
-    host: '192.168.20.200',
+    host: '192.168.15.201',
     port: 3050,
     database: 'E:/Bases de Datos/JECOR 2020.FDB',
     lowercase_keys: false, 
