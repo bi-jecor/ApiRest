@@ -73,8 +73,8 @@ const G32H = {
 const TURCIO = {
     user: 'SYSDBA',
     password: 'B0l@g3t1tJ',
-    // host: '192.168.1.2',
-    host: '192.168.40.200',
+    host: '192.168.15.202',
+    //host: '192.168.40.200',
     
     port: 3053,
     database: 'E:/Bases de datos/JECOR 2018.FDB',
@@ -98,8 +98,8 @@ const TIANGUIS = {
     user: 'SYSDBA',
     password: 'B0l@g3t1tJ',
     //password: 'B0l@g3t1tJ',
-    // host: '192.168.1.2',
-    host: '192.168.40.200',
+     host: '192.168.15.202',
+    //host: '192.168.40.200',
     port: 3053,
     database: 'E:/Bases de datos/ADI 2019.FDB',
     lowercase_keys: false, 
