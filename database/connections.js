@@ -30,7 +30,7 @@ const AC = {
 const G32 = {
     user: 'SYSDBA',
     password: 'B0l@g3t1tJ',
-    host: '192.168.15.200',
+    host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/JECOR 2020.FDB',
     lowercase_keys: false, 
@@ -51,7 +51,7 @@ const G32 = {
 const G32H = {
     user: 'SYSDBA',
     password: 'B0l@g3t1tJ',
-    host: '192.168.15.200',
+    host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/JECOR 2022 HISTORICA.FDB',
     lowercase_keys: false, 
@@ -73,8 +73,8 @@ const G32H = {
 const TURCIO = {
     user: 'SYSDBA',
     password: 'B0l@g3t1tJ',
-    host: '192.168.15.202',
-    //host: '192.168.40.200',
+    //host: '192.168.15.202',
+    host: '192.168.40.200',
     
     port: 3053,
     database: 'E:/Bases de datos/JECOR 2018.FDB',
@@ -96,10 +96,9 @@ const TURCIO = {
 
 const TIANGUIS = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
-    //password: 'B0l@g3t1tJ',
-    host: '192.168.15.202',
-    //host: '192.168.40.200',
+    password: 'B0l@g3t1tJ',   
+    //host: '192.168.15.202',
+    host: '192.168.40.200',
     port: 3053,
     database: 'E:/Bases de datos/ADI 2019.FDB',
     lowercase_keys: false, 
@@ -330,7 +329,7 @@ const CHAVEZC = {
 const ESTACIONAMIENTO = {
     user: 'SYSDBA',
     password: 'B0l@g3t1tJ',
-    host: '192.168.15.200',
+    host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/ESTACIONAMIENTO 2020.FDB',
     lowercase_keys: false, 
