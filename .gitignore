@@ -1,1 +1,9 @@
+<<<<<<< HEAD
+/uploads
 /node_modules
+.env
+=======
+/node_modules
+
+/uploads
+>>>>>>> 8852260b559e36a5b24434d11e14a8d595b5dfd1
