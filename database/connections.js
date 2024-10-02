@@ -72,7 +72,7 @@ const G32H = {
 
 const TURCIO = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'masterkey',
     //host: '192.168.15.202',
     host: '192.168.40.200',
     
@@ -96,7 +96,7 @@ const TURCIO = {
 
 const TIANGUIS = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',   
+    password: 'masterkey',   
     //host: '192.168.15.202',
     host: '192.168.40.200',
     port: 3053,
@@ -186,7 +186,7 @@ const COLIMAH = {
 
 const VILLA = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'masterkey',
     host: '192.168.60.200',
     // host: '192.168.60.200',
     port: 3055,
