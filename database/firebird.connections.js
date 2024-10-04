@@ -48,7 +48,7 @@ const CIMA = {
 const TURCIO = {
     name: "TURCIO",
     user: 'SYSDBA',
-    password: 'masterkey',
+    password: 'B0l@g3t1tJ',
     host: '192.168.40.200',
     port: 3053,
     database: 'E:/Bases de datos/JECOR 2018.FDB',
@@ -57,7 +57,7 @@ const TURCIO = {
 const TIANGUIS = {
     name: "TIANGUIS",
     user: 'SYSDBA',
-    password: 'masterkey',
+    password: 'B0l@g3t1tJ',
     host: '192.168.40.200',
     port: 3053,
     database: 'E:/Bases de datos/ADI 2019.FDB',
@@ -66,7 +66,7 @@ const TIANGUIS = {
 const PAEZ = {
     name: "PAEZ",
     user: 'SYSDBA',
-    password: 'masterkey',
+    password: 'B0l@g3t1tJ',
     host: '192.168.30.200',
     port: 3052,
     database: 'E:/Bases de datos/JECOR PAEZ STILLE.FDB',
@@ -76,8 +76,8 @@ const COLIMA = {
     name: "COLIMA",
     user: 'SYSDBA',
     password: 'B0l@g3t1tJ',
-    // host: '192.168.50.201',
-    host: 'colimajec.ddns.net',
+    host: '192.168.50.201',
+    //host: 'colimajec.ddns.net',
     port: 3054,
     database: 'E:/Bases de datos/JECOR SA DE CV 2018.FDB',
 }
@@ -85,7 +85,7 @@ const COLIMA = {
 const VILLA = {
     name: "VILLA",
     user: 'SYSDBA',
-    password: 'T1csyst3m@',
+    password: 'B0l@g3t1tJ',
     host: '192.168.60.200',
     // host: 'villajecor.ddns.net',
     port: 3055,
@@ -95,8 +95,8 @@ const VILLA = {
 const COLINAS = {
     name: "COLINAS",
     user: 'SYSDBA',
-    password: 'masterkey',
-    host: 'villarey.ddns.net',
+    password: 'B0l@g3t1tJ',
+    host: '192.168.80.200',
     port: 3056,
     database: 'E:/Bases de datos/JECOR 2020.FDB',
 }
