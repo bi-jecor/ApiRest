@@ -2466,7 +2466,8 @@ const obtenerDoctosVe = (connection) => {
                                 coalesce(ie30.importe_impuesto,0) as Ieps_30,
                                 trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie,
                                 A.estatus,
-                                A.cfdi_certificado
+                                A.cfdi_certificado,
+                                coalesce(A.fecha_hora_cancelacion,'01.01.1900') AS Fecha_Cancelacion
                         FROM DOCTOS_PV A
                         INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
                         LEFT JOIN (
@@ -2522,7 +2523,8 @@ const obtenerDoctosVe = (connection) => {
                         coalesce(ie6.importe_impuesto,0) as Ieps_6, coalesce(ie30.importe_impuesto,0) as Ieps_30,
                         trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie,
                         A.estatus,
-                        A.cfdi_certificado
+                        A.cfdi_certificado,
+                        coalesce(A.fecha_hora_cancelacion,'01.01.1900') AS Fecha_Cancelacion
                         FROM DOCTOS_VE A
                         LEFT JOIN (
                                 select  ipd.docto_ve_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
@@ -2570,7 +2572,8 @@ const obtenerDoctosVe = (connection) => {
                         if (err) {
                             return reject(err)
                         }                    
-
+                       console.log(doctosVeDB);
+                       
                         let doctosVe = doctosVeDB.map(docto => {
                             return {
                                 doctoId : docto.DOCTO_ID,
@@ -2597,6 +2600,7 @@ const obtenerDoctosVe = (connection) => {
                                 serie : docto.SERIE !== null ? docto.SERIE.toString('latin1') : '',
                                 estatus : docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
                                 cfdi_certificado : docto.CFDI_CERTIFICADO !== null ? docto.CFDI_CERTIFICADO.toString('latin1') : '',
+                                fecha_cancelacion : formatDate.formatDateToString(docto.FECHA_CANCELACION),
                                 sucursal : obtenerSucursalPorFolio(docto.SERIE)
                             }
                         })
