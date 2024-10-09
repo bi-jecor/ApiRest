@@ -2506,7 +2506,7 @@ const obtenerDoctosVe = (connection) => {
                                 WHERE pvd.docto_pv_id = pvd.docto_pv_id
                                 GROUP BY pvd.docto_pv_id
                             ) AS x on  a.docto_pv_id = x.docto_pv_id
-                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D')  AND A.FECHA  >= '01.01.2024'
+                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D','C')  AND A.FECHA  >= '01.01.2024'
                         UNION ALL
                         SELECT A.DOCTO_VE_ID AS DOCTO_ID,
                         A.CLAVE_CLIENTE,
@@ -2565,7 +2565,7 @@ const obtenerDoctosVe = (connection) => {
                             ) AS x
                         on  a.docto_ve_id = x.docto_ve_id
                         INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
-                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D') AND A.FECHA  >= '01.01.2024'
+                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D','C') AND A.FECHA  >= '01.01.2024'
 
                     ` ,
                     function (err, doctosVeDB) {
