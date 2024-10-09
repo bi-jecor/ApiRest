@@ -2572,7 +2572,7 @@ const obtenerDoctosVe = (connection) => {
                         if (err) {
                             return reject(err)
                         }                    
-                       console.log(doctosVeDB);
+                       //console.log(doctosVeDB);
                        
                         let doctosVe = doctosVeDB.map(docto => {
                             return {
