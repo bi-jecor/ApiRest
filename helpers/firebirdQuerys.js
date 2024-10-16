@@ -2467,7 +2467,8 @@ const obtenerDoctosVe = (connection) => {
                                 trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie,
                                 A.estatus,
                                 A.cfdi_certificado,
-                                coalesce(A.fecha_hora_cancelacion,'01.01.1900') AS Fecha_Cancelacion
+                                coalesce(A.fecha_hora_cancelacion,'01.01.1900') AS Fecha_Cancelacion,
+                                D.sujeto_ieps
                         FROM DOCTOS_PV A
                         INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
                         LEFT JOIN (
@@ -2524,7 +2525,8 @@ const obtenerDoctosVe = (connection) => {
                         trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie,
                         A.estatus,
                         A.cfdi_certificado,
-                        coalesce(A.fecha_hora_cancelacion,'01.01.1900') AS Fecha_Cancelacion
+                        coalesce(A.fecha_hora_cancelacion,'01.01.1900') AS Fecha_Cancelacion,
+                        D.sujeto_ieps
                         FROM DOCTOS_VE A
                         LEFT JOIN (
                                 select  ipd.docto_ve_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
@@ -2601,6 +2603,7 @@ const obtenerDoctosVe = (connection) => {
                                 estatus : docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
                                 cfdi_certificado : docto.CFDI_CERTIFICADO !== null ? docto.CFDI_CERTIFICADO.toString('latin1') : '',
                                 fecha_cancelacion : formatDate.formatDateToString(docto.FECHA_CANCELACION),
+                                sujeto_ieps: docto.SUJETO_IEPS !== null ? docto.SUJETO_IEPS.toString('latin1') : '',
                                 sucursal : obtenerSucursalPorFolio(docto.SERIE)
                             }
                         })
