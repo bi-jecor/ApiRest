@@ -328,7 +328,6 @@ const getCustomersBalances = (conection, date) => {
         });
     });
 }
-
 const getCustomersBalances2 = (conection, date) => {
     console.log('2');
 
@@ -406,7 +405,6 @@ const getCustomersBalances2 = (conection, date) => {
         });
     });
 }
-
 const getCustomersBalancesToday = (conection) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], async function (err, db) {
@@ -486,6 +484,7 @@ const getCustomersBalancesToday = (conection) => {
         });
     });
 }
+
 
 const getCmTotal = (conection, date1, date2) => {
     console.log(conection, date1, date2);
@@ -941,7 +940,6 @@ const getMarks = (connection) => {
         });
     });
 }
-
 const getStockByArticle = (conection, code) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], function (err, db) {
@@ -2459,11 +2457,10 @@ const obtenerDoctosVe = (connection) => {
                                 D.NOMBRE AS NOMBRE_CLIENTE,
                                 A.FECHA,
                                 trim(replace(substring(a.folio from 1 for 3), '0', ''))  || cast(cast(substring(a.folio from 4 for 9) as int) as varchar(50)) as FACTURA,
-                                (A.IMPORTE_NETO + A.TOTAL_IMPUESTOS) AS CONTADO,
-                                x.base,
+                                (A.IMPORTE_NETO + A.TOTAL_IMPUESTOS) AS CONTADO,                                
                                 x.descuento,
                                 A.dscto_importe as desGlobal,
-                                x.base + x.descuento  +  A.dscto_importe as subtotal,
+                                x.base  as subtotal,
                                 0 AS CREDITO,
                                 'PV' AS MODULO,
                                 coalesce(i0.venta_neta,0) +  coalesce(ie8.importe_impuesto,0) AS Vtas_0,
@@ -2474,7 +2471,9 @@ const obtenerDoctosVe = (connection) => {
                                 coalesce(ie30.importe_impuesto,0) as Ieps_30,
                                 trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie,
                                 A.estatus,
-                                A.cfdi_certificado
+                                A.cfdi_certificado,
+                                coalesce(A.fecha_hora_cancelacion,'01.01.1900') AS Fecha_Cancelacion,
+                                D.sujeto_ieps
                         FROM DOCTOS_PV A
                         INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
                         LEFT JOIN (
@@ -2513,20 +2512,26 @@ const obtenerDoctosVe = (connection) => {
                                 WHERE pvd.docto_pv_id = pvd.docto_pv_id
                                 GROUP BY pvd.docto_pv_id
                             ) AS x on  a.docto_pv_id = x.docto_pv_id
-                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D')  AND A.FECHA  >= '01.01.2024'
+                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D','C')  AND A.FECHA  >= '01.01.2024'
                         UNION ALL
-                        SELECT A.DOCTO_VE_ID AS DOCTO_ID,A.CLAVE_CLIENTE,D.NOMBRE AS NOMBRE_CLIENTE,A.FECHA,
+                        SELECT A.DOCTO_VE_ID AS DOCTO_ID,
+                        A.CLAVE_CLIENTE,
+                        D.NOMBRE AS NOMBRE_CLIENTE,
+                        A.FECHA,
                         trim(replace(substring(a.folio from 1 for 3), '0', ''))  || cast(cast(substring(a.folio from 4 for 9) as int) as varchar(50)) as FACTURA,
                         CASE WHEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) = A.IMPORTE_COBRO THEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) ELSE 0 END AS CONTADO,
-                        x.base, x.descuento, A.dscto_importe as desGlobal, x.base + x.descuento  +  A.dscto_importe as subtotal ,
+                        x.descuento, A.dscto_importe as desGlobal, x.base  as subtotal ,
                         CASE WHEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) <> A.IMPORTE_COBRO THEN ((A.IMPORTE_NETO + A.FLETES + A.OTROS_CARGOS + A.TOTAL_IMPUESTOS) - (A.TOTAL_RETENCIONES)) ELSE 0 END AS CREDITO,
-                        'VE' AS MODULO, coalesce(i0.venta_neta,0) + coalesce(ie8.importe_impuesto,0) AS Vtas_0, coalesce(i16.venta_neta,0) AS Vtas_16 ,
+                        'VE' AS MODULO, 
+                        coalesce(i0.venta_neta,0) + coalesce(ie8.importe_impuesto,0) AS Vtas_0, coalesce(i16.venta_neta,0) AS Vtas_16 ,
                         coalesce(IE8.venta_neta,0) as Vtas_8, coalesce(ie6.venta_neta,0) as Vtas_6, coalesce(ie30.venta_neta,0) as Vtas_30,coalesce(i0.importe_impuesto,0) as Tasa_0,
                         coalesce(i16.importe_impuesto,0) as Tasa_16,coalesce(ie8.importe_impuesto,0) as Ieps_8,
                         coalesce(ie6.importe_impuesto,0) as Ieps_6, coalesce(ie30.importe_impuesto,0) as Ieps_30,
                         trim(replace(substring(a.folio from 1 for 3), '0', ''))  as serie,
-                                A.estatus,
-                                A.cfdi_certificado
+                        A.estatus,
+                        A.cfdi_certificado,
+                        coalesce(A.fecha_hora_cancelacion,'01.01.1900') AS Fecha_Cancelacion,
+                        D.sujeto_ieps
                         FROM DOCTOS_VE A
                         LEFT JOIN (
                                 select  ipd.docto_ve_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
@@ -2567,41 +2572,44 @@ const obtenerDoctosVe = (connection) => {
                             ) AS x
                         on  a.docto_ve_id = x.docto_ve_id
                         INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
-                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D') AND A.FECHA  >= '01.01.2024'
+                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D','C') AND A.FECHA  >= '01.01.2024'
 
                     ` ,
                     function (err, doctosVeDB) {
                         if (err) {
                             return reject(err)
                         }                    
-
+                       //console.log(doctosVeDB);
+                       
                         let doctosVe = doctosVeDB.map(docto => {
                             return {
-                                doctoId: docto.DOCTO_ID,
-                                clave_cliente: docto.CLAVE_CLIENTE,
-                                nombre_cliente: docto.NOMBRE_CLIENTE,
-                                fecha: formatDate.formatDateToString(docto.FECHA),
-                                factura: docto.FACTURA !== null ? docto.FACTURA.toString('latin1') : '',
-                                contado: docto.CONTADO,
-                                base: docto.BASE,
-                                descuento: docto.DESCUENTO,
-                                desglobal: docto.DESGLOBAL,
-                                subtotal: docto.SUBTOTAL,
-                                modulo: docto.MODULO,
-                                vtas_0: docto.VTAS_0,
-                                vtas_16: docto.VTAS_16,
-                                vtas_8: docto.VTAS_8,
-                                vtas_6: docto.VTAS_6,
-                                vtas_30: docto.VTAS_30,
-                                tasa_0: docto.TASA_0,
-                                tasa_16: docto.TASA_16,
-                                ieps_8: docto.IEPS_8,
-                                ieps_6: docto.IEPS_6,
-                                ieps_30: docto.IEPS_39,
-                                serie: docto.SERIE !== null ? docto.SERIE.toString('latin1') : '',
-                                estatus: docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
-                                cfdi_certificado: docto.CFDI_CERTIFICADO !== null ? docto.CFDI_CERTIFICADO.toString('latin1') : '',
-                                sucursal: obtenerSucursalPorFolio(docto.SERIE)
+                                doctoId : docto.DOCTO_ID,
+                                clave_cliente : docto.CLAVE_CLIENTE,
+                                nombre_cliente : docto.NOMBRE_CLIENTE,
+                                fecha : formatDate.formatDateToString(docto.FECHA),
+                                factura : docto.FACTURA !== null ? docto.FACTURA.toString('latin1') : '',
+                                contado : docto.CONTADO,
+                                base : docto.BASE,
+                                descuento : docto.DESCUENTO,
+                                desglobal : docto.DESGLOBAL,
+                                subtotal : docto.SUBTOTAL,
+                                modulo : docto.MODULO,
+                                vtas_0 : docto.VTAS_0,
+                                vtas_16 : docto.VTAS_16,
+                                vtas_8 : docto.VTAS_8,
+                                vtas_6 : docto.VTAS_6,
+                                vtas_30 : docto.VTAS_30,
+                                tasa_0 : docto.TASA_0,
+                                tasa_16 : docto.TASA_16,
+                                ieps_8 : docto.IEPS_8,
+                                ieps_6 : docto.IEPS_6,
+                                ieps_30 : docto.IEPS_39,
+                                serie : docto.SERIE !== null ? docto.SERIE.toString('latin1') : '',
+                                estatus : docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
+                                cfdi_certificado : docto.CFDI_CERTIFICADO !== null ? docto.CFDI_CERTIFICADO.toString('latin1') : '',
+                                fecha_cancelacion : formatDate.formatDateToString(docto.FECHA_CANCELACION),
+                                sujeto_ieps: docto.SUJETO_IEPS !== null ? docto.SUJETO_IEPS.toString('latin1') : '',
+                                sucursal : obtenerSucursalPorFolio(docto.SERIE)
                             }
                         })
                         db.detach();
@@ -2699,11 +2707,12 @@ const obtenerDoctosVeDet = (connection) => {
                     A.estatus,
                     A.cfdi_certificado,
                     x.clave_articulo,
-                    x.unidades
+                    x.unidades,
+                    x.base as subtotal
                     FROM DOCTOS_PV A
                     INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
                     INNER JOIN (
-                                SELECT pvd.docto_pv_id,ca.clave_articulo,pvd.unidades
+                                SELECT pvd.docto_pv_id,ca.clave_articulo,pvd.unidades,pvd.precio_total_neto as base
                                 FROM  doctos_pv_det pvd
                                 INNER JOIN claves_articulos ca on pvd.articulo_id=ca.articulo_id and ca.rol_clave_art_id=17
                                 ) AS x on  a.docto_pv_id = x.docto_pv_id
@@ -2716,10 +2725,11 @@ const obtenerDoctosVeDet = (connection) => {
                         A.estatus,
                         A.cfdi_certificado,
                         x.clave_articulo,
-                        x.unidades
+                        x.unidades,
+                        x.base as subtotal
                     FROM DOCTOS_VE A
                     LEFT JOIN (
-                            select  ved.docto_ve_id,ca.clave_articulo,ved.unidades
+                            select  ved.docto_ve_id,ca.clave_articulo,ved.unidades,ved.PRECIO_TOTAL_NETO as base
                             FROM doctos_ve_det ved
                             inner join claves_articulos ca on ca.articulo_id=ved.articulo_id and ca.rol_clave_art_id=17
                             ) AS x

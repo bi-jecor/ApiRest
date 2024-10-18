@@ -1246,7 +1246,7 @@ const getFullCatalog = (req, res) => {
 }
 const obtenerListaPrecios = (req, res) => {
     firebird.attach(conections.AC, function(err, db) {
-        // console.log('err1',db);
+        console.log('err1',err);
         db.query(`
                         select
                             getArtImpt.articulo_id,

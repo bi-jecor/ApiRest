@@ -7,8 +7,8 @@ const fir_password = process.env.FIR_PASSWORD
 const AC = {
     // FIREBIRD CONFIG
     user: 'SYSDBA',
-    password:  cryptr.decrypt(fir_password),
-    host: '192.168.15.201',
+    password: 'B0l@g3t1tJ',
+    host: '192.168.20.200',
     port: 3050,
     database: 'E:/Bases de Datos/JECOR 2020.FDB',
     lowercase_keys: false, 
@@ -29,8 +29,8 @@ const AC = {
 
 const G32 = {
     user: 'SYSDBA',
-    password:  cryptr.decrypt(fir_password),
-    host: '192.168.15.200',
+    password: 'B0l@g3t1tJ',
+    host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/JECOR 2020.FDB',
     lowercase_keys: false, 
@@ -50,8 +50,8 @@ const G32 = {
 }
 const G32H = {
     user: 'SYSDBA',
-    password:  cryptr.decrypt(fir_password),
-    host: '192.168.15.200',
+    password: 'B0l@g3t1tJ',
+    host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/JECOR 2022 HISTORICA.FDB',
     lowercase_keys: false, 
@@ -72,8 +72,8 @@ const G32H = {
 
 const TURCIO = {
     user: 'SYSDBA',
-    password: cryptr.decrypt(fir_password),
-    // host: '192.168.1.2',
+    password: 'masterkey',
+    //host: '192.168.15.202',
     host: '192.168.40.200',
     
     port: 3053,
@@ -96,8 +96,8 @@ const TURCIO = {
 
 const TIANGUIS = {
     user: 'SYSDBA',
-    password: cryptr.decrypt(fir_password),
-    // host: '192.168.1.2',
+    password: 'masterkey',   
+    //host: '192.168.15.202',
     host: '192.168.40.200',
     port: 3053,
     database: 'E:/Bases de datos/ADI 2019.FDB',
@@ -120,7 +120,7 @@ const TIANGUIS = {
 
 const PAEZ = {
     user: 'SYSDBA',
-    password: cryptr.decrypt(fir_password),
+    password: 'B0l@g3t1tJ',
     host: '192.168.30.200',
     //host: '192.168.15.203',    
     port: 3052,
@@ -142,7 +142,7 @@ const PAEZ = {
 
 const COLIMA = {
     user: 'SYSDBA',
-    password: cryptr.decrypt(fir_password),
+    password: 'B0l@g3t1tJ',
     // host: 'colima-jrczrpbtpk.dynamic-m.com',
     host: '192.168.50.201',
     port: 3054,
@@ -164,7 +164,7 @@ const COLIMA = {
 
 const COLIMAH = {
     user: 'SYSDBA',
-    password: cryptr.decrypt(fir_password),
+    password: 'B0l@g3t1tJ',
     // host: 'colima-jrczrpbtpk.dynamic-m.com',
     host: '192.168.50.201',
     port: 3054,
@@ -186,7 +186,7 @@ const COLIMAH = {
 
 const VILLA = {
     user: 'SYSDBA',
-    password: cryptr.decrypt(fir_password),
+    password: 'masterkey',
     host: '192.168.60.200',
     // host: '192.168.60.200',
     port: 3055,
@@ -207,7 +207,7 @@ const VILLA = {
 }
 const VILLAH = {
     user: 'SYSDBA',
-    password: cryptr.decrypt(fir_password),
+    password: 'B0l@g3t1tJ',
     host: '192.168.60.200',
     // host: '192.168.60.200',
     port: 3055,
@@ -229,7 +229,7 @@ const VILLAH = {
 
 const COLINAS = {
     user: 'SYSDBA',
-    password: cryptr.decrypt(fir_password),
+    password: 'B0l@g3t1tJ',
     // host: 'colima-jrczrpbtpk.dynamic-m.com',
     host: '192.168.80.200',
     port: 3056,
@@ -254,7 +254,7 @@ const test = {
     port : 3050,
     database : 'C:/Microsip Datos/JECOR_PRUEBAS.FDB',
     user : 'SYSDBA',
-    password : cryptr.decrypt(fir_password),
+    password : 'masterkey',
     lowercase_keys : false, // set to true to lowercase key,
     role : null, // defaul,
     pageSize : 4096,
@@ -270,7 +270,7 @@ const test = {
 
 const VIVERO = {
     user: 'SYSDBA',
-    password:  cryptr.decrypt(fir_password),
+    password: 'B0l@g3t1tJ',
     host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/VIVERO 2020.FDB',
@@ -288,7 +288,7 @@ const VIVERO = {
 
 const CIMA = {
     user: 'SYSDBA',
-    password:  cryptr.decrypt(fir_password),
+    password: 'B0l@g3t1tJ',
     host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/ADI 2020.FDB',
@@ -307,7 +307,7 @@ const CIMA = {
 
 const CHAVEZC = {
     user: 'SYSDBA',
-    password: cryptr.decrypt(fir_password),
+    password: 'B0l@g3t1tJ',
     host: '192.168.70.200',
     //port: 3051,
     database: 'E:/Bases de datos/JECOR CHAVEZ CARRILLO.FDB',
@@ -328,8 +328,8 @@ const CHAVEZC = {
 
 const ESTACIONAMIENTO = {
     user: 'SYSDBA',
-    password:  cryptr.decrypt(fir_password),
-    host: '192.168.15.200',
+    password: 'B0l@g3t1tJ',
+    host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/ESTACIONAMIENTO 2020.FDB',
     lowercase_keys: false, 
