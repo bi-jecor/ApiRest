@@ -1,5 +1,5 @@
-﻿const {response, request} = require('express');
-var firebird = require('node-firebird');
+﻿var firebird = require('node-firebird');
+const {response, request} = require('express');
 const Cryptr = require('cryptr');
 const cryptr = new Cryptr('myTotalySecretKey');
 const fir_password = process.env.FIR_PASSWORD
@@ -1015,7 +1015,7 @@ const getFullCatalog3 = (req, res) => {
                                         id: element[0],
                                         code: element[1] = element[1] !== null ? element[1].toString('utf8') : 'Null',
                                         article: element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null',
-                                        price: element[3],
+                                        // price: element[3],
                                         purchaseUnit: element[5] = element[5] !== null ? element[5].toString('utf8') : 'Null',
                                         saleUnit: element[6] = element[6] !== null ? element[6].toString('utf8') : 'Null',
                                         principal: element[9],
@@ -1056,10 +1056,10 @@ const getFullCatalog3 = (req, res) => {
                             // element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null'
                             // console.log(element[2]);
                             const newElement = {
-                                id: element[0],
+                                // id: element[0],
                                 code: element[1] = element[1] !== null ? element[1].toString('utf8') : 'Null',
                                 article: element[2] = element[2] !== null ? element[2].toString('utf8') : 'Null',
-                                price: element[3],
+                                // price: element[3],
                                 // priceOff: element[4],
                                 purchaseUnit: element[5] = element[5] !== null ? element[5].toString('utf8') : 'Null',
                                 saleUnit: element[6] = element[6] !== null ? element[6].toString('utf8') : 'Null',

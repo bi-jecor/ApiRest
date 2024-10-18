@@ -347,6 +347,7 @@ const ESTACIONAMIENTO = {
     keysArticlesIds : '17,18,4185',
     companyPriceId:3276
 }
+
 module.exports = {
     AC,
     G32,

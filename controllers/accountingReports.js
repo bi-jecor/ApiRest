@@ -326,13 +326,13 @@ const obtenerDoctosPagos = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
         firebirdQuerys.obtenerDoctosPagos('AC'),
-        firebirdQuerys.obtenerDoctosPagos('G32', date),
-        firebirdQuerys.obtenerDoctosPagos('CHAVEZC', date),
-        firebirdQuerys.obtenerDoctosPagos('TURCIO', date),
-        firebirdQuerys.obtenerDoctosPagos('PAEZ', date),
-        firebirdQuerys.obtenerDoctosPagos('COLIMA', date),
-        firebirdQuerys.obtenerDoctosPagos('VILLA', date),
-        firebirdQuerys.obtenerDoctosPagos('COLINAS', date),
+        // firebirdQuerys.obtenerDoctosPagos('G32', date),
+        // firebirdQuerys.obtenerDoctosPagos('CHAVEZC', date),
+        // firebirdQuerys.obtenerDoctosPagos('TURCIO', date),
+        // firebirdQuerys.obtenerDoctosPagos('PAEZ', date),
+        // firebirdQuerys.obtenerDoctosPagos('COLIMA', date),
+        // firebirdQuerys.obtenerDoctosPagos('VILLA', date),
+        // firebirdQuerys.obtenerDoctosPagos('COLINAS', date),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];

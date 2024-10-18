@@ -8,6 +8,7 @@ const warehouses = require('../database/warehouses');
 const formatDate = require('../helpers/formatDate');
 const { obtenerSucursalPorFolio } = require('./sucursalPorFolio');
 const { dosDecimales } = require('./redondeo');
+const { obtenerDias } = require('./formatearTexto');
 
 
 const getDataToPolicyTest = (conection, date1, date2) => {
@@ -157,6 +158,7 @@ const getDataToPolicyTest = (conection, date1, date2) => {
                                 impuestoexento: element[14],
                                 impuestoiva: element[15],
                                 concepto_cp_id: element[16],
+                                db : conection
 
                             }
 
@@ -1980,93 +1982,100 @@ const getCustomersToSap = (connection) => {
             }
             db.execute(
                 `
-                        select
+select
+            c.cliente_id,
+            trim(c.nombre) as nombre,
+            trim('C') as serie ,
+            trim(iif(cond.nombre != 'CONTADO', 'CREDITO', 'CONTADO')) as Grupo,
+            COALESCE(pre.nombre, '') as lista_precios,
+            iif(cond.nombre != 'CONTADO', trim(substring(cond.nombre from 9 for 12)), 'CONTADO') as cond_pago,
+            c.rfc_curp as rfc,
+            trim('104-101-000') as cuenta,
+            trim(COALESCE(c.clave_regimen_fiscal, '')) as clave_regimen_fiscal,
+            c.calle,
+            c.colonia,
+            c.codigo_postal,
+            c.ciudad,
+            c.poblacion,
+            trim(c.pais),
+            c.estado,
+            c.num_exterior,
+            c.num_interior,
+            c.telefono1,
+            c.email,
+            c.limite_credito
+            from (
+                    SELECT
+                        c.nombre,
                         c.cliente_id,
-                        trim(c.nombre) as nombre,
-                        trim('C') as serie ,
-                        trim(iif(cond.nombre != 'CONTADO', 'CREDITO', 'CONTADO')) as Grupo,
-                        COALESCE(pre.nombre, '') as lista_precios,
-                        iif(cond.nombre != 'CONTADO', trim(substring(cond.nombre from 9 for 15)), 'CONTADO') as cond_pago,
-                        c.rfc_curp as rfc,
-                        trim('104-101-000') as cuenta,
-                        trim(COALESCE(c.clave_regimen_fiscal, '')) as clave_regimen_fiscal,
-                        c.calle,
-                        c.colonia,
-                        c.codigo_postal,
-                        c.ciudad,
-                        c.poblacion,
-                        trim(c.pais),
-                        c.estado,
-                        c.num_exterior,
-                        c.num_interior,
-                        c.telefono1
-                        from (
-                                SELECT
-                                    c.nombre,
-                                    c.cliente_id,
-                                    c.cond_pago_id,
-                                    d.rfc_curp,
-                                    d.clave_regimen_fiscal,
-                                    d.calle, d.colonia,
-                                    d.codigo_postal,
-                                    ci.nombre as ciudad,
-                                    d.poblacion,
-                                    e.nombre as estado,
-                                    'MEXICO' AS pais,
-                                    d.num_exterior,
-                                    d.num_interior,
-                                    d.telefono1
-                                FROM doctos_ve ve
-                                left join clientes c
-                                on c.cliente_id = ve.cliente_id
-                                left join dirs_clientes d
-                                on c.cliente_id = d.cliente_id and d.es_dir_ppal = 'S'
-                                left join ciudades ci
-                                on ci.ciudad_id = d.ciudad_id
-                                left join estados e
-                                on e.estado_id = d.estado_id
-                                where ve.fecha > '01.09.2023'
-                                and c.estatus = 'A'
-                                group by c.nombre, c.cliente_id, c.cond_pago_id, d.rfc_curp,  d.clave_regimen_fiscal, d.calle, d.colonia, d.codigo_postal, ciudad, d.poblacion, estado, pais, d.num_exterior, d.num_interior, d.telefono1
-                                union
-                                SELECT
-                                    c.nombre,
-                                    c.cliente_id,
-                                    c.cond_pago_id,
-                                    d.rfc_curp,
-                                    d.clave_regimen_fiscal,
-                                    d.calle,
-                                    d.colonia,
-                                    d.codigo_postal,
-                                    ci.nombre as ciudad,
-                                    d.poblacion,
-                                    e.nombre as estado,
-                                    'MEXICO' as pais,
-                                    d.num_exterior,
-                                    d.num_interior,
-                                    d.telefono1
-                                FROM doctos_pv pv
-                                left join clientes c
-                                on c.cliente_id = pv.cliente_id
-                                left join dirs_clientes d
-                                on c.cliente_id = d.cliente_id and d.es_dir_ppal = 'S'
-                                left join ciudades ci
-                                on ci.ciudad_id = d.ciudad_id
-                                left join estados e
-                                on e.estado_id = ci.estado_id
-                                where pv.fecha > '01.01.2023'
-                                and c.estatus = 'A'
-                                group by c.nombre, c.cliente_id, c.cond_pago_id, d.rfc_curp, d.clave_regimen_fiscal, d.calle, d.colonia, d.codigo_postal, ciudad, d.poblacion, estado, pais, d.num_exterior, d.num_interior, d.telefono1
-                            ) c
-                        join RFCS_LCO fis
-                        on c.rfc_curp = fis.rfc
-                        join condiciones_pago  cond
-                        on cond.cond_pago_id = c.cond_pago_id
-                        left join precios_cli_cli p
-                        on p.cliente_id = c.cliente_id
-                        left join precios_empresa pre
-                        on p.precio_empresa_id = pre.precio_empresa_id             
-                    ` ,
+                        c.cond_pago_id,
+                        d.rfc_curp,
+                        d.clave_regimen_fiscal,
+                        d.calle, d.colonia,
+                        d.codigo_postal,
+                        ci.nombre as ciudad,
+                        d.poblacion,
+                        e.nombre as estado,
+                        'MEXICO' AS pais,
+                        d.num_exterior,
+                        d.num_interior,
+                        d.telefono1,
+                        d.email,
+                        c.limite_credito
+                    FROM doctos_ve ve
+                    left join clientes c
+                    on c.cliente_id = ve.cliente_id
+                    left join dirs_clientes d
+                    on c.cliente_id = d.cliente_id and d.es_dir_ppal = 'S'
+                    left join ciudades ci
+                    on ci.ciudad_id = d.ciudad_id
+                    left join estados e
+                    on e.estado_id = d.estado_id
+                    where ve.fecha > '01.09.2023'
+                    and c.estatus = 'A'
+                    group by c.nombre, c.cliente_id, c.cond_pago_id, d.rfc_curp,  d.clave_regimen_fiscal, d.calle, d.colonia, d.codigo_postal, ciudad, d.poblacion, estado, pais, d.num_exterior, d.num_interior, d.telefono1,  d.email, c.limite_credito
+                    union
+                    SELECT
+                        c.nombre,
+                        c.cliente_id,
+                        c.cond_pago_id,
+                        d.rfc_curp,
+                        d.clave_regimen_fiscal,
+                        d.calle,
+                        d.colonia,
+                        d.codigo_postal,
+                        ci.nombre as ciudad,
+                        d.poblacion,
+                        e.nombre as estado,
+                        'MEXICO' as pais,
+                        d.num_exterior,
+                        d.num_interior,
+                        d.telefono1,
+                        d.email,
+                        c.limite_credito
+                    FROM doctos_pv pv
+                    left join clientes c
+                    on c.cliente_id = pv.cliente_id
+                    left join dirs_clientes d
+                    on c.cliente_id = d.cliente_id and d.es_dir_ppal = 'S'
+                    left join ciudades ci
+                    on ci.ciudad_id = d.ciudad_id
+                    left join estados e
+                    on e.estado_id = ci.estado_id
+                    where pv.fecha > '01.01.2023'
+                    and c.estatus = 'A'
+                    group by c.nombre, c.cliente_id, c.cond_pago_id, d.rfc_curp, d.clave_regimen_fiscal, d.calle, d.colonia, d.codigo_postal, ciudad, d.poblacion, estado, pais, d.num_exterior, d.num_interior, d.telefono1,  d.email, c.limite_credito
+                ) c
+            join RFCS_LCO fis
+            on c.rfc_curp = fis.rfc
+            join condiciones_pago  cond
+            on cond.cond_pago_id = c.cond_pago_id
+            left join precios_cli_cli p
+            on p.cliente_id = c.cliente_id
+            left join precios_empresa pre
+            on p.precio_empresa_id = pre.precio_empresa_id   
+
+                ` ,
                 function (err, customersDB) {
                     console.log('err', err);
                     console.log('DB', customersDB);
@@ -2079,7 +2088,7 @@ const getCustomersToSap = (connection) => {
                             serie: customer[2],
                             group: customer[3],
                             list: customer[4],
-                            cond: customer[5],
+                            cond: customer[5] !== null ? obtenerDias(customer[5].toString('latin1')) : '',
                             rfc: customer[6].toString('latin1'),
                             account: customer[7],
                             cfdi: 'G03',
@@ -2094,15 +2103,11 @@ const getCustomersToSap = (connection) => {
                             buildingFloorRoom: customer[16] !== null ? customer[16].toString('latin1') : '',
                             streetNo: customer[17] !== null ? customer[17].toString('latin1') : '',
                             phone: customer[18] !== null ? customer[18].toString('latin1') : '',
-                            connection: connection
-                            // folio : charge[5] !== null ? charge[5].toString('latin1') : '',
+                            connection: connection,
+                            email : customer[19] !== null ? customer[19].toString('latin1') : '',
+                            limite_credito : customer[20] ,
                         }
                     })
-
-                    // let data = {
-                    //     customers,
-                    //     connection
-                    // }
 
                     db.detach();
                     resolve(customers.sort((a, b) => a.name - b.name))
@@ -2616,69 +2621,8 @@ const obtenerDoctosPagos = (connection) => {
             }
             db.query(
                 `
-                            select first 10
-                                cc.folio,
-                                c.nombre,
-                                cc.fecha,
-                                cc.cfdi_certificado,
-                                fcc.nombre as forma_cobro,
-                                ve.folio as folio_f,
-                                cargos.importe,
-                                COALESCE(t0.importe_impuesto,0) as Tasa_Cero,
-                                COALESCE(i16.importe_impuesto,0) as Iva_16,
-                                COALESCE(ie8.importe_impuesto, 0) as Ieps_8 ,
-                                COALESCE (ie30.importe_impuesto,0) as Ieps_30,
-                                COALESCE(ie6.importe_impuesto,0) as Ieps_6 ,
-                                ve.importe_neto
-                            from doctos_cc cc
-                            left join importes_doctos_cc icc
-                            on icc.docto_cc_id = cc.docto_cc_id
-                            left join clientes c
-                            on c.cliente_id = cc.cliente_id
-                            LEFT JOIN FORMAS_COBRO_DOCTOS fcd
-                            ON fcd.DOCTO_ID = cc.DOCTO_CC_ID AND fcd.NOM_TABLA_DOCTOS = 'DOCTOS_CC'
-                            LEFT JOIN FORMAS_COBRO_CC fcc
-                            ON fcd.FORMA_COBRO_ID = fcc.FORMA_COBRO_CC_ID
-                            left join conceptos_cc concepto
-                            on concepto.concepto_cc_id = cc.concepto_cc_id
-                            left join cargos_acreditados_cc(cc.docto_cc_id) cargos
-                            on cargos.docto_cc_id = cc.docto_cc_id
-                            inner join doctos_ve ve
-                            on ve.folio = cargos.folio
-                            left join (
-                                select impve.docto_ve_id ,impve.impuesto_id,  impve.importe_impuesto from impuestos_doctos_ve impve
-                                inner join impuestos imp
-                                on imp.impuesto_id = impve.impuesto_id and imp.nombre = 'TASA CERO'
-                                ) t0
-                            on t0.docto_ve_id = ve.docto_ve_id
-                            left join (
-                                select impve.docto_ve_id ,impve.impuesto_id,  impve.importe_impuesto from impuestos_doctos_ve impve
-                                inner join impuestos imp
-                                on imp.impuesto_id = impve.impuesto_id and imp.nombre = 'IVA TASA 16%'
-                                ) i16
-                            on i16.docto_ve_id = ve.docto_ve_id
-                            left join (
-                                select impve.docto_ve_id ,impve.impuesto_id,  impve.importe_impuesto from impuestos_doctos_ve impve
-                                inner join impuestos imp
-                                on imp.impuesto_id = impve.impuesto_id and imp.nombre = 'IEPS 8%'
-                                ) ie8
-                            on ie8.docto_ve_id = ve.docto_ve_id
-                            left join (
-                                select impve.docto_ve_id ,impve.impuesto_id,  impve.importe_impuesto from impuestos_doctos_ve impve
-                                inner join impuestos imp
-                                on imp.impuesto_id = impve.impuesto_id and imp.nombre = 'IEPS 6%'
-                                ) ie6
-                            on ie6.docto_ve_id = ve.docto_ve_id
-                            left join (
-                                select impve.docto_ve_id ,impve.impuesto_id,  impve.importe_impuesto from impuestos_doctos_ve impve
-                                inner join impuestos imp
-                                on imp.impuesto_id = impve.impuesto_id and imp.nombre = 'IESP 30%'
-                                ) ie30
-                            on ie30.docto_ve_id = ve.docto_ve_id
-                            where concepto.nombre = 'Pagos'
-                            and cc.fecha between '01.08.2024' and '31.08.2024'
-                            group by cc.folio, c.nombre, cc.fecha, cc.cfdi_certificado, fcc.nombre, ve.folio, cargos.importe, t0.importe_impuesto, i16.importe_impuesto, ie8.importe_impuesto, ie6.importe_impuesto, ie30.importe_impuesto, ve.importe_neto
-                        ` ,
+                    SELECT FIRST 10 * FROM obtener_pagos('01.08.2024', '31.08.2024')
+                ` ,
                 function (err, pagosDB) {     
                     if (err) {
                         return reject(err)
@@ -2691,17 +2635,26 @@ const obtenerDoctosPagos = (connection) => {
                                 bd: connection,
                                 folio: charge.FOLIO !== null ? charge.FOLIO.toString('latin1') : '',
                                 folio_f: charge.FOLIO_F !== null ? charge.FOLIO_F.toString('latin1') : '',
-                                nombre: charge.NOMBRE,
-                                fecha: charge.FECHA,
-                                importe_cargo: charge.IMPORTE,
-                                tasa_cero: charge.TASA_CERO,
+                                nombre: charge.NOMBRE !== null ? charge.NOMBRE.toString('latin1') : '',
+                                fecha: charge.FECHA  ,
+                                importe_cargo: charge.IMPORTE ,
+                                tasa_cero: charge.TASA_CERO ,
+                                base_tasa_cero: charge.BASE_TASA_CERO ,
                                 iva_16: dosDecimales(charge.IVA_16 * factor),
+                                base_iva_16: dosDecimales(charge.BASE_IVA_16 * factor),
                                 ieps_8: dosDecimales(charge.IEPS_8 * factor),
+                                base_ieps_8: dosDecimales(charge.BASE_IEPS_8 * factor),
                                 ieps_6: dosDecimales(charge.IEPS_6 * factor),
+                                base_ieps_6: dosDecimales(charge.BASE_IEPS_6 * factor),
                                 ieps_30: dosDecimales(charge.IEPS_30 * factor),
+                                base_ieps_30: dosDecimales(charge.BASE_IEPS_30 * factor),
                                 importe_neto: dosDecimales(charge.IMPORTE_NETO),
                                 cfdi_certificado: charge.CFDI_CERTIFICADO !== null ? charge.CFDI_CERTIFICADO.toString('latin1') : '',
                                 forma_cobro: charge.FORMA_COBRO !== null ? charge.FORMA_COBRO.toString('latin1') : '',
+                                rfc: charge.RFC !== null ? charge.RFC.toString('latin1') : '',
+                                uuid: charge.UUID !== null ? charge.UUID.toString('latin1') : '',
+                                razon_social: charge.RAZON_SOCIAL !== null ? charge.RAZON_SOCIAL.toString('latin1') : '',
+
                             }
                         });
                         db.detach();

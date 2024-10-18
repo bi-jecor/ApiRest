@@ -12,7 +12,5 @@ router.get('/getAisleOrdersReport/', getAisleOrdersReport);
 router.put('/updateAisleOrders/:aisleOrderId', updateAisleOrder);
 router.delete('/deleteAisleOrders/:aisleOrderId', deleteAisleOrder);
 
-
-
 module.exports = router;
 
