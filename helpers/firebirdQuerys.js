@@ -2644,7 +2644,7 @@ const obtenerDoctosPagos = (connection) => {
                                 folio: charge.FOLIO !== null ? charge.FOLIO.toString('latin1') : '',
                                 folio_f: charge.FOLIO_F !== null ? charge.FOLIO_F.toString('latin1') : '',
                                 nombre: charge.NOMBRE !== null ? charge.NOMBRE.toString('latin1') : '',
-                                fecha: charge.FECHA  ,
+                                fecha: charge.FECHA_C  ,
                                 importe_cargo: charge.IMPORTE ,
                                 tasa_cero: charge.TASA_CERO ,
                                 base_tasa_cero: charge.BASE_TASA_CERO ,

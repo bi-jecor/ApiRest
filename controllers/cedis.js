@@ -826,7 +826,7 @@ const getExistencias = (req, res) => {
     const conectionName = req.params.conectionName;
     const date = `${new Date().getDate()}.${new Date().getMonth() + 1 }.${new Date().getFullYear()}`
     console.log(date);
-    firebird.attach(conections[conectionName], function(err, db) {
+    firebird.attach('CHAVEZC', function(err, db) {
         if(err){
             console.log('error1', err);
             return res.status(500).json({
@@ -834,7 +834,7 @@ const getExistencias = (req, res) => {
             });
         }
         db.execute(`select articulo_id as article_id , clave_articulo as code, nombre as article, existencia as stock
-        from exival_art_ur2('${microsipName}', '${date}', 'N', 'S', 'S', 'S');`,
+        from exival_art_ur2('CHAVEZ CARRILLO COL', '${date}', 'N', 'S', 'S', 'S');`,
             function(err, data) {
                 console.log(data);
                 if(err){
