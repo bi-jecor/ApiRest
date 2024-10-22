@@ -823,10 +823,10 @@ const updateJecInventarioArticuloCantidad = (req, res) => {
 
 const getExistencias = (req, res) => {
     const microsipName = req.params.microsipName;
-    const conectionName = req.params.conectionName;
+    const conectionName = 'CHAVEZC';
     const date = `${new Date().getDate()}.${new Date().getMonth() + 1 }.${new Date().getFullYear()}`
     console.log(date);
-    firebird.attach('CHAVEZC', function(err, db) {
+    firebird.attach(conections[conectionName], function(err, db) {
         if(err){
             console.log('error1', err);
             return res.status(500).json({
