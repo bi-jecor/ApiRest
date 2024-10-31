@@ -2,6 +2,8 @@ obtenerSucursalPorFolio = (folio = 'FA') => {
     const folioSucursal = {
         FA:'1002 DULCERIA G32',
         FB:'1002 DULCERIA G32',
+        FIP:'1102 DULCERIA MADERO',
+        FI:'1102 DULCERIA MADERO',
         FC:'1102 DULCERIA MADERO',
         FCP:'1102 DULCERIA MADERO',
         FD:'1000 CEDIS',
@@ -30,7 +32,9 @@ obtenerSucursalPorFolio = (folio = 'FA') => {
         FPB:'1002 DULCERIA G32',
         FPN:'1202 CEREALES COLINAS',
         FQ:'1103 REPOSTERIA MADERO',
-        FQP:'1103 REPOSTERIA MADERO'
+        FQP:'1103 REPOSTERIA MADERO',
+        FR:'EXPO AGRICOLA 2024',
+        FF:'ESTACIONAMIENTO'
     }
     return folioSucursal[folio] || 'Sin definir'
 }
