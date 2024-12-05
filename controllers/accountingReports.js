@@ -208,16 +208,53 @@ const getAllProvidersChargesCxp = (req, res) => {
     });
 }
 
+const getAllProvidersChargesCxpPb = (req, res) => {
+    const all = Promise.allSettled([
+        firebirdQuerys.getProvidersChargesCxp('G32'),
+        //firebirdQuerys.getProvidersChargesCxp('G32H'),
+        firebirdQuerys.getProvidersChargesCxp('AC'),
+        firebirdQuerys.getProvidersChargesCxp('ACH'),
+        firebirdQuerys.getProvidersChargesCxp('COLIMA'),
+        firebirdQuerys.getProvidersChargesCxp('VILLA'),
+        firebirdQuerys.getProvidersChargesCxp('VILLAH'),
+        firebirdQuerys.getProvidersChargesCxp('COLINAS'),
+        firebirdQuerys.getProvidersChargesCxp('TURCIO'),
+        firebirdQuerys.getProvidersChargesCxp('PAEZ'),
+        firebirdQuerys.getProvidersChargesCxp('CHAVEZC'),
+    ]).then((values) => {
+
+        let data = [];
+        let fails = ''
+        let emptys = ''
+        values.forEach(element => {
+
+            if (element.status !== 'rejected') {
+                data = [...data, ...element.value.charges]
+                if (element.value.charges.length === 0) {
+                    emptys = emptys + ' ' + element.value.connection
+                }
+            } else {
+                fails = fails + ' ' + element.reason.connection;
+            }
+        });
+        return res.json({
+            data,
+            fails: fails.trim(),
+            emptys: emptys.trim()
+        });
+    });
+}
+
 const getAllProvidersChargesCxpSap = (req, res) => {
     const all = Promise.allSettled([
-        firebirdQuerys.getProvidersChargesCxpSap('G32'),
+        // firebirdQuerys.getProvidersChargesCxpSap('G32'),
         firebirdQuerys.getProvidersChargesCxpSap('AC'),
-        firebirdQuerys.getProvidersChargesCxpSap('COLIMA'),
-        firebirdQuerys.getProvidersChargesCxpSap('VILLA'),
-        firebirdQuerys.getProvidersChargesCxpSap('COLINAS'),
-        firebirdQuerys.getProvidersChargesCxpSap('TURCIO'),
-        firebirdQuerys.getProvidersChargesCxpSap('PAEZ'),
-        firebirdQuerys.getProvidersChargesCxpSap('CHAVEZC'),
+        // firebirdQuerys.getProvidersChargesCxpSap('COLIMA'),
+        // firebirdQuerys.getProvidersChargesCxpSap('VILLA'),
+        // firebirdQuerys.getProvidersChargesCxpSap('COLINAS'),
+        // firebirdQuerys.getProvidersChargesCxpSap('TURCIO'),
+        // firebirdQuerys.getProvidersChargesCxpSap('PAEZ'),
+        // firebirdQuerys.getProvidersChargesCxpSap('CHAVEZC'),
     ]).then((values) => {
 
         let data = [];
@@ -253,6 +290,32 @@ const getCustomersBalances = (req = request, res = response) => {
         firebirdQuerys.getCustomersBalances2('COLIMA', date),
         firebirdQuerys.getCustomersBalances2('VILLA', date),
         firebirdQuerys.getCustomersBalances2('COLINAS', date),
+
+    ]).then(cargosPorSucursal => {
+        let cargos = [];
+        const s = cargosPorSucursal.forEach(cargoXC => {
+            cargos = [...cargos, ...cargoXC]
+        })
+        return res.json({
+            CustomersBalances: cargos
+        });
+    })
+}
+
+const getCustomersBalancesPb = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.getCustomersBalancesPb('AC', date),
+        firebirdQuerys.getCustomersBalancesPb('ACH', date),
+        firebirdQuerys.getCustomersBalancesPb('G32', date),
+        firebirdQuerys.getCustomersBalancesPb('G32H', date),
+        firebirdQuerys.getCustomersBalancesPb('CHAVEZC', date),
+        firebirdQuerys.getCustomersBalancesPb('TURCIO', date),
+        firebirdQuerys.getCustomersBalancesPb('PAEZ', date),
+        firebirdQuerys.getCustomersBalancesPb('COLIMA', date),
+        firebirdQuerys.getCustomersBalancesPb('VILLA', date),
+        firebirdQuerys.getCustomersBalancesPb('VILLAH', date),
+        firebirdQuerys.getCustomersBalancesPb('COLINAS', date),
 
     ]).then(cargosPorSucursal => {
         let cargos = [];
@@ -387,10 +450,12 @@ module.exports = {
     getCustomersToSap,
     getProvidersToSap,
     getAllProvidersChargesCxp,
+    getAllProvidersChargesCxpPb,
     getAllProvidersChargesCxpSap,
     getCustomersBalances,
+    getCustomersBalancesPb,
     obtenerPagos,
     obtenerDoctosVe,
     obtenerDoctosPagos,
-    obtenerDoctosVeDet
+    obtenerDoctosVeDet,
 }

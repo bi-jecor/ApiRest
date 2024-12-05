@@ -405,6 +405,84 @@ const getCustomersBalances2 = (conection, date) => {
         });
     });
 }
+const getCustomersBalancesPb = (conection, date) => {
+    console.log('2');
+
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[conection], async function (err, db) {
+            if (err) {
+                console.log(err);
+
+                let cargs = [{
+                    sucursal: conection,
+                    rfc: '',
+                    folio: '',
+                    cuenta_cliente: '',
+                    cliente: 'Favor de reprotarlo al dpto. TI',
+                    fecha: '',
+                    fecha_vencimiento: '',
+                    cond_pago: 'Falla de Conexion',
+                    importe_cargo: '',
+                    saldo: '',
+                    atraso: '',
+                }];
+                console.log(cargs);
+
+                resolve(cargs)
+                return
+            }
+            db.query(
+                `
+                    SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
+                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    LEFT JOIN DOCTOS_CC B
+                    ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
+                    LEFT JOIN clientes
+                    ON B.cliente_id = clientes.cliente_id
+                    Left Join condiciones_pago
+                    on clientes.cond_pago_id = condiciones_pago.cond_pago_id
+                    LEFT JOIN CONCEPTOS_CC C
+                    ON B.CONCEPTO_CC_ID = C.CONCEPTO_CC_ID
+                    JOIN doctos_ve F
+                    on B.folio = F.folio
+                    left join dirs_clientes dc
+                    on f.dir_consig_id = DC.dir_cli_id
+                    left join conceptos_cc cc
+                    on b.cond_pago_id = cc.concepto_cc_id
+                    Left Join condiciones_pago fp
+                    on F.cond_pago_id = fp.cond_pago_id
+                    --WHERE A.FECHA_VENCIMIENTO BETWEEN '2024.01.01' AND '2024.12.31'
+                    ORDER BY B.FECHA
+                    `, async function (err, cargos) {
+                console.log(err);
+
+                let cargs = cargos.map((cargo) => {
+                    return {
+                        sucursal: conection,
+                        rfc: cargo.RFC != null ? cargo.RFC.toString('utf8') : 'Sin RFC',
+                        folio: cargo.FOLIO.toString('utf8'),
+                        cuenta_cliente: '',
+                        cliente: cargo.NOMBRE,
+                        fecha: cargo.RFC != null ? formatDate.formatDateToString(cargo.FECHA) : 'Sin fecha',
+                        fecha_vencimiento: formatDate.formatDateToString(cargo.FECHA_VENCIMIENTO),
+                        cond_pago: cargo.COND_FT != null ? cargo.COND_FT.toString('utf8') : 'Sin Condicion de Pago',
+                        importe_cargo: cargo.IMPORTE_CARGO,
+                        saldo: cargo.SALDO_CARGO,
+                        atraso: cargo.ATRASO <= 0 ? 0 : cargo.ATRASO,
+                        // concepto_cc_id : cargo.CONCEPTO_CC_ID,
+                        // folio : cargo.FOLIO,
+                        // descripcion : cargo.DESCRIPCION != null ? cargo.DESCRIPCION.toString('utf8') : 'Sin Descripcion',
+                        // nombre_abrev: cargo.NOMBRE_ABREV.toString('utf8'),
+                    }
+                });
+                db.detach();
+                resolve(cargs)
+                return
+            }
+            );
+        });
+    });
+}
 const getCustomersBalancesToday = (conection) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], async function (err, db) {
@@ -2814,6 +2892,7 @@ module.exports = {
     getProvidersChargesCxp,
     getProvidersChargesCxpSap,
     getCustomersBalances2,
+    getCustomersBalancesPb,
 
     //Contabilidad
     obtenerPagos,

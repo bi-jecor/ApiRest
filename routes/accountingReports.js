@@ -4,8 +4,10 @@ const { getAllProvidersCharges,
     getCustomersCharges, 
     getCustomersToSap,getProvidersToSap, 
     getAllProvidersChargesCxp,
+    getAllProvidersChargesCxpPb,
     getAllProvidersChargesCxpSap,
     getCustomersBalances,
+    getCustomersBalancesPb,
     obtenerPagos,
     obtenerDoctosVe,
     obtenerDoctosPagos,
@@ -28,5 +30,8 @@ router.get('/doctosPagos/', obtenerDoctosPagos );
 
 
 router.get('/doctosVeDet/', obtenerDoctosVeDet );
+
+router.get('/getCustomersBalancesPb/', getCustomersBalancesPb );
+router.get('/getAllProvidersChargesCxpPb/', getAllProvidersChargesCxpPb );
 
 module.exports = router;
