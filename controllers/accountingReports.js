@@ -208,19 +208,17 @@ const getAllProvidersChargesCxp = (req, res) => {
     });
 }
 
-const getAllProvidersChargesCxpPb = (req, res) => {
+const getAllProvidersChargesCxpHis = (req, res) => {
     const all = Promise.allSettled([
-        firebirdQuerys.getProvidersChargesCxp('G32'),
-        //firebirdQuerys.getProvidersChargesCxp('G32H'),
-        firebirdQuerys.getProvidersChargesCxp('AC'),
-        firebirdQuerys.getProvidersChargesCxp('ACH'),
-        firebirdQuerys.getProvidersChargesCxp('COLIMA'),
-        firebirdQuerys.getProvidersChargesCxp('VILLA'),
-        firebirdQuerys.getProvidersChargesCxp('VILLAH'),
-        firebirdQuerys.getProvidersChargesCxp('COLINAS'),
-        firebirdQuerys.getProvidersChargesCxp('TURCIO'),
-        firebirdQuerys.getProvidersChargesCxp('PAEZ'),
-        firebirdQuerys.getProvidersChargesCxp('CHAVEZC'),
+        firebirdQuerys.getProvidersChargesCxpHis('G32'),
+        firebirdQuerys.getProvidersChargesCxpHis('AC'),
+        firebirdQuerys.getProvidersChargesCxpHis('ACH'),
+        firebirdQuerys.getProvidersChargesCxpHis('COLIMA'),
+        firebirdQuerys.getProvidersChargesCxpHis('VILLA'),
+        firebirdQuerys.getProvidersChargesCxpHis('COLINAS'),
+        firebirdQuerys.getProvidersChargesCxpHis('TURCIO'),
+        firebirdQuerys.getProvidersChargesCxpHis('PAEZ'),
+        firebirdQuerys.getProvidersChargesCxpHis('CHAVEZC'),
     ]).then((values) => {
 
         let data = [];
@@ -302,20 +300,19 @@ const getCustomersBalances = (req = request, res = response) => {
     })
 }
 
-const getCustomersBalancesPb = (req = request, res = response) => {
+const getCustomersBalancesHis = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
-        firebirdQuerys.getCustomersBalancesPb('AC', date),
-        firebirdQuerys.getCustomersBalancesPb('ACH', date),
-        firebirdQuerys.getCustomersBalancesPb('G32', date),
-        firebirdQuerys.getCustomersBalancesPb('G32H', date),
-        firebirdQuerys.getCustomersBalancesPb('CHAVEZC', date),
-        firebirdQuerys.getCustomersBalancesPb('TURCIO', date),
-        firebirdQuerys.getCustomersBalancesPb('PAEZ', date),
-        firebirdQuerys.getCustomersBalancesPb('COLIMA', date),
-        firebirdQuerys.getCustomersBalancesPb('VILLA', date),
-        firebirdQuerys.getCustomersBalancesPb('VILLAH', date),
-        firebirdQuerys.getCustomersBalancesPb('COLINAS', date),
+        firebirdQuerys.getCustomersBalancesHis('AC', date),
+        firebirdQuerys.getCustomersBalancesHis('ACH', date),
+        firebirdQuerys.getCustomersBalancesHis('G32', date),
+        firebirdQuerys.getCustomersBalancesHis('G32H', date),
+        firebirdQuerys.getCustomersBalancesHis('CHAVEZC', date),
+        firebirdQuerys.getCustomersBalancesHis('TURCIO', date),
+        firebirdQuerys.getCustomersBalancesHis('PAEZ', date),
+        firebirdQuerys.getCustomersBalancesHis('COLIMA', date),
+        firebirdQuerys.getCustomersBalancesHis('VILLA', date),
+        firebirdQuerys.getCustomersBalancesHis('COLINAS', date),
 
     ]).then(cargosPorSucursal => {
         let cargos = [];
@@ -450,10 +447,10 @@ module.exports = {
     getCustomersToSap,
     getProvidersToSap,
     getAllProvidersChargesCxp,
-    getAllProvidersChargesCxpPb,
+    getAllProvidersChargesCxpHis,
     getAllProvidersChargesCxpSap,
     getCustomersBalances,
-    getCustomersBalancesPb,
+    getCustomersBalancesHis,
     obtenerPagos,
     obtenerDoctosVe,
     obtenerDoctosPagos,

@@ -405,7 +405,7 @@ const getCustomersBalances2 = (conection, date) => {
         });
     });
 }
-const getCustomersBalancesPb = (conection, date) => {
+const getCustomersBalancesHis = (conection, date) => {
     console.log('2');
 
     return new Promise((resolve, reject) => {
@@ -414,17 +414,23 @@ const getCustomersBalancesPb = (conection, date) => {
                 console.log(err);
 
                 let cargs = [{
-                    sucursal: conection,
-                    rfc: '',
-                    folio: '',
-                    cuenta_cliente: '',
-                    cliente: 'Favor de reprotarlo al dpto. TI',
-                    fecha: '',
-                    fecha_vencimiento: '',
-                    cond_pago: 'Falla de Conexion',
-                    importe_cargo: '',
-                    saldo: '',
-                    atraso: '',
+                    Sucursal: conection,
+                    Rfc: '',
+                    Serie: '',
+                    Folio: '',
+                    Folio_ms: '',
+                    Cliente: 'Favor de reprotarlo al dpto. TI',
+                    Fecha: '',
+                    Fecha_vencimiento: '',
+                    Cond_pago: 'Falla de Conexion',
+                    Tasa_cero: '',
+                    Iva_16: '',
+                    Ieps_6: '',
+                    Ieps_8: '',
+                    Ieps_30: '',
+                    Importe_cargo: '',
+                    Saldo: '',
+                    Atraso: '',
                 }];
                 console.log(cargs);
 
@@ -433,42 +439,79 @@ const getCustomersBalancesPb = (conection, date) => {
             }
             db.query(
                 `
-                    SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
+                    SELECT
+                        DC.rfc_curp AS RFC,
+                        REPLACE(LEFT(B.FOLIO, 3), '0', '') AS SERIE,
+                        B.FOLIO,
+                        REPLACE(LEFT(B.FOLIO, 3), '0', '') || CAST(RIGHT(B.FOLIO, 6) AS INT) AS FOLIO_MS,
+                        CL.NOMBRE AS CLIENTE,
+                        B.FECHA,
+                        A.FECHA_VENCIMIENTO,
+                        CP.NOMBRE AS COND_PAGO,
+                        COALESCE(IM_0.IMPUESTO, 0) AS TASA_CERO,
+                        COALESCE(IM_16.IMPUESTO, 0) AS IVA_16,
+                        COALESCE(IE_6.IMPUESTO, 0) AS IEPS_6,
+                        COALESCE(IE_8.IMPUESTO, 0) AS IEPS_8,
+                        COALESCE(IE_30.IMPUESTO, 0) AS IEPS_30,
+                        A.IMPORTE_CARGO,
+                        A.SALDO_CARGO AS SALDO,
+                        A.ATRASO
                     FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
-                    LEFT JOIN DOCTOS_CC B
-                    ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
-                    LEFT JOIN clientes
-                    ON B.cliente_id = clientes.cliente_id
-                    Left Join condiciones_pago
-                    on clientes.cond_pago_id = condiciones_pago.cond_pago_id
-                    LEFT JOIN CONCEPTOS_CC C
-                    ON B.CONCEPTO_CC_ID = C.CONCEPTO_CC_ID
-                    JOIN doctos_ve F
-                    on B.folio = F.folio
-                    left join dirs_clientes dc
-                    on f.dir_consig_id = DC.dir_cli_id
-                    left join conceptos_cc cc
-                    on b.cond_pago_id = cc.concepto_cc_id
-                    Left Join condiciones_pago fp
-                    on F.cond_pago_id = fp.cond_pago_id
-                    --WHERE A.FECHA_VENCIMIENTO BETWEEN '2024.01.01' AND '2024.12.31'
+                    LEFT JOIN DOCTOS_CC B ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
+                    LEFT JOIN clientes CL ON B.cliente_id = CL.cliente_id
+                    LEFT JOIN condiciones_pago CP on CL.cond_pago_id = CP.cond_pago_id
+                    INNER JOIN doctos_ve F on B.FOLIO = F.FOLIO
+                    LEFT JOIN dirs_clientes DC ON F.dir_consig_id = DC.dir_cli_id
+                    LEFT JOIN importes_doctos_cc IC ON B.docto_cc_id = IC.docto_cc_id
+                    LEFT JOIN (
+                        SELECT IM.impte_docto_cc_id, I.nombre, IM.pctje_impuesto, IM.impuesto FROM importes_doctos_cc_imptos IM
+                        LEFT JOIN IMPUESTOS I ON IM.impuesto_id = I.impuesto_id
+                        WHERE I.NOMBRE = 'TASA CERO'
+                    ) IM_0 ON IC.impte_docto_cc_id = IM_0.impte_docto_cc_id
+                    LEFT JOIN (
+                        SELECT IM.impte_docto_cc_id, I.nombre, IM.pctje_impuesto, IM.impuesto FROM importes_doctos_cc_imptos IM
+                        LEFT JOIN IMPUESTOS I ON IM.impuesto_id = I.impuesto_id
+                        WHERE I.NOMBRE = 'IVA TASA 16%'
+                    ) IM_16 ON IC.impte_docto_cc_id = IM_16.impte_docto_cc_id
+                    LEFT JOIN (
+                        SELECT IM.impte_docto_cc_id, I.nombre, IM.pctje_impuesto, IM.impuesto FROM importes_doctos_cc_imptos IM
+                        LEFT JOIN IMPUESTOS I ON IM.impuesto_id = I.impuesto_id
+                        WHERE I.NOMBRE = 'IEPS 6%'
+                    ) IE_6 ON IC.impte_docto_cc_id = IE_6.impte_docto_cc_id
+                    LEFT JOIN (
+                        SELECT IM.impte_docto_cc_id, I.nombre, IM.pctje_impuesto, IM.impuesto FROM importes_doctos_cc_imptos IM
+                        LEFT JOIN IMPUESTOS I ON IM.impuesto_id = I.impuesto_id
+                        WHERE I.NOMBRE = 'IEPS 8%'
+                    ) IE_8 ON IC.impte_docto_cc_id = IE_8.impte_docto_cc_id
+                    LEFT JOIN (
+                        SELECT IM.impte_docto_cc_id, I.nombre, IM.pctje_impuesto, IM.impuesto FROM importes_doctos_cc_imptos IM
+                        LEFT JOIN IMPUESTOS I ON IM.impuesto_id = I.impuesto_id
+                        WHERE I.NOMBRE = 'IESP 30%'
+                    ) IE_30 ON IC.impte_docto_cc_id = IE_30.impte_docto_cc_id
                     ORDER BY B.FECHA
                     `, async function (err, cargos) {
                 console.log(err);
 
                 let cargs = cargos.map((cargo) => {
                     return {
-                        sucursal: conection,
-                        rfc: cargo.RFC != null ? cargo.RFC.toString('utf8') : 'Sin RFC',
-                        folio: cargo.FOLIO.toString('utf8'),
-                        cuenta_cliente: '',
-                        cliente: cargo.NOMBRE,
-                        fecha: cargo.RFC != null ? formatDate.formatDateToString(cargo.FECHA) : 'Sin fecha',
-                        fecha_vencimiento: formatDate.formatDateToString(cargo.FECHA_VENCIMIENTO),
-                        cond_pago: cargo.COND_FT != null ? cargo.COND_FT.toString('utf8') : 'Sin Condicion de Pago',
-                        importe_cargo: cargo.IMPORTE_CARGO,
-                        saldo: cargo.SALDO_CARGO,
-                        atraso: cargo.ATRASO <= 0 ? 0 : cargo.ATRASO,
+                        Sucursal: conection,
+                        Rfc: cargo.RFC != null ? cargo.RFC.toString('utf8') : 'Sin RFC',
+                        Serie: cargo.SERIE.toString('utf8'),
+                        Folio: cargo.FOLIO.toString('utf8'),
+                        Folio_ms: cargo.FOLIO_MS.toString('utf8'),
+                        //cuenta_cliente: '',
+                        Cliente: cargo.CLIENTE,
+                        Fecha: cargo.FECHA != null ? formatDate.formatDateToString(cargo.FECHA) : 'Sin fecha',
+                        Fecha_vencimiento: formatDate.formatDateToString(cargo.FECHA_VENCIMIENTO),
+                        Cond_pago: cargo.COND_PAGO != null ? cargo.COND_PAGO.toString('utf8') : 'Sin Condicion de Pago',
+                        Tasa_cero: cargo.TASA_CERO,
+                        Iva_16: cargo.IVA_16,
+                        Ieps_6: cargo.IEPS_6,
+                        Ieps_8: cargo.IEPS_8,
+                        Ieps_30: cargo.IEPS_30,
+                        Importe_cargo: cargo.IMPORTE_CARGO,
+                        Saldo: cargo.SALDO,
+                        Atraso: cargo.ATRASO <= 0 ? 0 : cargo.ATRASO,
                         // concepto_cc_id : cargo.CONCEPTO_CC_ID,
                         // folio : cargo.FOLIO,
                         // descripcion : cargo.DESCRIPCION != null ? cargo.DESCRIPCION.toString('utf8') : 'Sin Descripcion',
@@ -2460,6 +2503,130 @@ const getProvidersChargesCxpSap = (connection) => {
     });
 }
 
+const getProvidersChargesCxpHis = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            //console.log('db', connection,err);
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg: err
+                }
+                return reject(error)
+            }
+            db.query(
+                `
+                    SELECT
+                        ALM.NOMBRE AS ALMACEN,
+                        P.RFC_CURP AS RFC,
+                        REPLACE(LEFT(B.FOLIO, 3), 0,'') AS SERIE,
+                        B.FOLIO,
+                        REPLACE(LEFT(B.FOLIO, 3), 0,'') || CAST(RIGHT(B.FOLIO, 6) AS INT) AS FOLIO_MS,
+                        CLP.CLAVE_PROV,
+                        P.NOMBRE AS PROVEEDOR,
+                        CCP.NOMBRE AS COND_PAGO,
+                        CM.FECHA AS FECHA_COMPRA,
+                        A.FECHA_VENCIMIENTO,
+                        COALESCE(IM_0.IMPUESTO, 0) AS TASA_CERO,
+                        COALESCE(IM_16.IMPUESTO, 0) AS IVA_16,
+                        COALESCE(IE_6.IMPUESTO, 0) AS IEPS_6,
+                        COALESCE(IE_8.IMPUESTO, 0) AS IEPS_8,
+                        COALESCE(IE_30.IMPUESTO, 0) AS IEPS_30,
+                        CM.IMPORTE_NETO,
+                        A.IMPORTE_CARGO AS IMPORTE,
+                        A.SALDO_CARGO AS SALDO,
+                        A.ATRASO
+                    FROM XSP_CARGOS_PROVEEDORES(current_date , current_date, 'N') A
+                    LEFT JOIN DOCTOS_CP B ON A.DOCTO_CP_ID = B.DOCTO_CP_ID
+                    LEFT JOIN CONCEPTOS_CP C ON B.CONCEPTO_CP_ID = C.CONCEPTO_CP_ID
+                    LEFT JOIN DOCTOS_CM CM ON B.proveedor_id = CM.proveedor_id AND B.folio = CM.folio_prov AND CM.tipo_docto = 'C' AND CM.estatus = 'N'
+                    LEFT JOIN ALMACENES ALM ON CM.almacen_id = ALM.almacen_id
+                    LEFT JOIN proveedores P on CM.proveedor_id = P.proveedor_id
+                    LEFT JOIN (
+                        SELECT P.proveedor_id, coalesce(CP1.clave_prov, CP2.clave_prov) AS clave_prov FROM PROVEEDORES P
+                            LEFT JOIN claves_proveedores CP1 ON P.proveedor_id = CP1.proveedor_id AND CP1.rol_clave_prov_id = 49
+                            LEFT JOIN claves_proveedores CP2 ON P.proveedor_id = CP2.proveedor_id AND CP2.rol_clave_prov_id = 50
+                    ) CLP on P.proveedor_id = CLP.proveedor_id
+                    LEFT JOIN condiciones_pago_cp CCP on CM.cond_pago_id = CCP.cond_pago_id
+                    LEFT JOIN tipos_prov TP on TP.tipo_prov_id = P.tipo_prov_id
+                    INNER JOIN IMPORTES_DOCTOS_CP ICP ON B.docto_cp_id = ICP.docto_cp_id
+                    LEFT JOIN (
+                        SELECT IM.impte_docto_CP_id, I.nombre, IM.pctje_impuesto, IM.impuesto FROM importes_doctos_CP_imptos IM
+                        LEFT JOIN IMPUESTOS I ON IM.impuesto_id = I.impuesto_id
+                        WHERE I.NOMBRE = 'TASA CERO'
+                    ) IM_0 ON ICP.impte_docto_CP_id = IM_0.impte_docto_CP_id
+                    LEFT JOIN (
+                        SELECT IM.impte_docto_CP_id, I.nombre, IM.pctje_impuesto, IM.impuesto FROM importes_doctos_CP_imptos IM
+                        LEFT JOIN IMPUESTOS I ON IM.impuesto_id = I.impuesto_id
+                        WHERE I.NOMBRE = 'IVA TASA 16%'
+                    ) IM_16 ON ICP.impte_docto_CP_id = IM_16.impte_docto_CP_id
+                    LEFT JOIN (
+                        SELECT IM.impte_docto_CP_id, I.nombre, IM.pctje_impuesto, IM.impuesto FROM importes_doctos_CP_imptos IM
+                        LEFT JOIN IMPUESTOS I ON IM.impuesto_id = I.impuesto_id
+                        WHERE I.NOMBRE = 'IEPS 6%'
+                    ) IE_6 ON ICP.impte_docto_CP_id = IE_6.impte_docto_CP_id
+                    LEFT JOIN (
+                        SELECT IM.impte_docto_CP_id, I.nombre, IM.pctje_impuesto, IM.impuesto FROM importes_doctos_CP_imptos IM
+                        LEFT JOIN IMPUESTOS I ON IM.impuesto_id = I.impuesto_id
+                        WHERE I.NOMBRE = 'IEPS 8%'
+                    ) IE_8 ON ICP.impte_docto_CP_id = IE_8.impte_docto_CP_id
+                    LEFT JOIN (
+                        SELECT IM.impte_docto_CP_id, I.nombre, IM.pctje_impuesto, IM.impuesto FROM importes_doctos_CP_imptos IM
+                        LEFT JOIN IMPUESTOS I ON IM.impuesto_id = I.impuesto_id
+                        WHERE I.NOMBRE = 'IESP 30%'
+                    ) IE_30 ON ICP.impte_docto_CP_id = IE_30.impte_docto_CP_id
+                    ORDER BY CM.FECHA
+                    ` ,
+                function (err, chargesDB) {
+                    if (err) {
+                        reject(err)
+                    }
+                    //console.log(chargesDB[0]);
+                    let charges = chargesDB.map(charge => {
+                        return {
+                            Almacen: charge.ALMACEN !== null ? charge.ALMACEN.toString('latin1') : '',
+                            Rfc: charge.RFC !== null ? charge.RFC.toString('latin1') : '',
+                            Serie: charge.SERIE !== null ? charge.SERIE.toString('latin1') : '',
+                            Folio: charge.FOLIO !== null ? charge.FOLIO.toString('latin1') : '',
+                            Folio_ms: charge.FOLIO_MS !== null ? charge.FOLIO_MS.toString('latin1') : '',
+                            Clave_prov: charge.CLAVE_PROV !== null ? charge.CLAVE_PROV.toString('latin1') : '',
+                            Proveedor: charge.PROVEEDOR !== null ? charge.PROVEEDOR.toString('latin1') : '',
+                            Cond_pago: charge.COND_PAGO !== null ? charge.COND_PAGO.toString('latin1') : '',
+                            Fecha_compra: charge.FECHA_COMPRA !== null ? charge.FECHA_COMPRA : '',
+                            Fecha_vencimiento: charge.FECHA_VENCIMIENTO !== null ? charge.FECHA_VENCIMIENTO : '',
+                            Tasa_cero: charge.TASA_CERO,
+                            Iva_16: charge.IVA_16,
+                            Ieps_6: charge.IEPS_6,
+                            Ieps_8: charge.IEPS_8,
+                            Ieps_30: charge.IEPS_30,
+                            Importe_neto: charge.IMPORTE_NETO !== null ? charge.IMPORTE_NETO : '',
+                            Importe: charge.IMPORTE !== null ? charge.IMPORTE : '',
+                            Saldo: charge.SALDO !== null ? charge.SALDO : '',
+                            Atraso: charge.ATRASO !== null ? charge.ATRASO : '',
+                            
+                            //numAtCard: charge.FOLIO !== null ? charge.FOLIO.toString('latin1') : '',
+                            //docDate: charge.FECHA_COMPRA !== null ? charge.FECHA_COMPRA : '',
+                            // proveedor_id : charge[8] !== null ? charge[8] : '',
+                            //fecha_recepcion: charge.FECHA_RECEPCION !== null ? charge.FECHA_RECEPCION.toString('latin1') : '',
+                            // tipo_provedor : charge[20] !== null ? charge[20].toString('latin1') : '',
+                        }
+                    })
+
+                    //console.log('cargos',charges[0]);
+
+                    let data = {
+                        charges,
+                        connection
+                    }
+                    console.log("[CUENTAS POR PAGAR] EJECUTADO CORRECTAMENTE EN " + connection);
+                    db.detach();
+                    resolve(data)
+                });
+        });
+    });
+}
+
 const obtenerPagos = (connection) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
@@ -2891,8 +3058,9 @@ module.exports = {
     getProvidersToSap,
     getProvidersChargesCxp,
     getProvidersChargesCxpSap,
+    getProvidersChargesCxpHis,
     getCustomersBalances2,
-    getCustomersBalancesPb,
+    getCustomersBalancesHis,
 
     //Contabilidad
     obtenerPagos,
