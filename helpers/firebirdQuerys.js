@@ -330,7 +330,6 @@ const getCustomersBalances = (conection, date) => {
 }
 const getCustomersBalances2 = (conection, date) => {
     console.log('2');
-
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
@@ -357,7 +356,7 @@ const getCustomersBalances2 = (conection, date) => {
             db.query(
                 `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
-                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    FROM cargos_cliente_jgb('06.12.2024', '06.12.2024', 'N', 'N') A
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -850,6 +849,7 @@ const getProviders = (conection, min, max) => {
         });
     });
 }
+
 const getArticlesToHealer = (conection, min, max, provider = '') => {
     let query = 'select * from xtjec_articulosanear';
     console.log(provider.length);
@@ -2415,9 +2415,12 @@ const obtenerPagos = (connection) => {
                     where cc.fecha >= '01.01.2024'
                     and c.nombre in ('Pagos', 'Abonos')
                     and cc.estatus = 'N'
+                    and cc.cancelado <> 'S'
                     ` ,
                 function (err, pagosDB) {
                     if (err) {
+                        console.log(err);
+                        
                         reject(err)
                     }
                     let pagos = pagosDB.map(charge => {
@@ -2430,8 +2433,7 @@ const obtenerPagos = (connection) => {
                             importe: charge.IMPORTE !== null ? charge.IMPORTE : '',
                             cond_pago: charge.COND_PAGO !== null ? charge.COND_PAGO.toString('latin1') : '',
                         }
-                    })
-
+                    });
                     db.detach();
                     resolve(pagos)
                 });
@@ -2448,7 +2450,6 @@ const obtenerDoctosVe = (connection) => {
                 if (err) {                                      
                     return reject(err);
                 }
-                
                 db.query(
                     `
                         SELECT
@@ -2619,8 +2620,8 @@ const obtenerDoctosVe = (connection) => {
     });
 }
 
-const obtenerDoctosPagos = (connection) => {
-
+const obtenerDoctosPagos = (connection, fecha, fechaFin) => {
+    
     return new Promise((resolve, reject) => {
 
         firebird.attach(conections[connection], function (err, db) {
@@ -2629,7 +2630,7 @@ const obtenerDoctosPagos = (connection) => {
             }
             db.query(
                 `
-                    SELECT FIRST 10 * FROM obtener_pagos('01.08.2024', '31.08.2024')
+                    SELECT FIRST 10 * FROM obtener_pagos('${fecha}', '${fechaFin}')
                 ` ,
                 function (err, pagosDB) {     
                     if (err) {
@@ -2662,6 +2663,8 @@ const obtenerDoctosPagos = (connection) => {
                                 rfc: charge.RFC !== null ? charge.RFC.toString('latin1') : '',
                                 uuid: charge.UUID !== null ? charge.UUID.toString('latin1') : '',
                                 razon_social: charge.RAZON_SOCIAL !== null ? charge.RAZON_SOCIAL.toString('latin1') : '',
+                                seleccionado : false,
+                                cargado : false
 
                             }
                         });
@@ -2764,6 +2767,167 @@ const obtenerDoctosVeDet = (connection) => {
     });
 }
 
+const obtenerArticulosReq = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    select 
+                        trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50)) as folio, 
+                        a.nombre AS nombre_articulo, 
+                        erd.solicitado, 
+                        erd.clave_articulo as claveArticulo
+                    from exp_requerimientos er
+                    left join  exp_requerimientos_det erd
+                    on erd.exp_req_id = er.exp_req_id
+                    left join articulos a
+                    on a.articulo_id = erd.articulo_id
+                    where  trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50))
+                    = '${folio}'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+
+                    let articulos = arts.map(art => {
+                        return {
+                            folio: art.FOLIO !== null ? art.FOLIO.toString('latin1') : '',
+                            nombreArticulo: art.NOMBRE_ARTICULO,
+                            solicitado: art.SOLICITADO !== null ? art.SOLICITADO : 0,
+                            claveArticulo : art.CLAVEARTICULO !== null ? art.CLAVEARTICULO : 0,
+
+                        }
+                    })
+
+                    db.detach();
+                    resolve(articulos)
+                });
+        });
+    });
+}
+
+const obtenerRequerimiento = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                        trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50)) as folio,
+                        so.nombre as origen, sd.nombre as destino, er.fecha
+                    from exp_requerimientos er
+                    left join exp_sync_sucursales so
+                    on so.sucursal_id = er.origen
+                    left join exp_sync_sucursales sd
+                    on sd.sucursal_id = er.destino
+                    where  trim(replace(substring(er.folio from 1 for 3), '0', '')) || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50))
+                    = '${folio}'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let articulos = arts.map(r => {
+                        return {
+                            folio : r.FOLIO !== null ? r.FOLIO.toString('latin1') : '',
+                            origen : r.ORIGEN !== null ? r.ORIGEN.toString('latin1') : '',
+                            destino : r.DESTINO !== null ? r.DESTINO.toString('latin1') : '',
+                            fecha: r.FECHA 
+                        }
+                    })
+                    db.detach();
+                    resolve(articulos[0])
+                });
+        });
+    });
+}
+const obtenerTraspaso = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                        trim(replace(substring(et.folio from 1 for 3), '0', ''))  || cast(cast(substring(et.folio from 4 for 9) as int) as varchar(50)) as folio,
+                        so.nombre as origen, sd.nombre as destino, et.fecha
+                    from exp_traspasos et
+                    left join exp_sync_sucursales so
+                    on so.sucursal_id = et.origen
+                    left join exp_sync_sucursales sd
+                    on sd.sucursal_id = et.destino
+                    where  trim(replace(substring(et.folio from 1 for 3), '0', '')) || cast(cast(substring(et.folio from 4 for 9) as int) as varchar(50))
+                    = '${folio}'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let articulos = arts.map(r => {
+                        return {
+                            folio : r.FOLIO !== null ? r.FOLIO.toString('latin1') : '',
+                            origen : r.ORIGEN !== null ? r.ORIGEN.toString('latin1') : '',
+                            destino : r.DESTINO !== null ? r.DESTINO.toString('latin1') : '',
+                            fecha: r.FECHA 
+                        }
+                    })
+                    db.detach();
+                    resolve(articulos[0])
+                });
+        });
+    });
+}
+
+
+const obtenerArticulosTraspaso = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                select 
+                    trim(replace(substring(et.folio from 1 for 3), '0', ''))  || cast(cast(substring(et.folio from 4 for 9) as int) as varchar(50)) as folio,
+                    a.nombre AS nombre_articulo, 
+                    etd.recibido,
+                    etd.clave_articulo AS claveArticulo
+                from exp_traspasos et
+                left join  exp_traspasos_det etd
+                on etd.exp_trasp_id = et.exp_trasp_id
+                left join articulos a
+                on a.articulo_id = etd.articulo_id
+                where  trim(replace(substring(et.folio from 1 for 3), '0', ''))  || cast(cast(substring(et.folio from 4 for 9) as int) as varchar(50))
+                    = '${folio}'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let articulos = arts.map(art => {
+                        return {
+                            folio: art.FOLIO !== null ? art.FOLIO.toString('latin1') : '',
+                            nombreArticulo: art.NOMBRE_ARTICULO,
+                            recibido: art.RECIBIDO !== null ? art.RECIBIDO : 0,
+                            claveArticulo : art.CLAVEARTICULO !== null ? art.CLAVEARTICULO : 0,
+                        }
+                    })
+                    db.detach();
+                    resolve(articulos[0])
+                });
+        });
+    });
+}
+
+
+
 
 module.exports = {
     getDataToPolicyTest,
@@ -2819,7 +2983,13 @@ module.exports = {
     obtenerPagos,
     obtenerDoctosVe,
     obtenerDoctosPagos,
-    obtenerDoctosVeDet
+    obtenerDoctosVeDet,
+    // Mvtos
+    obtenerArticulosReq,
+    obtenerRequerimiento,
+    obtenerTraspaso,
+    obtenerArticulosTraspaso
+
 
 }
 

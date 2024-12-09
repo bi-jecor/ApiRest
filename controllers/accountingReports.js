@@ -4,7 +4,8 @@ const conections = require('../database/connections');
 const firebirdQuerys = require('../helpers/firebirdQuerys');
 
 
-const accountingReports = require('../helpers/accountingReports')
+const accountingReports = require('../helpers/accountingReports');
+const { formatDateToString } = require('../helpers/formatDate');
 
 const getAllProvidersCharges = (req, res) => {
     const date = req.params.date;
@@ -266,6 +267,8 @@ const getCustomersBalances = (req = request, res = response) => {
 }
 
 const obtenerPagos = (req = request, res = response) => {
+    console.log('Entro');
+    
     const date = req.params.date
     const all = Promise.all([
         firebirdQuerys.obtenerPagos('AC', date),
@@ -323,9 +326,10 @@ const obtenerDoctosVe = (req = request, res = response) => {
 }
 
 const obtenerDoctosPagos = (req = request, res = response) => {
-    const date = req.params.date
+    const {fecha, fechaFin} = req.params
+    console.log(formatDateToString(fecha),formatDateToString(fecha))
     const all = Promise.all([
-        firebirdQuerys.obtenerDoctosPagos('AC'),
+        firebirdQuerys.obtenerDoctosPagos('AC',fecha,fechaFin),
         // firebirdQuerys.obtenerDoctosPagos('G32', date),
         // firebirdQuerys.obtenerDoctosPagos('CHAVEZC', date),
         // firebirdQuerys.obtenerDoctosPagos('TURCIO', date),
