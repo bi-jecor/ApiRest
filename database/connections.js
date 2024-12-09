@@ -27,6 +27,29 @@ const AC = {
 
 }
 
+const ACH = {
+    // FIREBIRD CONFIG
+    user: 'SYSDBA',
+    password: 'B0l@g3t1tJ',
+    host: '192.168.20.200',
+    port: 3050,
+    database: 'E:/Bases de Datos/JECOR SA DE CV 2013.FDB',
+    lowercase_keys: false, 
+    role: null,
+    pageSize: 4096,
+    // POLIZA DATA
+    roleKeyProviderId : 49,
+    conceptCpId : 51,
+    iva16: 1014,
+    tasa0: 1009,
+    ieps8: 1017,
+    ieps6: 700964,
+    ieps30: 3026741,
+    exento: 1018,
+    keysArticlesIds : '17,18,288'
+
+}
+
 const G32 = {
     user: 'SYSDBA',
     password: 'B0l@g3t1tJ',
@@ -350,6 +373,7 @@ const ESTACIONAMIENTO = {
 
 module.exports = {
     AC,
+    ACH,
     G32,
     G32H,
     TURCIO,
