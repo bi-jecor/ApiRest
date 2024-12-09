@@ -724,8 +724,6 @@ const getJecInventarioMovil = (req, res) => {
            return res.json({
                inventarios
            })
-
-
         });
     });
 }
@@ -746,7 +744,7 @@ const getJecInventariosMovil = (req, res) => {
                     consecutivo : element.CONSECUTIVO.toString('utf8'),
                 }
                 inventarios.push(newElement);
-            })
+            }); 
 
            return res.json({
             inventarios

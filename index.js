@@ -101,6 +101,10 @@ app.use('/jecor/api/ventasRetiros', require('./routes/ventasRetiros'));
 app.use('/jecor/api/sistemaTiendas', require('./routes/sistemaTiendas'));
 
 
+app.use('/jecor/api/mvtos', require('./routes/mvtos'));
+
+
+
 
 
 // --------------------------------------------------------------------------------
