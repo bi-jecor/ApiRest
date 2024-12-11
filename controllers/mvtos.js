@@ -1,6 +1,22 @@
 const { response, request, json } = require('express');
 const firebirdQuerys = require('../helpers/firebirdQuerys');
 
+const  obtenerNombreArticuloPorClave = (req = request, res = response) => {
+        const {clave} = req.params;
+        firebirdQuerys.obtenerNombreArticuloPorClave( 'AC', clave )
+        .then(data => {
+            return res.json({
+                data,
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            return res.status(err.claveError).json({
+                err
+            });
+            
+        })
+}
 const  obtenerArticulosRequerimiento = (req = request, res = response) => {
         const {folio} = req.params;
         firebirdQuerys.obtenerArticulosReq( 'AC', folio )
@@ -9,8 +25,12 @@ const  obtenerArticulosRequerimiento = (req = request, res = response) => {
                 data,
             });
         })
-
+        .catch(err => {
+            console.log(err);
+            
+        })
 }
+
 const  obtenerRequerimiento = (req = request, res = response) => {
         const {folio} = req.params;
         firebirdQuerys.obtenerRequerimiento( 'AC', folio )
@@ -44,6 +64,7 @@ const  obtenerArticulosTraspaso = (req = request, res = response) => {
 
 
 module.exports = {
+    obtenerNombreArticuloPorClave,
     obtenerArticulosRequerimiento,
     obtenerRequerimiento,
     obtenerTraspaso,

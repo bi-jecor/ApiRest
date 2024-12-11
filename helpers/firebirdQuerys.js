@@ -3012,6 +3012,36 @@ const obtenerDoctosVeDet = (connection) => {
     });
 }
 
+const obtenerNombreArticuloPorClave = (connection, clave) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                Select a.nombre from claves_articulos ca
+                    left join articulos a
+                    on a.articulo_id = ca.articulo_id
+                where ca.clave_articulo = '${clave}'
+                ` ,
+                function (err, articulo ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    if (articulo.length === 0) {
+                        return reject({msg: 'Clave no encontrada', claveError : 404});
+                    }
+  
+                    
+                    db.detach();
+                    resolve(articulo[0].NOMBRE !== null ? {nombre: articulo[0].NOMBRE.toString('latin1') }: {nombre: ''})
+                });
+        });
+    });
+}
+
+
 const obtenerArticulosReq = (connection, folio) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
@@ -3020,34 +3050,46 @@ const obtenerArticulosReq = (connection, folio) => {
             }
             db.query(
                 `
-                    select 
+                    select
                         trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50)) as folio, 
                         a.nombre AS nombre_articulo, 
-                        erd.solicitado, 
-                        erd.clave_articulo as claveArticulo
+                        erd.clave_articulo as claveArticulo,
+                        erd.solicitado,
+                        ceil(erd.solicitado/ a.contenido_unidad_compra) as cajas,
+                        exi.existencia,
+                        a.unidad_compra,
+                        a.contenido_unidad_compra
                     from exp_requerimientos er
                     left join  exp_requerimientos_det erd
                     on erd.exp_req_id = er.exp_req_id
                     left join articulos a
                     on a.articulo_id = erd.articulo_id
+                    inner join EXIVAL_ART_UR2('ALMACEN GENERAL CEDIS', '10-DEC-2024', 'N', 'S', 'S', 'S') exi
+                    on exi.articulo_id  = erd.articulo_id
                     where  trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50))
                     = '${folio}'
+                    order by a.nombre
+
                 ` ,
                 function (err, arts ) {
                     if (err) {
                        return reject(err)
                     }
 
+
                     let articulos = arts.map(art => {
                         return {
                             folio: art.FOLIO !== null ? art.FOLIO.toString('latin1') : '',
                             nombreArticulo: art.NOMBRE_ARTICULO,
-                            solicitado: art.SOLICITADO !== null ? art.SOLICITADO : 0,
                             claveArticulo : art.CLAVEARTICULO !== null ? art.CLAVEARTICULO : 0,
-
+                            solicitado: art.SOLICITADO !== null ? art.SOLICITADO : 0,
+                            surtido: 0,
+                            partida: 0,
+                            cajas : art.CAJAS !== null ? art.CAJAS : 0,
+                            existencia : art.EXISTENCIA !== null ? art.EXISTENCIA : 0,
+                            nota : ''
                         }
-                    })
-
+                    });
                     db.detach();
                     resolve(articulos)
                 });
@@ -3092,6 +3134,7 @@ const obtenerRequerimiento = (connection, folio) => {
         });
     });
 }
+
 const obtenerTraspaso = (connection, folio) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
@@ -3129,7 +3172,6 @@ const obtenerTraspaso = (connection, folio) => {
         });
     });
 }
-
 
 const obtenerArticulosTraspaso = (connection, folio) => {
     return new Promise((resolve, reject) => {
@@ -3232,6 +3274,7 @@ module.exports = {
     obtenerDoctosPagos,
     obtenerDoctosVeDet,
     // Mvtos
+    obtenerNombreArticuloPorClave,
     obtenerArticulosReq,
     obtenerRequerimiento,
     obtenerTraspaso,

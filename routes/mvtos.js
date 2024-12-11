@@ -1,9 +1,10 @@
 const { Router } = require('express');
-const { obtenerArticulosRequerimiento,obtenerRequerimiento, obtenerTraspaso, obtenerArticulosTraspaso} = require('../controllers/mvtos')
+const {  obtenerNombreArticuloPorClave,obtenerArticulosRequerimiento,obtenerRequerimiento, obtenerTraspaso, obtenerArticulosTraspaso} = require('../controllers/mvtos')
 
 const router = Router();
 
 
+router.get('/obtenerNombreArticuloPorClave/:clave', obtenerNombreArticuloPorClave);
 router.get('/obtenerArticulosRequerimiento/:folio', obtenerArticulosRequerimiento);
 router.get('/obtenerRequerimiento/:folio', obtenerRequerimiento);
 router.get('/obtenerTraspaso/:folio', obtenerTraspaso);
