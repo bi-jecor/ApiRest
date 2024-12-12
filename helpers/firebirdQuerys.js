@@ -1850,7 +1850,6 @@ const getJecStockListGraphByWarehouse = (conection, warehouseId, warehouseIdSQL)
                     //console.log(data);
                     if (data) {
                         data.forEach(element => {
-
                             const newElement = {
                                 almacen_id: warehouseIdSQL,
                                 estatus: element.ESTATUS = element.ESTATUS !== null ? element.ESTATUS.toString('latin1') : 'Null',
@@ -1998,6 +1997,7 @@ const frkOrdenCompraDet = (connection, data) => {
                     function (err, result) {
                         db.detach();
                         if (err) {
+                            console.log(err);
                             reject(err)
                         }
                         if (result && i + 1 === data.length) {
@@ -3064,7 +3064,7 @@ const obtenerArticulosReq = (connection, folio) => {
                     on erd.exp_req_id = er.exp_req_id
                     left join articulos a
                     on a.articulo_id = erd.articulo_id
-                    inner join EXIVAL_ART_UR2('ALMACEN GENERAL CEDIS', '10-DEC-2024', 'N', 'S', 'S', 'S') exi
+                    inner join EXIVAL_ART_UR2('ALMACEN GENERAL CEDIS', current_date, 'N', 'S', 'S', 'S') exi
                     on exi.articulo_id  = erd.articulo_id
                     where  trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50))
                     = '${folio}'
