@@ -3023,7 +3023,7 @@ const obtenerDevoluciones = (connection) => {
                 select
                     ve.folio,
                     ve.fecha,
-                    ve.importe_neto,
+                    ve.importe_neto + ve.total_impuestos as importe_total,
                     alm.nombre as almacen,
                     c.nombre AS nombre_cliente,
                     ve.estatus
@@ -3049,6 +3049,56 @@ const obtenerDevoluciones = (connection) => {
                             fecha: formatDate.formatDateToString(docto.FECHA),
                             nombre_cliente: docto.NOMBRE_CLIENTE,
                             estatus: docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
+                            almacen: docto.ALMACEN,
+                            importe_neto: docto.IMPORTE_NETO
+                        }
+                    })
+
+                    db.detach();
+                    resolve(devoluciones)
+                });
+        });
+    });
+}
+const obtenerTicketsNoFacturados = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                        pv.folio,
+                        pv.fecha,
+                        pv.importe_neto + pv.total_impuestos as importe_neto,
+                        c.nombre AS nombre_cliente,
+                        alm.nombre as almacen
+                    from doctos_PV pv
+                    left join  doctos_pv_ligas liga
+                    on liga.docto_pv_fte_id = pv.docto_pv_id
+                    left join clientes c
+                    on c.cliente_id = pv.cliente_id
+                    left join almacenes alm
+                    on alm.almacen_id = pv.almacen_id
+                    where pv.tipo_docto = 'V'
+                    and pv.estatus = 'N'
+                    and  liga.docto_pv_liga_id is null
+                    ` ,
+                function (err, doctosVeDetDB) {
+                    if (err) {
+                       return reject(err)
+                    }
+
+                    console.log(doctosVeDetDB);
+                    
+
+                    let devoluciones = doctosVeDetDB.map(docto => {
+                        return {
+                            folio: docto.FOLIO !== null ? docto.FOLIO.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(docto.FECHA),
+                            nombre_cliente: docto.NOMBRE_CLIENTE,
+                            // estatus: docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
                             almacen: docto.ALMACEN,
                             importe_neto: docto.IMPORTE_NETO
                         }
@@ -3384,6 +3434,7 @@ module.exports = {
     obtenerDoctosPagos,
     obtenerDoctosVeDet,
     obtenerDevoluciones,
+    obtenerTicketsNoFacturados,
     // Mvtos
     obtenerNombreArticuloPorClave,
     obtenerArticulosReq,

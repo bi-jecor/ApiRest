@@ -441,6 +441,7 @@ const obtenerDoctosVeDet = (req = request, res = response) => {
             });
         })
 }
+
 const obtenerDevoluciones = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
@@ -452,6 +453,33 @@ const obtenerDevoluciones = (req = request, res = response) => {
         firebirdQuerys.obtenerDevoluciones('COLIMA', date),
         firebirdQuerys.obtenerDevoluciones('VILLA', date),
         firebirdQuerys.obtenerDevoluciones('COLINAS', date),
+
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            doctosVe: doctos
+        });
+    })
+        .catch(error => {
+            return res.status(500).json({
+                error
+            });
+        })
+}
+const obtenerTicketsNoFacturados = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.obtenerTicketsNoFacturados('AC', date),
+        firebirdQuerys.obtenerTicketsNoFacturados('G32', date),
+        firebirdQuerys.obtenerTicketsNoFacturados('CHAVEZC', date),
+        firebirdQuerys.obtenerTicketsNoFacturados('TURCIO', date),
+        firebirdQuerys.obtenerTicketsNoFacturados('PAEZ', date),
+        firebirdQuerys.obtenerTicketsNoFacturados('COLIMA', date),
+        firebirdQuerys.obtenerTicketsNoFacturados('VILLA', date),
+        firebirdQuerys.obtenerTicketsNoFacturados('COLINAS', date),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
@@ -486,5 +514,6 @@ module.exports = {
     obtenerDoctosVe,
     obtenerDoctosPagos,
     obtenerDoctosVeDet,
-    obtenerDevoluciones
+    obtenerDevoluciones,
+    obtenerTicketsNoFacturados
 }
