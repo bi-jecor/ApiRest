@@ -441,6 +441,33 @@ const obtenerDoctosVeDet = (req = request, res = response) => {
             });
         })
 }
+const obtenerDevoluciones = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.obtenerDevoluciones('AC', date),
+        firebirdQuerys.obtenerDevoluciones('G32', date),
+        firebirdQuerys.obtenerDevoluciones('CHAVEZC', date),
+        firebirdQuerys.obtenerDevoluciones('TURCIO', date),
+        firebirdQuerys.obtenerDevoluciones('PAEZ', date),
+        firebirdQuerys.obtenerDevoluciones('COLIMA', date),
+        firebirdQuerys.obtenerDevoluciones('VILLA', date),
+        firebirdQuerys.obtenerDevoluciones('COLINAS', date),
+
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            doctosVe: doctos
+        });
+    })
+        .catch(error => {
+            return res.status(500).json({
+                error
+            });
+        })
+}
 
 
 
@@ -459,4 +486,5 @@ module.exports = {
     obtenerDoctosVe,
     obtenerDoctosPagos,
     obtenerDoctosVeDet,
+    obtenerDevoluciones
 }

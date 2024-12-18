@@ -3012,6 +3012,55 @@ const obtenerDoctosVeDet = (connection) => {
     });
 }
 
+const obtenerDevoluciones = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                select
+                    ve.folio,
+                    ve.fecha,
+                    ve.importe_neto,
+                    alm.nombre as almacen,
+                    c.nombre AS nombre_cliente,
+                    ve.estatus
+                from doctos_ve ve
+                left join almacenes alm
+                on alm.almacen_id = ve.almacen_id
+                left join clientes c
+                on c.cliente_id = ve.cliente_id
+                where ve.tipo_docto = 'D'
+                and ve.cfdi_certificado = 'N'
+                    ` ,
+                function (err, doctosVeDetDB) {
+                    if (err) {
+                       return reject(err)
+                    }
+
+                    console.log(doctosVeDetDB);
+                    
+
+                    let devoluciones = doctosVeDetDB.map(docto => {
+                        return {
+                            folio: docto.FOLIO !== null ? docto.FOLIO.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(docto.FECHA),
+                            nombre_cliente: docto.NOMBRE_CLIENTE,
+                            estatus: docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
+                            almacen: docto.ALMACEN,
+                            importe_neto: docto.IMPORTE_NETO
+                        }
+                    })
+
+                    db.detach();
+                    resolve(devoluciones)
+                });
+        });
+    });
+}
+
 const obtenerNombreArticuloPorClave = (connection, clave) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
@@ -3153,6 +3202,7 @@ const obtenerTraspaso = (connection, folio) => {
                     on sd.sucursal_id = et.destino
                     where  trim(replace(substring(et.folio from 1 for 3), '0', '')) || cast(cast(substring(et.folio from 4 for 9) as int) as varchar(50))
                     = '${folio}'
+                    and et.tipo = 'E'
                 ` ,
                 function (err, arts ) {
                     if (err) {
@@ -3181,18 +3231,24 @@ const obtenerArticulosTraspaso = (connection, folio) => {
             }
             db.query(
                 `
-                select 
-                    trim(replace(substring(et.folio from 1 for 3), '0', ''))  || cast(cast(substring(et.folio from 4 for 9) as int) as varchar(50)) as folio,
+                select
+                    trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50)) as folio, 
                     a.nombre AS nombre_articulo, 
-                    etd.recibido,
-                    etd.clave_articulo AS claveArticulo
-                from exp_traspasos et
-                left join  exp_traspasos_det etd
-                on etd.exp_trasp_id = et.exp_trasp_id
+                    erd.clave_articulo as claveArticulo,
+                    erd.cantidad as solicitado,
+                    ceil(erd.cantidad/ a.contenido_unidad_compra) as cajas,
+                    exi.existencia,
+                    a.unidad_compra,
+                    a.contenido_unidad_compra
+                from exp_traspasos er
+                left join  exp_traspasos_det erd
+                on erd.exp_trasp_id = er.exp_trasp_id
                 left join articulos a
-                on a.articulo_id = etd.articulo_id
-                where  trim(replace(substring(et.folio from 1 for 3), '0', ''))  || cast(cast(substring(et.folio from 4 for 9) as int) as varchar(50))
-                    = '${folio}'
+                on a.articulo_id = erd.articulo_id
+                inner join EXIVAL_ART_UR2('1-ALMACEN CENTRO', current_date, 'N', 'S', 'S', 'S') exi
+                on exi.articulo_id  = erd.articulo_id
+                where  trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50))
+                = '${folio}'
                 ` ,
                 function (err, arts ) {
                     if (err) {
@@ -3202,12 +3258,66 @@ const obtenerArticulosTraspaso = (connection, folio) => {
                         return {
                             folio: art.FOLIO !== null ? art.FOLIO.toString('latin1') : '',
                             nombreArticulo: art.NOMBRE_ARTICULO,
-                            recibido: art.RECIBIDO !== null ? art.RECIBIDO : 0,
                             claveArticulo : art.CLAVEARTICULO !== null ? art.CLAVEARTICULO : 0,
+                            solicitado: art.SOLICITADO !== null ? art.SOLICITADO : 0,
+                            surtido: 0,
+                            cajas : art.CAJAS !== null ? art.CAJAS : 0,
+                            existencia : art.EXISTENCIA !== null ? art.EXISTENCIA : 0,
+                            nota : ''
                         }
-                    })
+                    });
                     db.detach();
-                    resolve(articulos[0])
+                    resolve(articulos)
+                });
+        });
+    });
+}
+
+
+
+
+const existenciaCedisYRuta = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    SELECT 
+                        cedis.nombre, 
+                        cedis.existencia, 
+                        ruta.existencia
+                    from
+                    (
+                        select * FROM EXIVAL_ART_UR2('ALMACEN GENERAL CEDIS', '10-DEC-2024', 'N', 'S', 'S', 'S')   exi
+                        where EXI.nombre IN ('GALL. CRACKETS 135 GR 1 PZA (20/22) GAMESA', 'AZUCAR STANDAR EMPACADA 1 KG (50/25)')
+                    ) cedis
+
+                    left join (
+                    SELECT * FROM EXIVAL_ART_UR2('ALMACEN GENERAL CEDIS', '10-DEC-2024', 'N', 'S', 'S', 'S') exi
+                    where EXI.nombre IN ('GALL. CRACKETS 135 GR 1 PZA (20/22) GAMESA', 'AZUCAR STANDAR EMPACADA 1 KG (50/25)')
+                    )  ruta
+                    on ruta.nombre = cedis.nombre
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let articulos = arts.map(art => {
+                        return {
+                            folio: art.FOLIO !== null ? art.FOLIO.toString('latin1') : '',
+                            nombreArticulo: art.NOMBRE_ARTICULO,
+                            claveArticulo : art.CLAVEARTICULO !== null ? art.CLAVEARTICULO : 0,
+                            solicitado: art.SOLICITADO !== null ? art.SOLICITADO : 0,
+                            surtido: 0,
+                            cajas : art.CAJAS !== null ? art.CAJAS : 0,
+                            existencia : art.EXISTENCIA !== null ? art.EXISTENCIA : 0,
+                            nota : ''
+                        }
+                    });
+                    db.detach();
+                    resolve(arts)
                 });
         });
     });
@@ -3273,12 +3383,14 @@ module.exports = {
     obtenerDoctosVe,
     obtenerDoctosPagos,
     obtenerDoctosVeDet,
+    obtenerDevoluciones,
     // Mvtos
     obtenerNombreArticuloPorClave,
     obtenerArticulosReq,
     obtenerRequerimiento,
     obtenerTraspaso,
-    obtenerArticulosTraspaso
+    obtenerArticulosTraspaso,
+    existenciaCedisYRuta
 
 
 }

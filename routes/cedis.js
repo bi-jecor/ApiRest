@@ -148,6 +148,7 @@ router.get('/getArticleStockByWarehouse/:articleCode', getArticleStockByWarehous
 router.get('/getJecStockListExisByWarehouse', getJecStockListExisByWarehouse);
 router.get('/getJecStockListGraphByWarehouse', getJecStockListGraphByWarehouse);
 router.get('/listaPrecios', obtenerListaPrecios);
+router.get('/existenciaCedisRuta', obtenerListaPrecios);
 
 
 

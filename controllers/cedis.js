@@ -2012,6 +2012,7 @@ const getMarks = (req, res) => {
             });
         });
     }
+
     const updateArticleToHealer = (req, res=response) => {
         const {article, user} = req.body;
         const conection = req.params.conection;
@@ -2203,6 +2204,18 @@ const getMarks = (req, res) => {
                 emptys: emptys.trim()
             });
         })
+    }
+
+    const existenciaCedisYRuta = (req, res=response) => {
+        const conection = req.params.conection;
+        const subcategoriesData = req.body;
+        console.log('insert subcategories', subcategoriesData);
+        firebirdQuerys.existenciaCedisYRuta(conection, subcategoriesData).then( msg => {
+            return res.json({
+                ok: true,
+                msg
+            });
+        });
     }
 
 module.exports = {

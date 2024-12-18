@@ -11,7 +11,8 @@ const { getAllProvidersCharges,
     obtenerPagos,
     obtenerDoctosVe,
     obtenerDoctosPagos,
-    obtenerDoctosVeDet,   
+    obtenerDoctosVeDet, 
+    obtenerDevoluciones  
 } = require('../controllers/accountingReports')
 
 const router = Router();
@@ -30,6 +31,7 @@ router.get('/doctosPagos/:fecha/:fechaFin', obtenerDoctosPagos );
 
 
 router.get('/doctosVeDet/', obtenerDoctosVeDet );
+router.get('/obtenerDevoluciones/', obtenerDevoluciones );
 
 router.get('/getCustomersBalancesHis/', getCustomersBalancesHis );
 router.get('/getAllProvidersChargesCxpHis/', getAllProvidersChargesCxpHis );

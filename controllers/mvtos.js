@@ -44,21 +44,22 @@ const  obtenerRequerimiento = (req = request, res = response) => {
 
 const  obtenerTraspaso = (req = request, res = response) => {
         const {folio} = req.params;
-        firebirdQuerys.obtenerTraspaso( 'AC', folio )
+        firebirdQuerys.obtenerTraspaso( 'G32', folio )
         .then(data => {
             return res.json({
                 data,
             });
-        })
+        });
 }
+
 const  obtenerArticulosTraspaso = (req = request, res = response) => {
         const {folio} = req.params;
-        firebirdQuerys.obtenerArticulosTraspaso( 'AC', folio )
+        firebirdQuerys.obtenerArticulosTraspaso( 'G32', folio )
         .then(data => {
             return res.json({
                 data,
             });
-        })
+        });
 }
 
 
