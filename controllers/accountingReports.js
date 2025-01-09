@@ -114,6 +114,8 @@ const getCustomersToSap = (req, res = response) => {
         firebirdQuerys.getCustomersToSap('TURCIO'),
         firebirdQuerys.getCustomersToSap('PAEZ'),
     ]).then((values) => {
+        console.log(values);
+        
         let data = [];
         let dataUnify = [];
         let fails = ''
@@ -121,18 +123,20 @@ const getCustomersToSap = (req, res = response) => {
             if (element.status !== 'rejected') {
                 data = [...data, ...element.value]
             } else {
-                console.log(element);
+                // console.log(element);
                 fails = fails + ' ' + element.reason.connection;
             }
         });
 
         data.forEach(customer => {
-            const exist = dataUnify.find(item => item.name === customer.name && item.rfc === customer.rfc);
-
+            const exist = dataUnify.find(item => item.cardName === customer.cardName && item.federalTax === customer.federalTax);
             if (exist === undefined) {
+                console.log('no existe', customer);
+                
                 dataUnify.push(customer)
             }
-        })
+        });
+
         return res.json({
             data: dataUnify,
             fails: fails.trim(),
@@ -148,7 +152,7 @@ const getProvidersToSap = (req, res = response) => {
         firebirdQuerys.getProvidersToSap('VILLA'),
         firebirdQuerys.getProvidersToSap('COLINAS'),
         firebirdQuerys.getProvidersToSap('TURCIO'),
-        // firebirdQuerys.getProvidersToSap('PAEZ'),
+        firebirdQuerys.getProvidersToSap('PAEZ'),
     ]).then((values) => {
         console.log(values);
         let data = [];
@@ -356,7 +360,6 @@ const obtenerPagos = (req = request, res = response) => {
         })
 }
 
-
 const obtenerDoctosVe = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
@@ -469,6 +472,7 @@ const obtenerDevoluciones = (req = request, res = response) => {
             });
         })
 }
+
 const obtenerTicketsNoFacturados = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([

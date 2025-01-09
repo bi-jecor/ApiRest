@@ -2099,9 +2099,9 @@ const getCustomersToSap = (connection) => {
                 }
                 return reject(error)
             }
-            db.execute(
-                `
-select
+            db.query(
+                `  
+                    select
             c.cliente_id,
             trim(c.nombre) as nombre,
             trim('C') as serie ,
@@ -2116,8 +2116,8 @@ select
             c.codigo_postal,
             c.ciudad,
             c.poblacion,
-            trim(c.pais),
-            c.estado,
+            trim(c.pais) as pais,
+            COALESCE(c.estado, '') as estado,
             c.num_exterior,
             c.num_interior,
             c.telefono1,
@@ -2193,38 +2193,38 @@ select
             on p.cliente_id = c.cliente_id
             left join precios_empresa pre
             on p.precio_empresa_id = pre.precio_empresa_id   
-
                 ` ,
                 function (err, customersDB) {
                     console.log('err', err);
-                    console.log('DB', customersDB);
+                    // console.log('DB', customersDB);
                     if (err) {
                         reject(err)
                     }
                     let customers = customersDB.map(customer => {
                         return {
-                            name: customer[1],
-                            serie: customer[2],
-                            group: customer[3],
-                            list: customer[4],
-                            cond: customer[5] !== null ? obtenerDias(customer[5].toString('latin1')) : '',
-                            rfc: customer[6].toString('latin1'),
-                            account: customer[7],
-                            cfdi: 'G03',
-                            fiscal: customer[8],
-                            street: customer[9] !== null ? customer[9].toString('latin1').split("\n").join(" ").split("\r").join("") : '',
-                            block: customer[10] !== null ? customer[10].toString('latin1') : '',
-                            zipCode: customer[11] !== null ? customer[11].toString('latin1') : '',
-                            city: customer[12] !== null ? customer[12].toString('latin1') : '',
-                            county: customer[13] !== null ? customer[13].toString('latin1') : '',
-                            country: customer[14] !== null ? customer[14].toString('latin1') : '',
-                            state: customer[15] !== null ? customer[15].toString('latin1') : '',
-                            buildingFloorRoom: customer[16] !== null ? customer[16].toString('latin1') : '',
-                            streetNo: customer[17] !== null ? customer[17].toString('latin1') : '',
-                            phone: customer[18] !== null ? customer[18].toString('latin1') : '',
-                            connection: connection,
-                            email : customer[19] !== null ? customer[19].toString('latin1') : '',
-                            limite_credito : customer[20] ,
+                            cardName: customer.NOMBRE,
+                            serie: customer.SERIE,
+                            groupCode: customer.GRUPO,
+                            list: customer.LISTA_PRECIOS,
+                            payTermsGrpCode: customer[5] !== null ? customer.COND_PAGO.toString('latin1')  : '',
+                            federalTaxID: customer.RFC.toString('latin1'),
+                            debitorAccount: customer.CUENTA,
+                            wTCode: 'G03',
+                            fiscal: customer.CLAVE_REGIMEN_FISCAL,
+                            street: customer.CALLE !== null ? customer.CALLE.toString('latin1').split("\n").join(" ").split("\r").join("") : '',
+                            block: customer.COLONIA !== null ? customer.COLONIA.toString('latin1') : '',
+                            zipCode: customer.CODIGO_POSTAL !== null ? customer.CODIGO_POSTAL.toString('latin1') : '',
+                            city: customer.CIUDAD !== null ? customer.CIUDAD.toString('latin1') : '',
+                            county: customer.POBLACION !== null ? customer.POBLACION.toString('latin1') : '',
+                            country: customer.PAIS !== null ? customer.PAIS.toString('latin1') : '',
+                            state: customer.ESTADO,
+                            buildingFloorRoom: customer.NUM_EXTERIOR !== null ? customer.NUM_EXTERIOR.toString('latin1') : '',
+                            streetNo: customer.NUM_INTERIOR !== null ? customer.NUM_INTERIOR.toString('latin1') : '',
+                            // streetNo: customer[17] !== null ? customer[17].toString('latin1') : '',
+                            phone1: customer.TELEFONO1 !== null ? customer.TELEFONO1.toString('latin1') : '',
+                            db: connection,
+                            email : customer.EMAIL !== null ? customer.EMAIL.toString('latin1') : '',
+                            creditLimit : customer.LIMITE_CREDITO
                         }
                     })
 
@@ -2247,104 +2247,85 @@ const getProvidersToSap = (connection) => {
                 }
                 return reject(error)
             }
-            db.execute(
+            db.query(
                 `
-                    select distinct
-                        '' as cardCode,
-                        p.nombre as cardName,
-                        trim('P') as serie,
-                        '' as cardType,
-                        trim('Compras') as GroupCode,
-                        p.telefono1 as phone1,
-                        p.telefono2 as phone2,
-                        p.fax,
-                        cast(p.email as varchar(100)) as email,
-                        cast(cond.nombre as varchar(50))  as payTerms,
-                        cast(p.rfc_curp as varchar(50)) as FederalTax,
-                        trim('201-101-000 - PROVEEDORES NACIONALES') as creditorAccount,
-                        trim('Lista de precios compra') as listname,
-                        '' as wTCode,
-                        '' as VatGroupLatinAmerica,
-                        '' as properties1,
-                        '' as properties2,
-                        '' as properties3,
-                        '' as properties4,
-                        '' as properties5,
-                        '' as properties6,
-                        '' as properties7,
-                        '' as properties8,
-                        '' as properties9,
-                        '' as properties10,
-                        '' as properties11,
-                        '' as properties12,
-                        '' as properties13,
-                        '' as properties14,
-                        '' as properties15,
-                        '' as properties16,
-                        '' as properties17,
-                        '' as properties18,
-                        '' as properties19,
-                        '' as regimen,
-                        trim('Otros' ) as providerType,
-                        trim('Nacional' ) as Nationality,
-                        trim('Transferencia') as payment,
-                        trim('G01') as cfdi_a_doctos_proc_cancel, 
-                        p.limite_credito
-                    from DOCTOS_CM cm
-                    join proveedores p
-                    on p.PROVEEDOR_ID = cm.proveedor_id
-                    left join condiciones_pago_cp cond
-                    on cond.cond_pago_id = p.cond_pago_id
-                    WHERE cm.fecha > '01.01.2023'         
-                    ` ,
+                SELECT
+                    '' as cardCode,
+                    p.nombre as cardName,
+                    cast(tp.nombre as varchar(200)) as groupCode,
+                    coalesce(p.telefono1, '') as phone1,
+                    coalesce(p.telefono2, '') as phone2,
+                    cast(p.email as varchar(100)) as email,
+                    cast(cond.nombre as varchar(50))  as payTermsGrpCode,
+                    cast(p.rfc_curp as varchar(50)) as FederalTaxID,
+                    trim('201101000') as debitorAccount,
+                    '' as wTCode,
+                    '' as typeCommercialOp,
+                    trim('Transferencia') as paymentMethod,
+                    '' as cfdi,
+                    p.limite_credito as creditLimit,
+                    trim('Nacional') as diot,
+                    trim('Otros') as diotType,
+                    trim('MEXICANA') as diotNationality,
+                    trim('FISCAL') as AddressName,
+                    trim('FISCAL') as addressType,
+                    p.nombre_calle as street,
+                    P.colonia AS BLOCK,
+                    P.codigo_postal as zipCode,
+                    cd.nombre as city,
+                    pais.nombre as country,
+                    e.nombre as state,
+                    p.num_exterior as buildingFloorRoom,
+                    p.num_interior as streetNo
+                FROM doctos_cm cm
+                LEFT JOIN proveedores p ON cm.proveedor_id = p.proveedor_id
+                left join condiciones_pago_cp cond
+                on cond.cond_pago_id = p.cond_pago_id
+                left join tipos_prov tp
+                on p.tipo_prov_id = tp.tipo_prov_id
+                left join ciudades cd
+                on cd.ciudad_id = p.ciudad_id
+                left join paises pais
+                on pais.pais_id = p.pais_id
+                left join estados e
+                on e.estado_id = p.estado_id
+                WHERE cm.fecha > '01.01.2023'
+                ` ,
                 function (err, providersDB) {
                     if (err) {
+            
                         reject(err)
                     }
-                    console.log(connection, providersDB);
+                    console.log(connection, err);
                     const providers = providersDB.map(provider => {
                         return {
-                            cardCode: provider[0],
-                            cardName: provider[1],
-                            serie: provider[2],
-                            cardType: provider[3],
-                            groupCode: provider[4],
-                            phone1: provider[5] !== null ? provider[5].toString('latin1') : '',
-                            phone2: provider[6] !== null ? provider[6].toString('latin1') : '',
-                            fax: provider[7] !== null ? provider[7].toString('latin1') : '',
-                            email: provider[8] !== null ? provider[8].toString('latin1') : '',
-                            payterms: provider[9] !== null ? provider[9].toString('latin1') : '',
-                            federalTax: provider[10] !== null ? provider[10].toString('latin1') : '',
-                            creditorAccount: provider[11] !== null ? provider[11].toString('latin1') : '',
-                            listname: provider[12] !== null ? provider[12].toString('latin1') : '',
-                            wTCode: provider[13] !== null ? provider[13].toString('latin1') : '',
-                            vatGroupLatinAmerica: provider[14] !== null ? provider[14].toString('latin1') : '',
-                            properties1: provider[15] !== null ? provider[15].toString('latin1') : '',
-                            properties2: provider[16] !== null ? provider[16].toString('latin1') : '',
-                            properties3: provider[17] !== null ? provider[17].toString('latin1') : '',
-                            properties4: provider[18] !== null ? provider[18].toString('latin1') : '',
-                            properties5: provider[19] !== null ? provider[19].toString('latin1') : '',
-                            properties6: provider[20] !== null ? provider[20].toString('latin1') : '',
-                            properties7: provider[21] !== null ? provider[21].toString('latin1') : '',
-                            properties8: provider[22] !== null ? provider[22].toString('latin1') : '',
-                            properties9: provider[23] !== null ? provider[23].toString('latin1') : '',
-                            properties10: provider[24] !== null ? provider[24].toString('latin1') : '',
-                            properties11: provider[25] !== null ? provider[25].toString('latin1') : '',
-                            properties12: provider[26] !== null ? provider[26].toString('latin1') : '',
-                            properties13: provider[27] !== null ? provider[27].toString('latin1') : '',
-                            properties14: provider[28] !== null ? provider[28].toString('latin1') : '',
-                            properties15: provider[29] !== null ? provider[29].toString('latin1') : '',
-                            properties16: provider[30] !== null ? provider[30].toString('latin1') : '',
-                            properties17: provider[31] !== null ? provider[31].toString('latin1') : '',
-                            properties18: provider[32] !== null ? provider[32].toString('latin1') : '',
-                            properties19: provider[33] !== null ? provider[33].toString('latin1') : '',
-                            regimen: provider[34] !== null ? provider[34].toString('latin1') : '',
-                            providerType: provider[35],
-                            nationality: provider[36],
-                            payment: provider[37],
-                            cfdi: provider[38],
-                            limit: provider[39],
-                            db: connection,
+                            cardCode: provider.CARDCODE,
+                            cardName: provider.CARDNAME,
+                            groupCode: provider.GROUPCODE,
+                            phone1: provider.PHONE1,
+                            phone2: provider.PHONE2,
+                            email: provider.EMAIL,
+                            payTermsGrpCode: obtenerDias(provider.PAYTERMSGRPCODE),
+                            federalTaxID: provider.FEDERALTAXID,
+                            debitorAccount: provider.DEBITORACCOUNT,
+                            wTCode: provider.WTCODE,
+                            typeCommercialOp: provider.TYPECOMMERCIALOP,
+                            paymentMethod: provider.PAYMENTMETHOD,
+                            cfdi: provider.CFDI,
+                            creditLimit: provider.CREDITLIMIT,
+                            diot: provider.DIOT,
+                            diotType: provider.DIOTTYPE,
+                            diotNationality: provider.DIOTNATIONALITY,
+                            addressName: provider.ADDRESSNAME,
+                            addressType: provider.ADDRESSTYPE,
+                            street: provider.STREET !== null ? provider.STREET.toString('latin1') : '', 
+                            block: provider.BLOCK !== null ? provider.BLOCK.toString('latin1') : '',
+                            zipCode: provider.ZIPCODE !== null ? provider.ZIPCODE.toString('latin1') : '',
+                            city: provider.CITY,
+                            country: provider.COUNTRY !== null ? provider.COUNTRY.toString('latin1') : '',
+                            state: provider.STATE !== null ? provider.STATE.toString('latin1') : '',
+                            buildingFloorRoom: provider.BUILDINGFLOORROOM !== null ? provider.BUILDINGFLOORROOM.toString('latin1') : '',
+                            streetNo: provider.STREETNO !== null ? provider.STREETNO.toString('latin1') : '',
                         }
                     });
                     db.detach();
@@ -2418,9 +2399,7 @@ const getProvidersChargesCxp = (connection) => {
                             // tipo_provedor : charge[20] !== null ? charge[20].toString('latin1') : '',
                         }
                     })
-
                     //console.log('cargos',charges[0]);
-
                     let data = {
                         charges,
                         connection
@@ -2488,9 +2467,6 @@ const getProvidersChargesCxpSap = (connection) => {
                             taxcode: charge.IMPUESTO !== null ? charge.IMPUESTO.toString('latin1') : '',
                         }
                     })
-
-                    //console.log('cargos',charges[0]);
-
                     let data = {
                         charges,
                         connection
@@ -2688,7 +2664,6 @@ const obtenerPagos = (connection) => {
 
 // Obtener la factura de Pv y Ve con estatus normal
 const obtenerDoctosVe = (connection) => {
- 
     return new Promise((resolve, reject) => {      
             firebird.attach(conections[connection], async function (err, db) {              
 
@@ -2866,7 +2841,6 @@ const obtenerDoctosVe = (connection) => {
 }
 
 const obtenerDoctosPagos = (connection, fecha, fechaFin) => {
-    
     return new Promise((resolve, reject) => {
 
         firebird.attach(conections[connection], function (err, db) {
@@ -3060,6 +3034,7 @@ const obtenerDevoluciones = (connection) => {
         });
     });
 }
+
 const obtenerTicketsNoFacturados = (connection) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
@@ -3139,7 +3114,6 @@ const obtenerNombreArticuloPorClave = (connection, clave) => {
         });
     });
 }
-
 
 const obtenerArticulosReq = (connection, folio) => {
     return new Promise((resolve, reject) => {
@@ -3323,9 +3297,6 @@ const obtenerArticulosTraspaso = (connection, folio) => {
     });
 }
 
-
-
-
 const existenciaCedisYRuta = (connection, folio) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
@@ -3435,6 +3406,7 @@ module.exports = {
     obtenerDoctosVeDet,
     obtenerDevoluciones,
     obtenerTicketsNoFacturados,
+    
     // Mvtos
     obtenerNombreArticuloPorClave,
     obtenerArticulosReq,

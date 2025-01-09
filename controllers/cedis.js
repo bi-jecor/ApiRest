@@ -821,7 +821,11 @@ const updateJecInventarioArticuloCantidad = (req, res) => {
 
 const getExistencias = (req, res) => {
     const microsipName = req.params.microsipName;
-    const conectionName = req.params.conectionName;
+    let conectionName = req.params.conectionName;
+    if (conectionName === 'CHAVEZ') {
+        conectionName = 'CHAVEZC'
+    }
+    
     const date = `${new Date().getDate()}.${new Date().getMonth() + 1 }.${new Date().getFullYear()}`
     console.log(date);
     firebird.attach(conections[conectionName], function(err, db) {
@@ -1005,7 +1009,8 @@ const getFullCatalog3 = (req, res) => {
                                 console.log('err',err);
                             }
                             console.log("[ GETFULLCATALOG3 ] CATALOG WAS REQUEST SUCCESSFULL " + new Date() );
-            
+                            console.log('data',data);
+                            
                             let catalogo = []
                             if(data){
                                 data.forEach(element => {
