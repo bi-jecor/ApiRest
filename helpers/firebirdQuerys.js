@@ -2628,12 +2628,12 @@ const obtenerPagos = (connection) => {
                     inner join
                         (
                         Select ve.folio, ve.cond_pago_id from doctos_ve  ve
-                            where ve.fecha >= '01.01.2024'
+                            where ve.fecha >= '01.08.2024'
                         )  ve
                     on ve.folio = f.folio
                     left join condiciones_pago cp
                     on cp.cond_pago_id = ve.cond_pago_id
-                    where cc.fecha >= '01.01.2024'
+                    where cc.fecha >= '01.08.2024'
                     and c.nombre in ('Pagos', 'Abonos')
                     and cc.estatus = 'N'
                     and cc.cancelado <> 'S'
