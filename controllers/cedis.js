@@ -1126,7 +1126,7 @@ const getCatalogForPriceChecker = (req, res) => {
                                         purchaseUnit: element[5] = element[5] !== null ? element[5].toString('utf8') : 'Null',
                                         saleUnit: element[6] = element[6] !== null ? element[6].toString('utf8') : 'Null',
                                         principal: element[9],
-                                        contenido: element[9],
+                                        contenido: element[10],
                                     }
                                     
                                     catalogo.push(newElement)
