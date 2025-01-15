@@ -1110,6 +1110,8 @@ const getCatalogForPriceChecker = (req, res) => {
                                     where claves_articulos.rol_clave_art_id in (17, 18, 288) 
                                 `,
                         function(err, data) {
+                            console.log(data);
+                            
                             if(err){
                                 console.log('err',err);
                             }
@@ -1143,7 +1145,7 @@ const getCatalogForPriceChecker = (req, res) => {
             db.execute(`
                             select getArtImpt.articulo_id, getArtImpt.clave_articulo, getArtImpt.nombre_articulo, getArtImpt.precio_lista,
                             getArtImpt.precio_mayoreo, articulos.unidad_compra, articulos.unidad_venta, articulos.linea_articulo_id,
-                            claves_articulos.rol_clave_art_id   ,  cap.clave_articulo
+                            claves_articulos.rol_clave_art_id   ,  cap.clave_articulo, articulos.contenido_unidad_compra
                             from get_precios_articulos_con_impto as getArtImpt
                             left join articulos on getArtImpt.articulo_id = articulos.articulo_id
                             left join claves_articulos on getArtImpt.clave_articulo = claves_articulos.clave_articulo
@@ -1174,6 +1176,7 @@ const getCatalogForPriceChecker = (req, res) => {
                                 // location: '------------',
                                 // category: element[7] = element[7] !== null ? element[7] : 'Null',
                                 principal: element[9],
+                                contenido: element[10],
                             }
                             
                             catalogo.push(newElement)
