@@ -51,7 +51,7 @@ const getProvidersCharges = (connection, date) => {
                             connection
                         }
                         db.detach();
-                        resolve(data)
+                        resolve(data);
                         // return res.json({
                         //     data
                         // })
