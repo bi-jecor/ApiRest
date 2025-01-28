@@ -328,6 +328,7 @@ const getCustomersBalances = (conection, date) => {
         });
     });
 }
+
 const getCustomersBalances2 = (conection, date) => {
     console.log('2');
     return new Promise((resolve, reject) => {
@@ -404,6 +405,7 @@ const getCustomersBalances2 = (conection, date) => {
         });
     });
 }
+
 const getCustomersBalancesHis = (conection, date) => {
     console.log('2');
 
@@ -525,6 +527,7 @@ const getCustomersBalancesHis = (conection, date) => {
         });
     });
 }
+
 const getCustomersBalancesToday = (conection) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], async function (err, db) {
@@ -604,7 +607,6 @@ const getCustomersBalancesToday = (conection) => {
         });
     });
 }
-
 
 const getCmTotal = (conection, date1, date2) => {
     console.log(conection, date1, date2);
@@ -2258,7 +2260,7 @@ const getProvidersToSap = (connection) => {
                     cast(p.email as varchar(100)) as email,
                     cast(cond.nombre as varchar(50))  as payTermsGrpCode,
                     cast(p.rfc_curp as varchar(50)) as FederalTaxID,
-                    trim('201101000') as debitorAccount,
+                    trim('21010101') as debitorAccount,
                     '' as wTCode,
                     '' as typeCommercialOp,
                     trim('Transferencia') as paymentMethod,
@@ -2977,8 +2979,7 @@ const obtenerDoctosVeDet = (connection) => {
                             unidades: docto.UNIDADES !== null ? docto.UNIDADES : 0.00,
                             sucursal: obtenerSucursalPorFolio(docto.SERIE)
                         }
-                    })
-
+                    });
                     db.detach();
                     resolve(doctosVeDet)
                 });
@@ -3024,7 +3025,8 @@ const obtenerDevoluciones = (connection) => {
                             nombre_cliente: docto.NOMBRE_CLIENTE,
                             estatus: docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
                             almacen: docto.ALMACEN,
-                            importe_neto: docto.IMPORTE_NETO
+                            importe_neto: docto.IMPORTE_NETO,
+                            db : connection
                         }
                     })
 
@@ -3075,7 +3077,8 @@ const obtenerTicketsNoFacturados = (connection) => {
                             nombre_cliente: docto.NOMBRE_CLIENTE,
                             // estatus: docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
                             almacen: docto.ALMACEN,
-                            importe_neto: docto.IMPORTE_NETO
+                            importe_neto: docto.IMPORTE_NETO,
+                            db : connection
                         }
                     })
 
