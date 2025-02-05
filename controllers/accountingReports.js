@@ -502,6 +502,35 @@ const obtenerTicketsNoFacturados = (req = request, res = response) => {
 }
 
 
+const obtenerComplementos = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.obtenerComplementos('AC', date),
+        firebirdQuerys.obtenerComplementos('G32', date),
+        firebirdQuerys.obtenerComplementos('CHAVEZC', date),
+        firebirdQuerys.obtenerComplementos('TURCIO', date),
+        firebirdQuerys.obtenerComplementos('PAEZ', date),
+        firebirdQuerys.obtenerComplementos('COLIMA', date),
+        firebirdQuerys.obtenerComplementos('VILLA', date),
+        firebirdQuerys.obtenerComplementos('COLINAS', date),
+
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            doctosVe: doctos
+        });
+    })
+        .catch(error => {
+            return res.status(500).json({
+                error
+            });
+        })
+}
+
+
 
 module.exports = {
     getAllProvidersCharges,
@@ -519,5 +548,6 @@ module.exports = {
     obtenerDoctosPagos,
     obtenerDoctosVeDet,
     obtenerDevoluciones,
-    obtenerTicketsNoFacturados
+    obtenerTicketsNoFacturados,
+    obtenerComplementos
 }
