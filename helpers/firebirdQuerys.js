@@ -9,6 +9,7 @@ const formatDate = require('../helpers/formatDate');
 const { obtenerSucursalPorFolio } = require('./sucursalPorFolio');
 const { dosDecimales } = require('./redondeo');
 const { obtenerDias } = require('./formatearTexto');
+const e = require('express');
 
 
 const getDataToPolicyTest = (conection, date1, date2) => {
@@ -3088,6 +3089,48 @@ const obtenerTicketsNoFacturados = (connection) => {
         });
     });
 }
+const obtenerComplementos = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {  
+                console.log(err);
+                              
+                return reject(err)
+            }
+            db.query(
+                `
+                    select cc.folio,
+                        concep.nombre,
+                        cc.fecha,
+                        cc.cfdi_certificado,
+                        cc.estatus
+                    from doctos_cc cc
+                    left join conceptos_cc concep
+                    on concep.concepto_cc_id = cc.concepto_cc_id
+                    where concep.nombre = 'Pagos' and
+                    cc.fecha between '01.01.2024' and  current_date
+                    and cc.modalidad_facturacion = 'CFDI'
+                    ` ,
+                function (err, complementosDb) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let complementos = complementosDb.map(complemento => {
+                        return {
+                            folio: complemento.FOLIO !== null ? complemento.FOLIO.toString('latin1') : '',
+                            cfdi_certificado: complemento.CFDI_CERTIFICADO !== null ? complemento.CFDI_CERTIFICADO.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(complemento.FECHA),
+                            estatus: complemento.ESTATUS !== null ? complemento.ESTATUS.toString('latin1') : '',
+                            db : connection
+                        }
+                    });
+
+                    db.detach();
+                    resolve(complementos)
+                });
+        });
+    });
+}
 
 const obtenerNombreArticuloPorClave = (connection, clave) => {
     return new Promise((resolve, reject) => {
@@ -3409,6 +3452,7 @@ module.exports = {
     obtenerDoctosVeDet,
     obtenerDevoluciones,
     obtenerTicketsNoFacturados,
+    obtenerComplementos,
     
     // Mvtos
     obtenerNombreArticuloPorClave,
