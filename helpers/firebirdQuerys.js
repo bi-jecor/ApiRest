@@ -3099,25 +3099,33 @@ const obtenerComplementos = (connection) => {
             }
             db.query(
                 `
-                    select cc.folio,
+                    select
+                        cc.folio,
                         concep.nombre,
                         cc.fecha,
                         cc.cfdi_certificado,
+                        Sum(icc.importe) as importe,
                         cc.estatus
                     from doctos_cc cc
                     left join conceptos_cc concep
                     on concep.concepto_cc_id = cc.concepto_cc_id
+                    left join importes_doctos_cc icc
+                    on icc.docto_cc_id = cc.docto_cc_id
                     where concep.nombre = 'Pagos' and
                     cc.fecha between '01.01.2024' and  current_date
                     and cc.modalidad_facturacion = 'CFDI'
+                    group by cc.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.estatus
                     ` ,
                 function (err, complementosDb) {
                     if (err) {
                        return reject(err)
                     }
+                    console.log(complementosDb);
+                    
                     let complementos = complementosDb.map(complemento => {
                         return {
                             folio: complemento.FOLIO !== null ? complemento.FOLIO.toString('latin1') : '',
+                            importe : complemento.IMPORTE,
                             cfdi_certificado: complemento.CFDI_CERTIFICADO !== null ? complemento.CFDI_CERTIFICADO.toString('latin1') : '',
                             fecha: formatDate.formatDateToString(complemento.FECHA),
                             estatus: complemento.ESTATUS !== null ? complemento.ESTATUS.toString('latin1') : '',
