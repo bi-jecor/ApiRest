@@ -3104,13 +3104,37 @@ const obtenerComplementos = (connection) => {
                         concep.nombre,
                         cc.fecha,
                         cc.cfdi_certificado,
-                        Sum(icc.importe) as importe,
-                        cc.estatus
+                        cc.estatus,
+                        sum(icc.importe) as importe,
+                        sum(coalesce(iva.importe,0)) as iva,
+                        sum(coalesce(ieps.importe,0)) as ieps
                     from doctos_cc cc
                     left join conceptos_cc concep
                     on concep.concepto_cc_id = cc.concepto_cc_id
                     left join importes_doctos_cc icc
                     on icc.docto_cc_id = cc.docto_cc_id
+                    left join (
+                        select
+                            ccimp.impte_docto_cc_id,
+                            Sum(ccimp.impuesto) as importe
+                        from importes_doctos_cc_imptos ccimp
+                        left join impuestos imp
+                        on ccimp.impuesto_id = imp.impuesto_id
+                        where imp.tipo_impto_id = 44
+                        group by ccimp.impte_docto_cc_id
+                        ) iva
+                    on iva.impte_docto_cc_id = icc.impte_docto_cc_id
+                    left join (
+                        select
+                            ccimp.impte_docto_cc_id,
+                            Sum(ccimp.impuesto) as importe
+                        from importes_doctos_cc_imptos ccimp
+                        left join impuestos imp
+                        on ccimp.impuesto_id = imp.impuesto_id
+                        where imp.tipo_impto_id = 45
+                        group by ccimp.impte_docto_cc_id
+                        ) ieps
+                    on ieps.impte_docto_cc_id = icc.impte_docto_cc_id
                     where concep.nombre = 'Pagos' and
                     cc.fecha between '01.01.2024' and  current_date
                     and cc.modalidad_facturacion = 'CFDI'
@@ -3126,6 +3150,8 @@ const obtenerComplementos = (connection) => {
                         return {
                             folio: complemento.FOLIO !== null ? complemento.FOLIO.toString('latin1') : '',
                             importe : complemento.IMPORTE,
+                            iva : complemento.IVA,
+                            ieps : complemento.IEPS,
                             cfdi_certificado: complemento.CFDI_CERTIFICADO !== null ? complemento.CFDI_CERTIFICADO.toString('latin1') : '',
                             fecha: formatDate.formatDateToString(complemento.FECHA),
                             estatus: complemento.ESTATUS !== null ? complemento.ESTATUS.toString('latin1') : '',
