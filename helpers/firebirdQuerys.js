@@ -358,7 +358,7 @@ const getCustomersBalances2 = (conection, date) => {
             db.query(
                 `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
-                    FROM cargos_cliente_jgb('31.12.2024', '31.12.2024', 'N', 'N') A
+                    FROM cargos_cliente_jgb('07.02.2025', '07.02.2025', 'N', 'N') A
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -3038,10 +3038,12 @@ const obtenerDevoluciones = (connection) => {
     });
 }
 
-const obtenerTicketsNoFacturados = (connection) => {
+const obtenerTicketsNoFacturados = (connection, fechaInicio, fechaFin) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
-            if (err) {                
+            if (err) {     
+                console.log(err);
+                           
                 return reject(err)
             }
             db.query(
@@ -3051,7 +3053,10 @@ const obtenerTicketsNoFacturados = (connection) => {
                         pv.fecha,
                         pv.importe_neto + pv.total_impuestos as importe_neto,
                         c.nombre AS nombre_cliente,
-                        alm.nombre as almacen
+                        alm.nombre as almacen,
+                        trim(coalesce(factura.folio,'')) as folio_factura,
+                        pv.estatus,
+                        trim(coalesce(factura.cfdi_certificado,'')) as cfdi_certificado
                     from doctos_PV pv
                     left join  doctos_pv_ligas liga
                     on liga.docto_pv_fte_id = pv.docto_pv_id
@@ -3059,16 +3064,20 @@ const obtenerTicketsNoFacturados = (connection) => {
                     on c.cliente_id = pv.cliente_id
                     left join almacenes alm
                     on alm.almacen_id = pv.almacen_id
+                    left join (
+                        select pv.docto_pv_id, folio, pv.cfdi_certificado from doctos_pv pv
+                    )  factura
+                    on factura.docto_pv_id = liga.docto_pv_dest_id
                     where pv.tipo_docto = 'V'
-                    and pv.estatus = 'N'
-                    and  liga.docto_pv_liga_id is null
+                    and pv.FECHA BETWEEN '${fechaInicio}' AND '${fechaFin}'
                     ` ,
                 function (err, doctosVeDetDB) {
                     if (err) {
+                        console.log(err);
                        return reject(err)
                     }
 
-                    console.log(doctosVeDetDB);
+                    // console.log(doctosVeDetDB);
                     
 
                     let devoluciones = doctosVeDetDB.map(docto => {
@@ -3076,9 +3085,11 @@ const obtenerTicketsNoFacturados = (connection) => {
                             folio: docto.FOLIO !== null ? docto.FOLIO.toString('latin1') : '',
                             fecha: formatDate.formatDateToString(docto.FECHA),
                             nombre_cliente: docto.NOMBRE_CLIENTE,
-                            // estatus: docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
                             almacen: docto.ALMACEN,
+                            estatus: docto.ESTATUS.toString('latin1'),
                             importe_neto: docto.IMPORTE_NETO,
+                            folio_factura: docto.FOLIO_FACTURA,
+                            cfdi_certificado: docto.CFDI_CERTIFICADO,
                             db : connection
                         }
                     })
@@ -3089,6 +3100,8 @@ const obtenerTicketsNoFacturados = (connection) => {
         });
     });
 }
+
+
 const obtenerComplementos = (connection) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
