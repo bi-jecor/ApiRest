@@ -12,7 +12,7 @@ const app = express();
 app.use(cors());
 
 // Lectura y parseo del body
-app.use( express.json({ limit : '1000mb' }) );
+app.use( express.json({ limit : '2000mb' }) );
 
 // Conexion Base de Datos
 dbConnection();

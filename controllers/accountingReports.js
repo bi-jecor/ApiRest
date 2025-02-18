@@ -474,27 +474,34 @@ const obtenerDevoluciones = (req = request, res = response) => {
 }
 
 const obtenerTicketsNoFacturados = (req = request, res = response) => {
-    const date = req.params.date
+    const fechaInicio = req.params.fechaInicio;
+    const fechaFin = req.params.fechaFin;
+    console.log(fechaInicio,fechaFin);
+    
     const all = Promise.all([
-        firebirdQuerys.obtenerTicketsNoFacturados('AC', date),
-        firebirdQuerys.obtenerTicketsNoFacturados('G32', date),
-        firebirdQuerys.obtenerTicketsNoFacturados('CHAVEZC', date),
-        firebirdQuerys.obtenerTicketsNoFacturados('TURCIO', date),
-        firebirdQuerys.obtenerTicketsNoFacturados('PAEZ', date),
-        firebirdQuerys.obtenerTicketsNoFacturados('COLIMA', date),
-        firebirdQuerys.obtenerTicketsNoFacturados('VILLA', date),
-        firebirdQuerys.obtenerTicketsNoFacturados('COLINAS', date),
+        firebirdQuerys.obtenerTicketsNoFacturados('AC', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('G32', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('CHAVEZC', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('TURCIO', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('PAEZ', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('COLIMA', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('VILLA', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('COLINAS', fechaInicio, fechaFin),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
         const s = doctosPorSucursal.forEach(docto => {
             doctos = [...doctos, ...docto]
-        })
+        });
+        console.log(doctos);
+        
         return res.json({
             doctosVe: doctos
         });
     })
         .catch(error => {
+            console.log(error);
+            
             return res.status(500).json({
                 error
             });

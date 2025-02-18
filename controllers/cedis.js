@@ -1665,7 +1665,6 @@ const getCustomersBalancesToday = (req = request, res = response) => {
 const getDataToPolicyByDay = (req = request, res = response) => {
     const date1 = req.params.date1;
     const date2 = req.params.date2;
-
     const all = Promise.allSettled([
         firebirdQuerys.getDataToPolicyByDay('AC', date1, date2),
         firebirdQuerys.getDataToPolicyByDay('G32', date1, date2),

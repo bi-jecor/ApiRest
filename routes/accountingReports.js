@@ -32,10 +32,9 @@ router.get('/doctosVe/', obtenerDoctosVe );
 router.get('/doctosPagos/:fecha/:fechaFin', obtenerDoctosPagos );
 router.get('/obtenerComplementos', obtenerComplementos );
 
-
 router.get('/doctosVeDet/', obtenerDoctosVeDet );
 router.get('/obtenerDevoluciones/', obtenerDevoluciones );
-router.get('/obtenerTicketsNoFacturados/', obtenerTicketsNoFacturados );
+router.get('/obtenerTicketsNoFacturados/:fechaInicio/:fechaFin', obtenerTicketsNoFacturados );
 
 router.get('/getCustomersBalancesHis/', getCustomersBalancesHis );
 router.get('/getAllProvidersChargesCxpHis/', getAllProvidersChargesCxpHis );
