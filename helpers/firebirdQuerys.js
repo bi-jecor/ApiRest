@@ -3056,7 +3056,8 @@ const obtenerTicketsNoFacturados = (connection, fechaInicio, fechaFin) => {
                         alm.nombre as almacen,
                         trim(coalesce(factura.folio,'')) as folio_factura,
                         pv.estatus,
-                        trim(coalesce(factura.cfdi_certificado,'')) as cfdi_certificado
+                        trim(coalesce(factura.cfdi_certificado,'')) as cfdi_certificado,
+                        pv.usuario_cancelacion
                     from doctos_PV pv
                     left join  doctos_pv_ligas liga
                     on liga.docto_pv_fte_id = pv.docto_pv_id
@@ -3090,6 +3091,7 @@ const obtenerTicketsNoFacturados = (connection, fechaInicio, fechaFin) => {
                             importe_neto: docto.IMPORTE_NETO,
                             folio_factura: docto.FOLIO_FACTURA,
                             cfdi_certificado: docto.CFDI_CERTIFICADO,
+                            usuario_cancelacion: docto.USUARIO_CANCELACION,
                             db : connection
                         }
                     })
