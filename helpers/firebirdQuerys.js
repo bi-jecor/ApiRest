@@ -3092,7 +3092,7 @@ const obtenerTicketsNoFacturados = (connection, fechaInicio, fechaFin) => {
                             importe_neto: docto.IMPORTE_NETO,
                             folio_factura: docto.FOLIO_FACTURA,
                             cfdi_certificado: docto.CFDI_CERTIFICADO,
-                            usuario_cancelacion: docto.USUARIO_CANCELACION,
+                            usuario_cancelacion: docto.USUARIO_CANCELACION !== null ? docto.USUARIO_CANCELACION.toString('latin1') : '',
                             db : connection
                         }
                     })
