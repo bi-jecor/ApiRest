@@ -537,6 +537,28 @@ const obtenerComplementos = (req = request, res = response) => {
         })
 }
 
+const obtenerTotalesVenta = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.obtenerTotalesVenta('COLIMA',),
+
+
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            doctosVe: doctos
+        });
+    })
+        .catch(error => {
+            return res.status(500).json({
+                error
+            });
+        })
+}
+
 
 
 module.exports = {
@@ -556,5 +578,6 @@ module.exports = {
     obtenerDoctosVeDet,
     obtenerDevoluciones,
     obtenerTicketsNoFacturados,
-    obtenerComplementos
+    obtenerComplementos,
+    obtenerTotalesVenta
 }
