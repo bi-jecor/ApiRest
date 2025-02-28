@@ -3488,8 +3488,8 @@ const obtenerTotalesVenta = (connection, folio) => {
                     }
                     let ventas = arts.map(ven => {
                         return {
-                            fecha: ven.FECHA !== null ? ven.FECHA.toString('latin1') : '',
-                            almacen: ven.ALMACE !== null ? ven.ALMACEN.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(ven.FECHA),
+                            almacen: ven.ALMACEN !== null ? ven.ALMACEN.toString('latin1') : '',
                             totalEfectivo: ven.TOTAL_EFECTIVO,
                             totalDigital: ven.TOTAL_DIGITAL,
                             pv_efectivo: ven.PV_EFECTIVO,
