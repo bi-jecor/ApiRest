@@ -3447,24 +3447,24 @@ const obtenerTotalesVenta = (connection, folio) => {
             }
             db.query(
                 `
-                        select
-                            r.fecha,
-                            r.almacen,
-                            sum(r.PV_Efectivo + R.VE_EFECTIVO) AS TOTAL_EFECTIVO,
-                            sum(R.PV_Digital + R.VE_DIGITAL) AS TOTAL_digital,
-                            sum(r.PV_Efectivo) AS PV_Efectivo,
-                            sum(R.PV_Digital) AS PV_Digital,
-                            sum(R.VE_EFECTIVO)AS VE_EFECTIVO,
-                            sum(R.VE_DIGITAL) AS VE_DIGITAL
-                        from (
+                    select
+                        r.fecha,
+                        r.almacen,
+                        sum(r.PV_Efectivo + R.VE_EFECTIVO) AS TOTAL_EFECTIVO,
+                        sum(R.PV_Digital + R.VE_DIGITAL) AS TOTAL_digital,
+                        sum(r.PV_Efectivo) AS PV_Efectivo,
+                        sum(R.PV_Digital) AS PV_Digital,
+                        sum(R.VE_EFECTIVO)AS VE_EFECTIVO,
+                        sum(R.VE_DIGITAL) AS VE_DIGITAL
+                    from (
                             Select
                                 pv.fecha, 
-                                sum(pv.importe_neto + pv.total_impuestos) as total,
-                                coalesce( sum( case when fc.tipo = 'E' then pv.importe_neto + pv.total_impuestos end) ,0 )as PV_Efectivo,
-                                coalesce (sum( case when fc.tipo <> 'E' then pv.importe_neto + pv.total_impuestos end),0) as PV_Digital,
+                                coalesce( sum ( case when fc.tipo = 'E' and cobro.tipo='C' then (cobro.importe) end) ,0 ) - coalesce( sum ( case when fc.tipo = 'E' and cobro.tipo='A' then (cobro.importe) end) ,0 ) as PV_Efectivo,
+                                coalesce (sum ( case when fc.tipo <> 'E' then cobro.importe end),0) as PV_Digital,
                                 0 AS VE_EFECTIVO,
                                 0 AS VE_DIGITAL,
-                                alm.nombre as almacen
+                                alm.nombre as almacen,
+                                fc.nombre
                             from doctos_pv pv
                             left join doctos_pv_cobros cobro
                             on cobro.docto_pv_id = pv.docto_pv_id
@@ -3472,14 +3472,14 @@ const obtenerTotalesVenta = (connection, folio) => {
                             on fc.forma_cobro_id = cobro.forma_cobro_id
                             left join almacenes alm
                             on alm.almacen_id = pv.almacen_id
-                            where pv.fecha >= '01.09.2024'
+                            where pv.fecha = '01.10.2024'
                             and pv.tipo_docto = 'V'
-                            and cobro.tipo = 'C'
                             and pv.estatus = 'N'
-                            group by alm.nombre, pv.fecha
-                            )    r
-                            group by r.fecha, r.almacen
-                            order  by r.fecha
+                            group by alm.nombre, pv.fecha, fc.nombre
+
+                        )  r
+                    group by r.fecha, r.almacen
+                    order  by r.fecha
 
                 ` ,
                 function (err, arts ) {
