@@ -3472,7 +3472,7 @@ const obtenerTotalesVenta = (connection, folio) => {
                             on fc.forma_cobro_id = cobro.forma_cobro_id
                             left join almacenes alm
                             on alm.almacen_id = pv.almacen_id
-                            where pv.fecha = '01.10.2024'
+                            where pv.fecha between '01.09.2024' and '15.02.2025'
                             and pv.tipo_docto = 'V'
                             and pv.estatus = 'N'
                             group by alm.nombre, pv.fecha, fc.nombre
