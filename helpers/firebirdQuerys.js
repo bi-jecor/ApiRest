@@ -3043,8 +3043,7 @@ const obtenerTicketsNoFacturados = (connection, fechaInicio, fechaFin) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {     
-                console.log(err);
-                           
+                console.log(err);      
                 return reject(err)
             }
             db.query(
@@ -3103,7 +3102,6 @@ const obtenerTicketsNoFacturados = (connection, fechaInicio, fechaFin) => {
         });
     });
 }
-
 
 const obtenerComplementos = (connection) => {
     return new Promise((resolve, reject) => {
@@ -3439,6 +3437,7 @@ const existenciaCedisYRuta = (connection, folio) => {
         });
     });
 }
+
 const obtenerTotalesVenta = (connection, folio) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
