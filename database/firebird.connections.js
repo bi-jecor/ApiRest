@@ -2,7 +2,7 @@ var firebird = require('node-firebird');
 
 const firebird_connection = {
     user: 'SYSDBA',
-    password: "B0l@g3t1tJ",
+    password: "J8wL#2pR!t",
     host: '192.168.20.200',
     port: 3050,
     database: 'E:/Bases de Datos/JECOR 2020.FDB',
@@ -11,7 +11,7 @@ const firebird_connection = {
 const AC = {
     name: "AC", 
     user: 'SYSDBA',
-    password: "B0l@g3t1tJ",
+    password: "J8wL#2pR!t",
     host: '192.168.20.200',
     port: 3050,
     database: 'E:/Bases de Datos/JECOR 2020.FDB',
@@ -21,7 +21,7 @@ const AC = {
 const G32 = {
     name:"G32", 
     user: 'SYSDBA',
-    password:  "B0l@g3t1tJ",
+    password:  "J8wL#2pR!t",
     host: '192.168.15.200',
     port: 3051,
     database: 'E:/Bases Datos/JECOR 2020.FDB',
@@ -30,7 +30,7 @@ const G32 = {
 const G32_HISTORICA = {
     name:"G32", 
     user: 'SYSDBA',
-    password:  "B0l@g3t1tJ",
+    password:  "J8wL#2pR!t",
     host: '192.168.15.200',
     port: 3051,
     database: 'E:/Bases datos/JECOR 2022 HISTORICA.FDB',
@@ -39,7 +39,7 @@ const G32_HISTORICA = {
 const CIMA = {
     name: "CIMA",
     user: 'SYSDBA',
-    password: "B0l@g3t1tJ",
+    password: "J8wL#2pR!t",
     host: '192.168.15.200',
     port: 3051,
     database: 'E:/Bases Datos/ADI 2020.FDB',
@@ -48,7 +48,7 @@ const CIMA = {
 const TURCIO = {
     name: "TURCIO",
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t',
     host: '192.168.40.200',
     port: 3053,
     database: 'E:/Bases de datos/JECOR 2018.FDB',
@@ -57,7 +57,7 @@ const TURCIO = {
 const TIANGUIS = {
     name: "TIANGUIS",
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t',
     host: '192.168.40.200',
     port: 3053,
     database: 'E:/Bases de datos/ADI 2019.FDB',
@@ -66,7 +66,7 @@ const TIANGUIS = {
 const PAEZ = {
     name: "PAEZ",
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t',
     host: '192.168.30.200',
     port: 3052,
     database: 'E:/Bases de datos/JECOR PAEZ STILLE.FDB',
@@ -75,7 +75,7 @@ const PAEZ = {
 const COLIMA = {
     name: "COLIMA",
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t',
     host: '192.168.50.201',
     //host: 'colimajec.ddns.net',
     port: 3054,
@@ -85,7 +85,7 @@ const COLIMA = {
 const VILLA = {
     name: "VILLA",
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t',
     host: '192.168.60.200',
     // host: 'villajecor.ddns.net',
     port: 3055,
@@ -95,7 +95,7 @@ const VILLA = {
 const COLINAS = {
     name: "COLINAS",
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t',
     host: '192.168.80.200',
     port: 3056,
     database: 'E:/Bases de datos/JECOR 2020.FDB',
@@ -104,7 +104,7 @@ const COLINAS = {
 const VIVERO = {
     name: "VIVERO",
     user: 'SYSDBA',
-    password: "B0l@g3t1tJ",
+    password: "J8wL#2pR!t",
     host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/VIVERO 2020.FDB',
