@@ -2797,7 +2797,7 @@ const obtenerDoctosVe = (connection) => {
                             ) AS x
                         on  a.docto_ve_id = x.docto_ve_id
                         INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
-                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D','C') AND A.FECHA  >= '01.01.2024'
+                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D','C') AND A.FECHA  >= '31.12.2025'
 
                     ` ,
                     function (err, doctosVeDB) {
