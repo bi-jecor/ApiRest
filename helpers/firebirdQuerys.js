@@ -2700,7 +2700,7 @@ const obtenerDoctosVe = (connection) => {
                                 coalesce(A.fecha_hora_cancelacion,'01.01.1900') AS Fecha_Cancelacion,
                                 D.sujeto_ieps
                         FROM DOCTOS_PV A
-                        INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
+                        LEFT JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
                         LEFT JOIN (
                                 select ipd.docto_pv_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
                                 from  impuestos_doctos_PV  ipd  inner join  impuestos i
@@ -2796,7 +2796,7 @@ const obtenerDoctosVe = (connection) => {
                                 GROUP BY ved.docto_ve_id
                             ) AS x
                         on  a.docto_ve_id = x.docto_ve_id
-                        INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
+                        LEFT JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
                         WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D','C') AND A.FECHA  >= '31.12.2025'
 
                     ` ,
