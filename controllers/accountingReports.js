@@ -212,6 +212,40 @@ const getAllProvidersChargesCxp = (req, res) => {
         });
     });
 }
+const getAllProvidersChargesCxpDate = (req, res) => {
+    const date = req.params.date
+    const all = Promise.allSettled([
+        firebirdQuerys.getProvidersChargesCxpDate('G32',date),
+        firebirdQuerys.getProvidersChargesCxpDate('AC',date),
+        firebirdQuerys.getProvidersChargesCxpDate('COLIMA',date),
+        firebirdQuerys.getProvidersChargesCxpDate('VILLA',date),
+        firebirdQuerys.getProvidersChargesCxpDate('COLINAS',date),
+        firebirdQuerys.getProvidersChargesCxpDate('TURCIO',date),
+        firebirdQuerys.getProvidersChargesCxpDate('PAEZ',date),
+        firebirdQuerys.getProvidersChargesCxpDate('CHAVEZC',date),
+    ]).then((values) => {
+
+        let data = [];
+        let fails = ''
+        let emptys = ''
+        values.forEach(element => {
+
+            if (element.status !== 'rejected') {
+                data = [...data, ...element.value.charges]
+                if (element.value.charges.length === 0) {
+                    emptys = emptys + ' ' + element.value.connection
+                }
+            } else {
+                fails = fails + ' ' + element.reason.connection;
+            }
+        });
+        return res.json({
+            data,
+            fails: fails.trim(),
+            emptys: emptys.trim()
+        });
+    });
+}
 
 const getAllProvidersChargesCxpHis = (req, res) => {
     const all = Promise.allSettled([
@@ -579,5 +613,6 @@ module.exports = {
     obtenerDevoluciones,
     obtenerTicketsNoFacturados,
     obtenerComplementos,
-    obtenerTotalesVenta
+    obtenerTotalesVenta,
+    getAllProvidersChargesCxpDate
 }

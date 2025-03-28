@@ -2416,6 +2416,82 @@ const getProvidersChargesCxp = (connection) => {
     });
 }
 // fUNCION PARA OBTENER CARGO DELOS PROVEEDORES
+const getProvidersChargesCxpDate = (connection,date) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            //console.log('db', connection,err);
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg: err
+                }
+                return reject(error)
+            }
+            db.query(
+                `
+                    SELECT A.*,  B.FOLIO, B.FECHA, B.PROVEEDOR_ID, B.DESCRIPCION, C.NOMBRE_ABREV, cm.fecha as fecha_compra, '' as fecha_recepcion,cm.folio as folio_cm , clp.clave_prov, p.nombre as nombre_provedor, p.rfc_curp,  ALM.nombre as almacen, ccp.NOMBRE AS cond_pago, cm.importe_neto, tp.nombre
+                    FROM XSP_CARGOS_PROVEEDORES('${date}' , '${date}', 'N') A
+                    LEFT JOIN DOCTOS_CP B
+                    ON A.DOCTO_CP_ID = B.DOCTO_CP_ID
+                    LEFT JOIN CONCEPTOS_CP C
+                    ON B.CONCEPTO_CP_ID = C.CONCEPTO_CP_ID
+                    LEFT JOIN DOCTOS_CM CM
+                    ON b.proveedor_id = cm.proveedor_id and b.folio =   cm.folio_prov  and cm.tipo_docto = 'C' and cm.estatus = 'N'
+                    LEFT join ALMACENES ALM
+                    ON ALM.almacen_id = CM.almacen_id
+                    left join proveedores p
+                    on p.proveedor_id = cm.proveedor_id
+                    left join (
+                         SELECT P.proveedor_id, coalesce(CP1.clave_prov, CP2.clave_prov) AS clave_prov FROM PROVEEDORES P
+                            LEFT JOIN claves_proveedores CP1 ON P.proveedor_id = CP1.proveedor_id AND CP1.rol_clave_prov_id = 49
+                            LEFT JOIN claves_proveedores CP2 ON P.proveedor_id = CP2.proveedor_id AND CP2.rol_clave_prov_id = 50
+                    ) clp on p.proveedor_id = clp.proveedor_id
+                    left join condiciones_pago_cp ccp
+                    on ccp.cond_pago_id = cm.cond_pago_id
+                    left join tipos_prov tp
+                    on tp.tipo_prov_id = p.tipo_prov_id
+                    ORDER BY FECHA
+                    ` ,
+                function (err, chargesDB) {
+                    if (err) {
+                        reject(err)
+                    }
+                    //console.log(chargesDB[0]);
+                    let charges = chargesDB.map(charge => {
+                        return {
+                            docDueDate: charge.FECHA_VENCIMIENTO !== null ? charge.FECHA_VENCIMIENTO : '',
+                            atraso: charge.ATRASO !== null ? charge.ATRASO : '',
+                            importe_cargo: charge.IMPORTE_CARGO !== null ? charge.IMPORTE_CARGO : '',
+                            saldo_cargo: charge.SALDO_CARGO !== null ? charge.SALDO_CARGO : '',
+                            numAtCard: charge.FOLIO !== null ? charge.FOLIO.toString('latin1') : '',
+                            docDate: charge.FECHA_COMPRA !== null ? charge.FECHA_COMPRA : '',
+                            // proveedor_id : charge[8] !== null ? charge[8] : '',
+                            fecha_compra: charge.FECHA_COMPRA !== null ? charge.FECHA_COMPRA : '',
+                            fecha_recepcion: charge.FECHA_RECEPCION !== null ? charge.FECHA_RECEPCION.toString('latin1') : '',
+                            folio_cm: charge.FOLIO_CM !== null ? charge.FOLIO_CM.toString('latin1') : '',
+                            clave_prov: charge.CLAVE_PROV !== null ? charge.CLAVE_PROV.toString('latin1') : '',
+                            cardName: charge.NOMBRE_PROVEDOR !== null ? charge.NOMBRE_PROVEDOR.toString('latin1') : '',
+                            rfc: charge.RFC_CURP !== null ? charge.RFC_CURP.toString('latin1') : '',
+                            almacen: charge.ALMACEN !== null ? charge.ALMACEN.toString('latin1') : '',
+                            cond_pago: charge.COND_PAGO !== null ? charge.COND_PAGO.toString('latin1') : '',
+                            importe_neto: charge.IMPORTE_NETO !== null ? charge.IMPORTE_NETO : '',
+                            // tipo_provedor : charge[20] !== null ? charge[20].toString('latin1') : '',
+                        }
+                    })
+                    //console.log('cargos',charges[0]);
+                    let data = {
+                        charges,
+                        connection
+                    }
+                    console.log("[CUENTAS POR PAGAR] EJECUTADO CORRECTAMENTE EN " + connection);
+                    db.detach();
+                    resolve(data)
+                });
+        });
+    });
+}
+// fUNCION PARA OBTENER CARGO DELOS PROVEEDORES
 const getProvidersChargesCxpSap = (connection) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
@@ -3576,8 +3652,10 @@ module.exports = {
     obtenerRequerimiento,
     obtenerTraspaso,
     obtenerArticulosTraspaso,
-    existenciaCedisYRuta
+    existenciaCedisYRuta,
 
+
+    getProvidersChargesCxpDate
 
 }
 
