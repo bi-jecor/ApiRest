@@ -15,7 +15,7 @@ const e = require('express');
 const getDataToPolicyTest = (conection, date1, date2) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], function (err, db) {
-            // console.log(conections[conection]);
+            console.log(conections[conection]);
             if (err) {
                 console.log('CONECT', conection);
                 const error = {
@@ -331,7 +331,7 @@ const getCustomersBalances = (conection, date) => {
 }
 
 const getCustomersBalances2 = (conection, date) => {
-    console.log('2');
+    date = date === null ? 'current_date' : date;
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
@@ -358,7 +358,7 @@ const getCustomersBalances2 = (conection, date) => {
             db.query(
                 `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
-                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    FROM cargos_cliente_jgb('${date}', '${date}', 'N', 'N') A
 
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID

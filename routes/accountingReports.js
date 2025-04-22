@@ -16,7 +16,8 @@ const { getAllProvidersCharges,
     obtenerTicketsNoFacturados,
     obtenerComplementos,
     obtenerTotalesVenta,
-    getAllProvidersChargesCxpDate 
+    getAllProvidersChargesCxpDate,
+    obtenerCargosClientes, 
 } = require('../controllers/accountingReports')
 
 const router = Router();
@@ -42,5 +43,6 @@ router.get('/obtenerTicketsNoFacturados/:fechaInicio/:fechaFin', obtenerTicketsN
 router.get('/getCustomersBalancesHis/', getCustomersBalancesHis );
 router.get('/getAllProvidersChargesCxpHis/', getAllProvidersChargesCxpHis );
 router.get('/getAllProvidersChargesCxpDate/:date/', getAllProvidersChargesCxpDate );
+router.get('/obtenerCargosClientes/:date/', obtenerCargosClientes );
 
 module.exports = router;

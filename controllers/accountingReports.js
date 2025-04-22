@@ -323,6 +323,7 @@ const getCustomersBalances = (req = request, res = response) => {
         firebirdQuerys.getCustomersBalances2('G32', date),
         firebirdQuerys.getCustomersBalances2('CHAVEZC', date),
         firebirdQuerys.getCustomersBalances2('TURCIO', date),
+        firebirdQuerys.getCustomersBalances2('TURCIOM', date),
         firebirdQuerys.getCustomersBalances2('PAEZ', date),
         firebirdQuerys.getCustomersBalances2('COLIMA', date),
         firebirdQuerys.getCustomersBalances2('VILLA', date),
@@ -373,6 +374,7 @@ const obtenerPagos = (req = request, res = response) => {
         firebirdQuerys.obtenerPagos('G32', date),
         firebirdQuerys.obtenerPagos('CHAVEZC', date),
         firebirdQuerys.obtenerPagos('TURCIO', date),
+        firebirdQuerys.obtenerPagos('TURCIOM', date),
         firebirdQuerys.obtenerPagos('PAEZ', date),
         firebirdQuerys.obtenerPagos('COLIMA', date),
         firebirdQuerys.obtenerPagos('VILLA', date),
@@ -542,7 +544,6 @@ const obtenerTicketsNoFacturados = (req = request, res = response) => {
         })
 }
 
-
 const obtenerComplementos = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
@@ -594,6 +595,31 @@ const obtenerTotalesVenta = (req = request, res = response) => {
 }
 
 
+const obtenerCargosClientes = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        firebirdQuerys.getCustomersBalances2('AC', date),
+        firebirdQuerys.getCustomersBalances2('G32', date),
+        firebirdQuerys.getCustomersBalances2('CHAVEZC', date),
+        firebirdQuerys.getCustomersBalances2('TURCIO', date),
+        firebirdQuerys.getCustomersBalances2('TURCIOM', date),
+        firebirdQuerys.getCustomersBalances2('PAEZ', date),
+        firebirdQuerys.getCustomersBalances2('COLIMA', date),
+        firebirdQuerys.getCustomersBalances2('VILLA', date),
+        firebirdQuerys.getCustomersBalances2('COLINAS', date),
+
+    ]).then(cargosPorSucursal => {
+        let cargos = [];
+        const s = cargosPorSucursal.forEach(cargoXC => {
+            cargos = [...cargos, ...cargoXC]
+        })
+        return res.json({
+            CustomersBalances: cargos
+        });
+    })
+}
+
+
 
 module.exports = {
     getAllProvidersCharges,
@@ -614,5 +640,6 @@ module.exports = {
     obtenerTicketsNoFacturados,
     obtenerComplementos,
     obtenerTotalesVenta,
-    getAllProvidersChargesCxpDate
+    getAllProvidersChargesCxpDate,
+    obtenerCargosClientes
 }

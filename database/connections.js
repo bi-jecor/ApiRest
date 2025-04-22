@@ -116,6 +116,29 @@ const TURCIO = {
     keysArticlesIds : '17,18,288',
     companyPriceId:16326
 }
+const TURCIOM = {
+    user: 'SYSDBA',
+    password: 'J8wL#2pR!t',
+    //host: '192.168.15.202',
+    host: '192.168.40.200',
+    
+    port: 3053,
+    database: 'E:/Bases de datos/JECOR MAYOREO.FDB',
+    lowercase_keys: false, 
+    role: null,
+    pageSize: 4096,
+        // POLIZA DATA
+    roleKeyProviderId : 49,
+    conceptCpId : 51,
+    iva16: 922,
+    tasa0: 917,
+    ieps8: 925,
+    ieps6: 342776,
+    ieps30: 543614,
+    exento: 926,
+    keysArticlesIds : '17,18,288',
+    companyPriceId:16326
+}
 
 const TIANGUIS = {
     user: 'SYSDBA',
@@ -377,6 +400,7 @@ module.exports = {
     G32,
     G32H,
     TURCIO,
+    TURCIOM,
     TIANGUIS,   
     PAEZ,
     COLIMA,
