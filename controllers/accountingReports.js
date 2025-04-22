@@ -601,7 +601,7 @@ const obtenerCargosClientes = (req = request, res = response) => {
         firebirdQuerys.getCustomersBalances2('AC', date),
         firebirdQuerys.getCustomersBalances2('G32', date),
         firebirdQuerys.getCustomersBalances2('CHAVEZC', date),
-        firebirdQuerys.getCustomersBalances2('TURCIO', date),
+        // firebirdQuerys.getCustomersBalances2('TURCIO', date),
         firebirdQuerys.getCustomersBalances2('TURCIOM', date),
         firebirdQuerys.getCustomersBalances2('PAEZ', date),
         firebirdQuerys.getCustomersBalances2('COLIMA', date),
