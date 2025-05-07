@@ -2,10 +2,9 @@ const { response, request, json } = require('express');
 var firebird = require('node-firebird');
 const conections = require('../database/connections');
 const firebirdQuerys = require('../helpers/firebirdQuerys');
-
-
 const accountingReports = require('../helpers/accountingReports');
 const { formatDateToString } = require('../helpers/formatDate');
+
 
 const getAllProvidersCharges = (req, res) => {
     const date = req.params.date;
@@ -212,6 +211,7 @@ const getAllProvidersChargesCxp = (req, res) => {
         });
     });
 }
+
 const getAllProvidersChargesCxpDate = (req, res) => {
     const date = req.params.date
     const all = Promise.allSettled([
@@ -403,6 +403,7 @@ const obtenerDoctosVe = (req = request, res = response) => {
         firebirdQuerys.obtenerDoctosVe('G32', date),
         firebirdQuerys.obtenerDoctosVe('CHAVEZC', date),
         firebirdQuerys.obtenerDoctosVe('TURCIO', date),
+        firebirdQuerys.obtenerDoctosVe('TURCIOM', date),
         firebirdQuerys.obtenerDoctosVe('PAEZ', date),
         firebirdQuerys.obtenerDoctosVe('COLIMA', date),
         firebirdQuerys.obtenerDoctosVe('VILLA', date),
@@ -517,9 +518,9 @@ const obtenerTicketsNoFacturados = (req = request, res = response) => {
     const all = Promise.all([
         firebirdQuerys.obtenerTicketsNoFacturados('AC', fechaInicio, fechaFin),
         firebirdQuerys.obtenerTicketsNoFacturados('G32', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('CHAVEZC', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('TURCIO', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('TURCIOM', fechaInicio, fechaFin),
         firebirdQuerys.obtenerTicketsNoFacturados('PAEZ', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('CHAVEZC', fechaInicio, fechaFin),
         firebirdQuerys.obtenerTicketsNoFacturados('COLIMA', fechaInicio, fechaFin),
         firebirdQuerys.obtenerTicketsNoFacturados('VILLA', fechaInicio, fechaFin),
         firebirdQuerys.obtenerTicketsNoFacturados('COLINAS', fechaInicio, fechaFin),
@@ -619,6 +620,107 @@ const obtenerCargosClientes = (req = request, res = response) => {
     })
 }
 
+const obtenerRemisiones = (req = request, res = response) => {
+    const { fechaInicio, fechaFin } = req.params;
+    const all = Promise.all([
+        firebirdQuerys.obtenerRemisiones('AC', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerRemisiones('G32', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerRemisiones('CHAVEZC', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerRemisiones('TURCIO', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerRemisiones('TURCIOM', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerRemisiones('PAEZ', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerRemisiones('COLIMA', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerRemisiones('VILLA', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerRemisiones('COLINAS', fechaInicio, fechaFin),
+
+    ]).then(cargosPorSucursal => {
+        let cargos = [];
+        const s = cargosPorSucursal.forEach(cargoXC => {
+            cargos = [...cargos, ...cargoXC]
+        })
+        return res.json({
+            CustomersBalances: cargos
+        });
+    })
+}
+
+const obtenerVentasPorImpuesto = (req = request, res = response) => {
+    const { fechaInicio, fechaFin } = req.params;
+    const all = Promise.all([
+        firebirdQuerys.obtenerVentasPorImpuesto('AC'),
+        firebirdQuerys.obtenerVentasPorImpuesto('G32'),
+        firebirdQuerys.obtenerVentasPorImpuesto('CHAVEZC'),
+        firebirdQuerys.obtenerVentasPorImpuesto('TURCIO'),
+        firebirdQuerys.obtenerVentasPorImpuesto('TURCIOM'),
+        firebirdQuerys.obtenerVentasPorImpuesto('PAEZ'),
+        firebirdQuerys.obtenerVentasPorImpuesto('COLIMA'),
+        firebirdQuerys.obtenerVentasPorImpuesto('VILLA'),
+        firebirdQuerys.obtenerVentasPorImpuesto('COLINAS'),
+
+    ]).then(cargosPorSucursal => {
+        let cargos = [];
+        const s = cargosPorSucursal.forEach(cargoXC => {
+            cargos = [...cargos, ...cargoXC]
+        })
+        return res.json({
+            CustomersBalances: cargos
+        });
+    })
+}
+
+const obtenerRecepciones = (req = request, res = response) => {
+    const { fechaInicio, fechaFin } = req.params;
+    const all = Promise.all([
+        firebirdQuerys.obtenerRecepciones('AC'),
+        firebirdQuerys.obtenerRecepciones('G32'),
+        firebirdQuerys.obtenerRecepciones('CHAVEZC'),
+        firebirdQuerys.obtenerRecepciones('TURCIO'),
+        firebirdQuerys.obtenerRecepciones('TURCIOM'),
+        firebirdQuerys.obtenerRecepciones('PAEZ'),
+        firebirdQuerys.obtenerRecepciones('COLIMA'),
+        firebirdQuerys.obtenerRecepciones('VILLA'),
+        firebirdQuerys.obtenerRecepciones('COLINAS'),
+
+    ]).then(cargosPorSucursal => {
+        let cargos = [];
+        const s = cargosPorSucursal.forEach(cargoXC => {
+            cargos = [...cargos, ...cargoXC]
+        })
+        return res.json({
+            CustomersBalances: cargos
+        });
+    })
+}
+
+
+const obtenerDevolucionesDet = (req = request, res = response) => {
+    const date = req.params.date
+    const all = Promise.all([
+        // firebirdQuerys.obtenerDevolucionesDet('AC', date),
+        firebirdQuerys.obtenerDevolucionesDet('G32', date),
+        firebirdQuerys.obtenerDevolucionesDet('CHAVEZC', date),
+        // firebirdQuerys.obtenerDevolucionesDet('TURCIO', date),
+        // firebirdQuerys.obtenerDevolucionesDet('PAEZ', date),
+        firebirdQuerys.obtenerDevolucionesDet('COLIMA', date),
+        firebirdQuerys.obtenerDevolucionesDet('VILLA', date),
+        // firebirdQuerys.obtenerDevolucionesDet('COLINAS', date),
+
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            doctosVe: doctos
+        });
+    })
+        .catch(error => {
+            return res.status(500).json({
+                error
+            });
+        });
+}
+
 
 
 module.exports = {
@@ -641,5 +743,9 @@ module.exports = {
     obtenerComplementos,
     obtenerTotalesVenta,
     getAllProvidersChargesCxpDate,
-    obtenerCargosClientes
+    obtenerCargosClientes,
+    obtenerRemisiones,
+    obtenerVentasPorImpuesto,
+    obtenerRecepciones,
+    obtenerDevolucionesDet,
 }
