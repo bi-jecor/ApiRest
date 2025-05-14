@@ -3807,7 +3807,6 @@ const obtenerDevolucionesDet = (connection) => {
                     AND d.fecha > '2025-04-01'
                     AND i.nombre IN ('TASA CERO', 'IEPS 6%', 'IEPS 8%', 'IVA TASA 16%', 'IESP 30%' )
                     GROUP BY d.folio, d.fecha, d.orden_compra, a.nombre
-
                 ` ,
                 function (err, arts ) {
                     if (err) {

@@ -2051,12 +2051,12 @@ const getMarks = (req, res) => {
             firebirdQuerys.getArticleStockByWarehouse('AC', articleCode, 662747, 'ruta'),
             firebirdQuerys.getArticleStockByWarehouse('AC', articleCode, 1043639, 'empaque'),
             //TURCIO
-            firebirdQuerys.getArticleStockByWarehouse('TURCIO', articleCode, 179263, 'turcio'),
+            firebirdQuerys.getArticleStockByWarehouse('TURCIOM', articleCode, 179263, 'turcio_mayoreo'),
             //TIANGUIS
-            firebirdQuerys.getArticleStockByWarehouse('TIANGUIS', articleCode, 37698592, 'adi_1'),
-            firebirdQuerys.getArticleStockByWarehouse('TIANGUIS', articleCode, 31906795, 'adi_2'),
-            firebirdQuerys.getArticleStockByWarehouse('TIANGUIS', articleCode, 31906794, 'cima_2'),
-            firebirdQuerys.getArticleStockByWarehouse('TIANGUIS', articleCode, 31907026, 'rf'),
+            firebirdQuerys.getArticleStockByWarehouse('TURCIO', articleCode, 615894, 'adi_1'),
+            firebirdQuerys.getArticleStockByWarehouse('TURCIO', articleCode, 615895, 'adi_2'),
+            firebirdQuerys.getArticleStockByWarehouse('TURCIO', articleCode, 615892, 'cima_2'),
+            firebirdQuerys.getArticleStockByWarehouse('TURCIO', articleCode, 615893, 'rf'),
             //PAEZ
             firebirdQuerys.getArticleStockByWarehouse('PAEZ', articleCode, 186107, 'paez'),
             //COLIMA
