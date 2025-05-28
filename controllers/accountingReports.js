@@ -669,17 +669,17 @@ const obtenerVentasPorImpuesto = (req = request, res = response) => {
 }
 
 const obtenerRecepciones = (req = request, res = response) => {
-    const { fechaInicio, fechaFin } = req.params;
+        const { fechaInicio, fechaFin } = req.params;
     const all = Promise.all([
-        firebirdQuerys.obtenerRecepciones('AC'),
-        firebirdQuerys.obtenerRecepciones('G32'),
-        firebirdQuerys.obtenerRecepciones('CHAVEZC'),
-        firebirdQuerys.obtenerRecepciones('TURCIO'),
-        firebirdQuerys.obtenerRecepciones('TURCIOM'),
-        firebirdQuerys.obtenerRecepciones('PAEZ'),
-        firebirdQuerys.obtenerRecepciones('COLIMA'),
-        firebirdQuerys.obtenerRecepciones('VILLA'),
-        firebirdQuerys.obtenerRecepciones('COLINAS'),
+    firebirdQuerys.obtenerRecepciones('AC', fechaInicio,fechaFin),
+        firebirdQuerys.obtenerRecepciones('G32', fechaInicio,fechaFin),
+        firebirdQuerys.obtenerRecepciones('CHAVEZC', fechaInicio,fechaFin),
+        firebirdQuerys.obtenerRecepciones('TURCIO', fechaInicio,fechaFin),
+        firebirdQuerys.obtenerRecepciones('TURCIOM', fechaInicio,fechaFin),
+        firebirdQuerys.obtenerRecepciones('PAEZ', fechaInicio,fechaFin),
+        firebirdQuerys.obtenerRecepciones('COLIMA', fechaInicio,fechaFin),
+        firebirdQuerys.obtenerRecepciones('VILLA', fechaInicio,fechaFin),
+        firebirdQuerys.obtenerRecepciones('COLINAS', fechaInicio,fechaFin),
 
     ]).then(cargosPorSucursal => {
         let cargos = [];
@@ -694,16 +694,17 @@ const obtenerRecepciones = (req = request, res = response) => {
 
 
 const obtenerDevolucionesDet = (req = request, res = response) => {
-    const date = req.params.date
+    const fechaInicio = req.params.fechaInicio;
+    const fechaFin = req.params.fechaFin;
     const all = Promise.all([
-        // firebirdQuerys.obtenerDevolucionesDet('AC', date),
-        firebirdQuerys.obtenerDevolucionesDet('G32', date),
-        firebirdQuerys.obtenerDevolucionesDet('CHAVEZC', date),
-        // firebirdQuerys.obtenerDevolucionesDet('TURCIO', date),
-        // firebirdQuerys.obtenerDevolucionesDet('PAEZ', date),
-        firebirdQuerys.obtenerDevolucionesDet('COLIMA', date),
-        firebirdQuerys.obtenerDevolucionesDet('VILLA', date),
-        // firebirdQuerys.obtenerDevolucionesDet('COLINAS', date),
+        firebirdQuerys.obtenerDevolucionesDet('AC', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerDevolucionesDet('G32', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerDevolucionesDet('CHAVEZC', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerDevolucionesDet('TURCIO', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerDevolucionesDet('PAEZ', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerDevolucionesDet('COLIMA', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerDevolucionesDet('VILLA', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerDevolucionesDet('COLINAS', fechaInicio, fechaFin),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];

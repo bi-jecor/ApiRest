@@ -2044,7 +2044,6 @@ const getMarks = (req, res) => {
             firebirdQuerys.getArticleStockByWarehouse('G32', articleCode, 359002, 'insumos'),
             //CIMA
             firebirdQuerys.getArticleStockByWarehouse('CIMA', articleCode, 31862487, 'cima'),
-    
             // CEDIS
             firebirdQuerys.getArticleStockByWarehouse('AC', articleCode, 181613, 'cedis'),
             firebirdQuerys.getArticleStockByWarehouse('AC', articleCode, 181614, 'ac'),

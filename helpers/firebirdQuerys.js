@@ -3732,7 +3732,7 @@ const obtenerVentasPorImpuesto = (connection) => {
 }
 
 
-const obtenerRecepciones = (connection) => {
+const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
     
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
@@ -3755,7 +3755,7 @@ const obtenerRecepciones = (connection) => {
                 left join doctos_cm compra
                 on compra.docto_cm_id = liga.docto_cm_dest_id
                 where CM.tipo_docto = 'R'
-                and cm.fecha between '01.01.2025' and current_date
+                and cm.fecha between '${fechaInicio}' and '${fechaFin}'
                 ` ,
                 function (err, arts ) {
                     if (err) {
@@ -3780,7 +3780,7 @@ const obtenerRecepciones = (connection) => {
 }
 
 
-const obtenerDevolucionesDet = (connection) => {
+const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {                
@@ -3804,7 +3804,7 @@ const obtenerDevolucionesDet = (connection) => {
                     JOIN impuestos_doctos_ve_det idv ON idv.docto_ve_det_id = ved.docto_ve_det_id
                     JOIN impuestos i ON i.impuesto_id = idv.impuesto_id
                     WHERE d.tipo_docto = 'D'
-                    AND d.fecha > '2025-04-01'
+                    AND d.fecha between '${fechaInicio}'  and '${fechaFin}'
                     AND i.nombre IN ('TASA CERO', 'IEPS 6%', 'IEPS 8%', 'IVA TASA 16%', 'IESP 30%' )
                     GROUP BY d.folio, d.fecha, d.orden_compra, a.nombre
                 ` ,
