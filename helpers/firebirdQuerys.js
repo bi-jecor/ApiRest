@@ -3788,7 +3788,7 @@ const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
             }
             db.query(
                 `
-                    SELECT
+                     SELECT
                         d.folio,
                         d.fecha,
                         d.orden_compra,
@@ -3798,7 +3798,11 @@ const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
                         SUM(CASE WHEN i.nombre = 'IEPS 8%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS ieps_8,
                         SUM(CASE WHEN i.nombre = 'IVA TASA 16%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS iva_16,
                         SUM(CASE WHEN i.nombre = 'IESP 30%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS ieps_30
-                    FROM doctos_ve d
+                    FROM (
+                        select  VE.docto_ve_id, VE.folio, VE.fecha, VE.tipo_docto, VE.orden_compra  FROM libres_devfac_ve DEV
+                            INNER JOIN doctos_ve VE
+                            ON VE.docto_ve_id = DEV.docto_ve_id
+                    )d
                     JOIN doctos_ve_det ved ON ved.docto_ve_id = d.docto_ve_id
                     JOIN articulos a ON a.articulo_id = ved.articulo_id
                     JOIN impuestos_doctos_ve_det idv ON idv.docto_ve_det_id = ved.docto_ve_det_id

@@ -697,7 +697,7 @@ const obtenerDevolucionesDet = (req = request, res = response) => {
     const fechaInicio = req.params.fechaInicio;
     const fechaFin = req.params.fechaFin;
     const all = Promise.all([
-        firebirdQuerys.obtenerDevolucionesDet('AC', fechaInicio, fechaFin),
+        // firebirdQuerys.obtenerDevolucionesDet('AC', fechaInicio, fechaFin),
         firebirdQuerys.obtenerDevolucionesDet('G32', fechaInicio, fechaFin),
         firebirdQuerys.obtenerDevolucionesDet('CHAVEZC', fechaInicio, fechaFin),
         firebirdQuerys.obtenerDevolucionesDet('TURCIO', fechaInicio, fechaFin),
