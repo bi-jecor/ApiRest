@@ -38,8 +38,8 @@ obtenerSucursalPorFolio = (folio = 'FA') => {
         AC:'1007 REPOSTERIA ADI 1',
         AD:'1008 DULCERIA ADI 2',
         AE:'1009 CEREALES RF',
-        AA:'1011 PLASTICOS CIMA 2'
-
+        AA:'1011 PLASTICOS CIMA 2',
+        FP:'1012 RUTA GUZMAN'
     }
     return folioSucursal[folio] || 'Sin definir'
 }
