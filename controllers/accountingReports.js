@@ -518,6 +518,7 @@ const obtenerTicketsNoFacturados = (req = request, res = response) => {
     const all = Promise.all([
         firebirdQuerys.obtenerTicketsNoFacturados('AC', fechaInicio, fechaFin),
         firebirdQuerys.obtenerTicketsNoFacturados('G32', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('TURCIO', fechaInicio, fechaFin),
         firebirdQuerys.obtenerTicketsNoFacturados('TURCIOM', fechaInicio, fechaFin),
         firebirdQuerys.obtenerTicketsNoFacturados('PAEZ', fechaInicio, fechaFin),
         firebirdQuerys.obtenerTicketsNoFacturados('CHAVEZC', fechaInicio, fechaFin),
