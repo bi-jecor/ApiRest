@@ -17,6 +17,7 @@ const  obtenerNombreArticuloPorClave = (req = request, res = response) => {
             
         })
 }
+
 const  obtenerArticulosRequerimiento = (req = request, res = response) => {
         const {folio} = req.params;
         firebirdQuerys.obtenerArticulosReq( 'AC', folio )
@@ -41,7 +42,6 @@ const  obtenerRequerimiento = (req = request, res = response) => {
         })
 }
 
-
 const  obtenerTraspaso = (req = request, res = response) => {
         const {folio} = req.params;
         firebirdQuerys.obtenerTraspaso( 'G32', folio )
@@ -53,15 +53,14 @@ const  obtenerTraspaso = (req = request, res = response) => {
 }
 
 const  obtenerArticulosTraspaso = (req = request, res = response) => {
-        const {folio} = req.params;
-        firebirdQuerys.obtenerArticulosTraspaso( 'G32', folio )
-        .then(data => {
-            return res.json({
-                data,
-            });
+    const {folio} = req.params;
+    firebirdQuerys.obtenerArticulosTraspaso( 'G32', folio )
+    .then(data => {
+        return res.json({
+            data,
         });
+    });
 }
-
 
 
 module.exports = {
@@ -71,3 +70,5 @@ module.exports = {
     obtenerTraspaso,
     obtenerArticulosTraspaso
 }
+
+
