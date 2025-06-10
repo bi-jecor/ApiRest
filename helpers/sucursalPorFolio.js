@@ -48,3 +48,4 @@ obtenerSucursalPorFolio = (folio = 'FA') => {
 module.exports = {
     obtenerSucursalPorFolio
 }
+

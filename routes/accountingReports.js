@@ -22,7 +22,6 @@ const { getAllProvidersCharges,
     obtenerVentasPorImpuesto,
     obtenerRecepciones ,
     obtenerDevolucionesDet
-
 } = require('../controllers/accountingReports')
 
 const router = Router();
