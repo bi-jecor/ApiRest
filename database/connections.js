@@ -146,7 +146,7 @@ const TIANGUIS = {
     //host: '192.168.15.202',
     host: '192.168.40.200',
     port: 3053,
-    database: 'E:/Bases de datos/ADI 2019.FDB',
+    database: 'E:/Bases de datos/JECOR 2018.FDB',
     lowercase_keys: false, 
     role: null,
     pageSize: 4096,
@@ -159,8 +159,8 @@ const TIANGUIS = {
     ieps6: 342776,
     ieps30: 37732487,
     exento: 33323230,
-    keysArticlesIds : '17,12465,25863515',
-    // keysArticlesIds : '17,18,288',
+    // keysArticlesIds : '17,12465,25863515',
+    keysArticlesIds : '17,18,288',
     companyPriceId:28548960
 }
 
