@@ -836,7 +836,7 @@ const getExistencias = (req, res) => {
             });
         }
         db.execute(`select articulo_id as article_id , clave_articulo as code, nombre as article, existencia as stock
-        from exival_art_ur2('${microsipName.toUpperCase()}', '${date}', 'N', 'S', 'S', 'S');`,
+        from exival_art_ur2('ADY 2', '${date}', 'N', 'S', 'S', 'S');`,
             function(err, data) {
                 console.log(data);
                 if(err){
