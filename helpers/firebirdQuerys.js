@@ -9,12 +9,13 @@ const formatDate = require('../helpers/formatDate');
 const { obtenerSucursalPorFolio } = require('./sucursalPorFolio');
 const { dosDecimales } = require('./redondeo');
 const { obtenerDias } = require('./formatearTexto');
+const e = require('express');
 
 
 const getDataToPolicyTest = (conection, date1, date2) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], function (err, db) {
-            // console.log(conections[conection]);
+            console.log(conections[conection]);
             if (err) {
                 console.log('CONECT', conection);
                 const error = {
@@ -328,9 +329,9 @@ const getCustomersBalances = (conection, date) => {
         });
     });
 }
-const getCustomersBalances2 = (conection, date) => {
-    console.log('2');
 
+const getCustomersBalances2 = (conection, date) => {
+    date = date === null ? 'current_date' : date;
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
@@ -357,7 +358,8 @@ const getCustomersBalances2 = (conection, date) => {
             db.query(
                 `
                     SELECT A.*,  B.FOLIO, B.FECHA, B.CLIENTE_ID, cc.nombre, B.DESCRIPCION, C.NOMBRE_ABREV, CLIENTES.nombre, condiciones_pago.nombre AS COND_PAGO, f.dir_consig_id, DC.rfc_curp as RFC, fp.nombre as cond_ft
-                    FROM cargos_cliente_jgb(current_date, current_date, 'N', 'N') A
+                    FROM cargos_cliente_jgb('${date}', '${date}', 'N', 'N') A
+
                     LEFT JOIN DOCTOS_CC B
                     ON A.DOCTO_CC_ID = B.DOCTO_CC_ID
                     LEFT JOIN clientes
@@ -405,6 +407,7 @@ const getCustomersBalances2 = (conection, date) => {
         });
     });
 }
+
 const getCustomersBalancesHis = (conection, date) => {
     console.log('2');
 
@@ -526,6 +529,7 @@ const getCustomersBalancesHis = (conection, date) => {
         });
     });
 }
+
 const getCustomersBalancesToday = (conection) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], async function (err, db) {
@@ -605,7 +609,6 @@ const getCustomersBalancesToday = (conection) => {
         });
     });
 }
-
 
 const getCmTotal = (conection, date1, date2) => {
     console.log(conection, date1, date2);
@@ -971,6 +974,7 @@ const getProviders = (conection, min, max) => {
         });
     });
 }
+
 const getArticlesToHealer = (conection, min, max, provider = '') => {
     let query = 'select * from xtjec_articulosanear';
     console.log(provider.length);
@@ -1850,7 +1854,6 @@ const getJecStockListGraphByWarehouse = (conection, warehouseId, warehouseIdSQL)
                     //console.log(data);
                     if (data) {
                         data.forEach(element => {
-
                             const newElement = {
                                 almacen_id: warehouseIdSQL,
                                 estatus: element.ESTATUS = element.ESTATUS !== null ? element.ESTATUS.toString('latin1') : 'Null',
@@ -1998,6 +2001,7 @@ const frkOrdenCompraDet = (connection, data) => {
                     function (err, result) {
                         db.detach();
                         if (err) {
+                            console.log(err);
                             reject(err)
                         }
                         if (result && i + 1 === data.length) {
@@ -2099,9 +2103,9 @@ const getCustomersToSap = (connection) => {
                 }
                 return reject(error)
             }
-            db.execute(
-                `
-select
+            db.query(
+                `  
+                    select
             c.cliente_id,
             trim(c.nombre) as nombre,
             trim('C') as serie ,
@@ -2116,8 +2120,8 @@ select
             c.codigo_postal,
             c.ciudad,
             c.poblacion,
-            trim(c.pais),
-            c.estado,
+            trim(c.pais) as pais,
+            COALESCE(c.estado, '') as estado,
             c.num_exterior,
             c.num_interior,
             c.telefono1,
@@ -2193,38 +2197,38 @@ select
             on p.cliente_id = c.cliente_id
             left join precios_empresa pre
             on p.precio_empresa_id = pre.precio_empresa_id   
-
                 ` ,
                 function (err, customersDB) {
                     console.log('err', err);
-                    console.log('DB', customersDB);
+                    // console.log('DB', customersDB);
                     if (err) {
                         reject(err)
                     }
                     let customers = customersDB.map(customer => {
                         return {
-                            name: customer[1],
-                            serie: customer[2],
-                            group: customer[3],
-                            list: customer[4],
-                            cond: customer[5] !== null ? obtenerDias(customer[5].toString('latin1')) : '',
-                            rfc: customer[6].toString('latin1'),
-                            account: customer[7],
-                            cfdi: 'G03',
-                            fiscal: customer[8],
-                            street: customer[9] !== null ? customer[9].toString('latin1').split("\n").join(" ").split("\r").join("") : '',
-                            block: customer[10] !== null ? customer[10].toString('latin1') : '',
-                            zipCode: customer[11] !== null ? customer[11].toString('latin1') : '',
-                            city: customer[12] !== null ? customer[12].toString('latin1') : '',
-                            county: customer[13] !== null ? customer[13].toString('latin1') : '',
-                            country: customer[14] !== null ? customer[14].toString('latin1') : '',
-                            state: customer[15] !== null ? customer[15].toString('latin1') : '',
-                            buildingFloorRoom: customer[16] !== null ? customer[16].toString('latin1') : '',
-                            streetNo: customer[17] !== null ? customer[17].toString('latin1') : '',
-                            phone: customer[18] !== null ? customer[18].toString('latin1') : '',
-                            connection: connection,
-                            email : customer[19] !== null ? customer[19].toString('latin1') : '',
-                            limite_credito : customer[20] ,
+                            cardName: customer.NOMBRE,
+                            serie: customer.SERIE,
+                            groupCode: customer.GRUPO,
+                            list: customer.LISTA_PRECIOS,
+                            payTermsGrpCode: customer[5] !== null ? customer.COND_PAGO.toString('latin1')  : '',
+                            federalTaxID: customer.RFC.toString('latin1'),
+                            debitorAccount: customer.CUENTA,
+                            wTCode: 'G03',
+                            fiscal: customer.CLAVE_REGIMEN_FISCAL,
+                            street: customer.CALLE !== null ? customer.CALLE.toString('latin1').split("\n").join(" ").split("\r").join("") : '',
+                            block: customer.COLONIA !== null ? customer.COLONIA.toString('latin1') : '',
+                            zipCode: customer.CODIGO_POSTAL !== null ? customer.CODIGO_POSTAL.toString('latin1') : '',
+                            city: customer.CIUDAD !== null ? customer.CIUDAD.toString('latin1') : '',
+                            county: customer.POBLACION !== null ? customer.POBLACION.toString('latin1') : '',
+                            country: customer.PAIS !== null ? customer.PAIS.toString('latin1') : '',
+                            state: customer.ESTADO,
+                            buildingFloorRoom: customer.NUM_EXTERIOR !== null ? customer.NUM_EXTERIOR.toString('latin1') : '',
+                            streetNo: customer.NUM_INTERIOR !== null ? customer.NUM_INTERIOR.toString('latin1') : '',
+                            // streetNo: customer[17] !== null ? customer[17].toString('latin1') : '',
+                            phone1: customer.TELEFONO1 !== null ? customer.TELEFONO1.toString('latin1') : '',
+                            db: connection,
+                            email : customer.EMAIL !== null ? customer.EMAIL.toString('latin1') : '',
+                            creditLimit : customer.LIMITE_CREDITO
                         }
                     })
 
@@ -2247,104 +2251,85 @@ const getProvidersToSap = (connection) => {
                 }
                 return reject(error)
             }
-            db.execute(
+            db.query(
                 `
-                    select distinct
-                        '' as cardCode,
-                        p.nombre as cardName,
-                        trim('P') as serie,
-                        '' as cardType,
-                        trim('Compras') as GroupCode,
-                        p.telefono1 as phone1,
-                        p.telefono2 as phone2,
-                        p.fax,
-                        cast(p.email as varchar(100)) as email,
-                        cast(cond.nombre as varchar(50))  as payTerms,
-                        cast(p.rfc_curp as varchar(50)) as FederalTax,
-                        trim('201-101-000 - PROVEEDORES NACIONALES') as creditorAccount,
-                        trim('Lista de precios compra') as listname,
-                        '' as wTCode,
-                        '' as VatGroupLatinAmerica,
-                        '' as properties1,
-                        '' as properties2,
-                        '' as properties3,
-                        '' as properties4,
-                        '' as properties5,
-                        '' as properties6,
-                        '' as properties7,
-                        '' as properties8,
-                        '' as properties9,
-                        '' as properties10,
-                        '' as properties11,
-                        '' as properties12,
-                        '' as properties13,
-                        '' as properties14,
-                        '' as properties15,
-                        '' as properties16,
-                        '' as properties17,
-                        '' as properties18,
-                        '' as properties19,
-                        '' as regimen,
-                        trim('Otros' ) as providerType,
-                        trim('Nacional' ) as Nationality,
-                        trim('Transferencia') as payment,
-                        trim('G01') as cfdi_a_doctos_proc_cancel, 
-                        p.limite_credito
-                    from DOCTOS_CM cm
-                    join proveedores p
-                    on p.PROVEEDOR_ID = cm.proveedor_id
-                    left join condiciones_pago_cp cond
-                    on cond.cond_pago_id = p.cond_pago_id
-                    WHERE cm.fecha > '01.01.2023'         
-                    ` ,
+                SELECT
+                    '' as cardCode,
+                    p.nombre as cardName,
+                    cast(tp.nombre as varchar(200)) as groupCode,
+                    coalesce(p.telefono1, '') as phone1,
+                    coalesce(p.telefono2, '') as phone2,
+                    cast(p.email as varchar(100)) as email,
+                    cast(cond.nombre as varchar(50))  as payTermsGrpCode,
+                    cast(p.rfc_curp as varchar(50)) as FederalTaxID,
+                    trim('21010101') as debitorAccount,
+                    '' as wTCode,
+                    '' as typeCommercialOp,
+                    trim('Transferencia') as paymentMethod,
+                    '' as cfdi,
+                    p.limite_credito as creditLimit,
+                    trim('Nacional') as diot,
+                    trim('Otros') as diotType,
+                    trim('MEXICANA') as diotNationality,
+                    trim('FISCAL') as AddressName,
+                    trim('FISCAL') as addressType,
+                    p.nombre_calle as street,
+                    P.colonia AS BLOCK,
+                    P.codigo_postal as zipCode,
+                    cd.nombre as city,
+                    pais.nombre as country,
+                    e.nombre as state,
+                    p.num_exterior as buildingFloorRoom,
+                    p.num_interior as streetNo
+                FROM doctos_cm cm
+                LEFT JOIN proveedores p ON cm.proveedor_id = p.proveedor_id
+                left join condiciones_pago_cp cond
+                on cond.cond_pago_id = p.cond_pago_id
+                left join tipos_prov tp
+                on p.tipo_prov_id = tp.tipo_prov_id
+                left join ciudades cd
+                on cd.ciudad_id = p.ciudad_id
+                left join paises pais
+                on pais.pais_id = p.pais_id
+                left join estados e
+                on e.estado_id = p.estado_id
+                WHERE cm.fecha > '01.01.2023'
+                ` ,
                 function (err, providersDB) {
                     if (err) {
+            
                         reject(err)
                     }
-                    console.log(connection, providersDB);
+                    console.log(connection, err);
                     const providers = providersDB.map(provider => {
                         return {
-                            cardCode: provider[0],
-                            cardName: provider[1],
-                            serie: provider[2],
-                            cardType: provider[3],
-                            groupCode: provider[4],
-                            phone1: provider[5] !== null ? provider[5].toString('latin1') : '',
-                            phone2: provider[6] !== null ? provider[6].toString('latin1') : '',
-                            fax: provider[7] !== null ? provider[7].toString('latin1') : '',
-                            email: provider[8] !== null ? provider[8].toString('latin1') : '',
-                            payterms: provider[9] !== null ? provider[9].toString('latin1') : '',
-                            federalTax: provider[10] !== null ? provider[10].toString('latin1') : '',
-                            creditorAccount: provider[11] !== null ? provider[11].toString('latin1') : '',
-                            listname: provider[12] !== null ? provider[12].toString('latin1') : '',
-                            wTCode: provider[13] !== null ? provider[13].toString('latin1') : '',
-                            vatGroupLatinAmerica: provider[14] !== null ? provider[14].toString('latin1') : '',
-                            properties1: provider[15] !== null ? provider[15].toString('latin1') : '',
-                            properties2: provider[16] !== null ? provider[16].toString('latin1') : '',
-                            properties3: provider[17] !== null ? provider[17].toString('latin1') : '',
-                            properties4: provider[18] !== null ? provider[18].toString('latin1') : '',
-                            properties5: provider[19] !== null ? provider[19].toString('latin1') : '',
-                            properties6: provider[20] !== null ? provider[20].toString('latin1') : '',
-                            properties7: provider[21] !== null ? provider[21].toString('latin1') : '',
-                            properties8: provider[22] !== null ? provider[22].toString('latin1') : '',
-                            properties9: provider[23] !== null ? provider[23].toString('latin1') : '',
-                            properties10: provider[24] !== null ? provider[24].toString('latin1') : '',
-                            properties11: provider[25] !== null ? provider[25].toString('latin1') : '',
-                            properties12: provider[26] !== null ? provider[26].toString('latin1') : '',
-                            properties13: provider[27] !== null ? provider[27].toString('latin1') : '',
-                            properties14: provider[28] !== null ? provider[28].toString('latin1') : '',
-                            properties15: provider[29] !== null ? provider[29].toString('latin1') : '',
-                            properties16: provider[30] !== null ? provider[30].toString('latin1') : '',
-                            properties17: provider[31] !== null ? provider[31].toString('latin1') : '',
-                            properties18: provider[32] !== null ? provider[32].toString('latin1') : '',
-                            properties19: provider[33] !== null ? provider[33].toString('latin1') : '',
-                            regimen: provider[34] !== null ? provider[34].toString('latin1') : '',
-                            providerType: provider[35],
-                            nationality: provider[36],
-                            payment: provider[37],
-                            cfdi: provider[38],
-                            limit: provider[39],
-                            db: connection,
+                            cardCode: provider.CARDCODE,
+                            cardName: provider.CARDNAME,
+                            groupCode: provider.GROUPCODE,
+                            phone1: provider.PHONE1,
+                            phone2: provider.PHONE2,
+                            email: provider.EMAIL,
+                            payTermsGrpCode: obtenerDias(provider.PAYTERMSGRPCODE),
+                            federalTaxID: provider.FEDERALTAXID,
+                            debitorAccount: provider.DEBITORACCOUNT,
+                            wTCode: provider.WTCODE,
+                            typeCommercialOp: provider.TYPECOMMERCIALOP,
+                            paymentMethod: provider.PAYMENTMETHOD,
+                            cfdi: provider.CFDI,
+                            creditLimit: provider.CREDITLIMIT,
+                            diot: provider.DIOT,
+                            diotType: provider.DIOTTYPE,
+                            diotNationality: provider.DIOTNATIONALITY,
+                            addressName: provider.ADDRESSNAME,
+                            addressType: provider.ADDRESSTYPE,
+                            street: provider.STREET !== null ? provider.STREET.toString('latin1') : '', 
+                            block: provider.BLOCK !== null ? provider.BLOCK.toString('latin1') : '',
+                            zipCode: provider.ZIPCODE !== null ? provider.ZIPCODE.toString('latin1') : '',
+                            city: provider.CITY,
+                            country: provider.COUNTRY !== null ? provider.COUNTRY.toString('latin1') : '',
+                            state: provider.STATE !== null ? provider.STATE.toString('latin1') : '',
+                            buildingFloorRoom: provider.BUILDINGFLOORROOM !== null ? provider.BUILDINGFLOORROOM.toString('latin1') : '',
+                            streetNo: provider.STREETNO !== null ? provider.STREETNO.toString('latin1') : '',
                         }
                     });
                     db.detach();
@@ -2418,9 +2403,83 @@ const getProvidersChargesCxp = (connection) => {
                             // tipo_provedor : charge[20] !== null ? charge[20].toString('latin1') : '',
                         }
                     })
-
                     //console.log('cargos',charges[0]);
-
+                    let data = {
+                        charges,
+                        connection
+                    }
+                    console.log("[CUENTAS POR PAGAR] EJECUTADO CORRECTAMENTE EN " + connection);
+                    db.detach();
+                    resolve(data)
+                });
+        });
+    });
+}
+// fUNCION PARA OBTENER CARGO DELOS PROVEEDORES
+const getProvidersChargesCxpDate = (connection,date) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            //console.log('db', connection,err);
+            if (err) {
+                const error = {
+                    ok: false,
+                    connection: connection,
+                    msg: err
+                }
+                return reject(error)
+            }
+            db.query(
+                `
+                    SELECT A.*,  B.FOLIO, B.FECHA, B.PROVEEDOR_ID, B.DESCRIPCION, C.NOMBRE_ABREV, cm.fecha as fecha_compra, '' as fecha_recepcion,cm.folio as folio_cm , clp.clave_prov, p.nombre as nombre_provedor, p.rfc_curp,  ALM.nombre as almacen, ccp.NOMBRE AS cond_pago, cm.importe_neto, tp.nombre
+                    FROM XSP_CARGOS_PROVEEDORES('${date}' , '${date}', 'N') A
+                    LEFT JOIN DOCTOS_CP B
+                    ON A.DOCTO_CP_ID = B.DOCTO_CP_ID
+                    LEFT JOIN CONCEPTOS_CP C
+                    ON B.CONCEPTO_CP_ID = C.CONCEPTO_CP_ID
+                    LEFT JOIN DOCTOS_CM CM
+                    ON b.proveedor_id = cm.proveedor_id and b.folio =   cm.folio_prov  and cm.tipo_docto = 'C' and cm.estatus = 'N'
+                    LEFT join ALMACENES ALM
+                    ON ALM.almacen_id = CM.almacen_id
+                    left join proveedores p
+                    on p.proveedor_id = cm.proveedor_id
+                    left join (
+                         SELECT P.proveedor_id, coalesce(CP1.clave_prov, CP2.clave_prov) AS clave_prov FROM PROVEEDORES P
+                            LEFT JOIN claves_proveedores CP1 ON P.proveedor_id = CP1.proveedor_id AND CP1.rol_clave_prov_id = 49
+                            LEFT JOIN claves_proveedores CP2 ON P.proveedor_id = CP2.proveedor_id AND CP2.rol_clave_prov_id = 50
+                    ) clp on p.proveedor_id = clp.proveedor_id
+                    left join condiciones_pago_cp ccp
+                    on ccp.cond_pago_id = cm.cond_pago_id
+                    left join tipos_prov tp
+                    on tp.tipo_prov_id = p.tipo_prov_id
+                    ORDER BY FECHA
+                    ` ,
+                function (err, chargesDB) {
+                    if (err) {
+                        reject(err)
+                    }
+                    //console.log(chargesDB[0]);
+                    let charges = chargesDB.map(charge => {
+                        return {
+                            docDueDate: charge.FECHA_VENCIMIENTO !== null ? charge.FECHA_VENCIMIENTO : '',
+                            atraso: charge.ATRASO !== null ? charge.ATRASO : '',
+                            importe_cargo: charge.IMPORTE_CARGO !== null ? charge.IMPORTE_CARGO : '',
+                            saldo_cargo: charge.SALDO_CARGO !== null ? charge.SALDO_CARGO : '',
+                            numAtCard: charge.FOLIO !== null ? charge.FOLIO.toString('latin1') : '',
+                            docDate: charge.FECHA_COMPRA !== null ? charge.FECHA_COMPRA : '',
+                            // proveedor_id : charge[8] !== null ? charge[8] : '',
+                            fecha_compra: charge.FECHA_COMPRA !== null ? charge.FECHA_COMPRA : '',
+                            fecha_recepcion: charge.FECHA_RECEPCION !== null ? charge.FECHA_RECEPCION.toString('latin1') : '',
+                            folio_cm: charge.FOLIO_CM !== null ? charge.FOLIO_CM.toString('latin1') : '',
+                            clave_prov: charge.CLAVE_PROV !== null ? charge.CLAVE_PROV.toString('latin1') : '',
+                            cardName: charge.NOMBRE_PROVEDOR !== null ? charge.NOMBRE_PROVEDOR.toString('latin1') : '',
+                            rfc: charge.RFC_CURP !== null ? charge.RFC_CURP.toString('latin1') : '',
+                            almacen: charge.ALMACEN !== null ? charge.ALMACEN.toString('latin1') : '',
+                            cond_pago: charge.COND_PAGO !== null ? charge.COND_PAGO.toString('latin1') : '',
+                            importe_neto: charge.IMPORTE_NETO !== null ? charge.IMPORTE_NETO : '',
+                            // tipo_provedor : charge[20] !== null ? charge[20].toString('latin1') : '',
+                        }
+                    })
+                    //console.log('cargos',charges[0]);
                     let data = {
                         charges,
                         connection
@@ -2488,9 +2547,6 @@ const getProvidersChargesCxpSap = (connection) => {
                             taxcode: charge.IMPUESTO !== null ? charge.IMPUESTO.toString('latin1') : '',
                         }
                     })
-
-                    //console.log('cargos',charges[0]);
-
                     let data = {
                         charges,
                         connection
@@ -2652,17 +2708,20 @@ const obtenerPagos = (connection) => {
                     inner join
                         (
                         Select ve.folio, ve.cond_pago_id from doctos_ve  ve
-                            where ve.fecha >= '01.01.2024'
+                            where ve.fecha >= '01.08.2024'
                         )  ve
                     on ve.folio = f.folio
                     left join condiciones_pago cp
                     on cp.cond_pago_id = ve.cond_pago_id
-                    where cc.fecha >= '01.01.2024'
+                    where cc.fecha >= '01.08.2024'
                     and c.nombre in ('Pagos', 'Abonos')
                     and cc.estatus = 'N'
+                    and cc.cancelado <> 'S'
                     ` ,
                 function (err, pagosDB) {
                     if (err) {
+                        console.log(err);
+                        
                         reject(err)
                     }
                     let pagos = pagosDB.map(charge => {
@@ -2675,8 +2734,7 @@ const obtenerPagos = (connection) => {
                             importe: charge.IMPORTE !== null ? charge.IMPORTE : '',
                             cond_pago: charge.COND_PAGO !== null ? charge.COND_PAGO.toString('latin1') : '',
                         }
-                    })
-
+                    });
                     db.detach();
                     resolve(pagos)
                 });
@@ -2686,14 +2744,12 @@ const obtenerPagos = (connection) => {
 
 // Obtener la factura de Pv y Ve con estatus normal
 const obtenerDoctosVe = (connection) => {
- 
     return new Promise((resolve, reject) => {      
             firebird.attach(conections[connection], async function (err, db) {              
 
                 if (err) {                                      
                     return reject(err);
                 }
-                
                 db.query(
                     `
                         SELECT
@@ -2720,7 +2776,7 @@ const obtenerDoctosVe = (connection) => {
                                 coalesce(A.fecha_hora_cancelacion,'01.01.1900') AS Fecha_Cancelacion,
                                 D.sujeto_ieps
                         FROM DOCTOS_PV A
-                        INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
+                        LEFT JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
                         LEFT JOIN (
                                 select ipd.docto_pv_id,sum(ipd.venta_neta) venta_neta,sum(ipd.importe_impuesto) importe_impuesto
                                 from  impuestos_doctos_PV  ipd  inner join  impuestos i
@@ -2757,7 +2813,7 @@ const obtenerDoctosVe = (connection) => {
                                 WHERE pvd.docto_pv_id = pvd.docto_pv_id
                                 GROUP BY pvd.docto_pv_id
                             ) AS x on  a.docto_pv_id = x.docto_pv_id
-                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D','C')  AND A.FECHA  >= '01.01.2024'
+                        WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D','C')  AND A.FECHA  >= '01.01.2025'
                         UNION ALL
                         SELECT A.DOCTO_VE_ID AS DOCTO_ID,
                         A.CLAVE_CLIENTE,
@@ -2816,7 +2872,7 @@ const obtenerDoctosVe = (connection) => {
                                 GROUP BY ved.docto_ve_id
                             ) AS x
                         on  a.docto_ve_id = x.docto_ve_id
-                        INNER JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
+                        LEFT JOIN CLIENTES D ON (A.CLIENTE_ID=D.CLIENTE_ID)
                         WHERE A.TIPO_DOCTO='F' AND A.ESTATUS in('N','D','C') AND A.FECHA  >= '01.01.2024'
 
                     ` ,
@@ -2864,8 +2920,7 @@ const obtenerDoctosVe = (connection) => {
     });
 }
 
-const obtenerDoctosPagos = (connection) => {
-
+const obtenerDoctosPagos = (connection, fecha, fechaFin) => {
     return new Promise((resolve, reject) => {
 
         firebird.attach(conections[connection], function (err, db) {
@@ -2874,7 +2929,7 @@ const obtenerDoctosPagos = (connection) => {
             }
             db.query(
                 `
-                    SELECT FIRST 10 * FROM obtener_pagos('01.08.2024', '31.08.2024')
+                    SELECT FIRST 10 * FROM obtener_pagos('${fecha}', '${fechaFin}')
                 ` ,
                 function (err, pagosDB) {     
                     if (err) {
@@ -2907,6 +2962,8 @@ const obtenerDoctosPagos = (connection) => {
                                 rfc: charge.RFC !== null ? charge.RFC.toString('latin1') : '',
                                 uuid: charge.UUID !== null ? charge.UUID.toString('latin1') : '',
                                 razon_social: charge.RAZON_SOCIAL !== null ? charge.RAZON_SOCIAL.toString('latin1') : '',
+                                seleccionado : false,
+                                cargado : false
 
                             }
                         });
@@ -3000,8 +3057,7 @@ const obtenerDoctosVeDet = (connection) => {
                             unidades: docto.UNIDADES !== null ? docto.UNIDADES : 0.00,
                             sucursal: obtenerSucursalPorFolio(docto.SERIE)
                         }
-                    })
-
+                    });
                     db.detach();
                     resolve(doctosVeDet)
                 });
@@ -3009,8 +3065,7 @@ const obtenerDoctosVeDet = (connection) => {
     });
 }
 
-// Obtener la factura de Pv y Ve con estatus normal
-const obtenerClientes = (connection) => {
+const obtenerDevoluciones = (connection) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {                
@@ -3018,74 +3073,765 @@ const obtenerClientes = (connection) => {
             }
             db.query(
                 `
-                    SELECT B.NOMBRE_CLIENTE AS "CLIENTE", A.CONTACTO1, A.CLIENTE_ID, B.ESTATUS, B.NOMBRE_TIPO AS "TIPO", B.NOMBRE_ZONA AS "ZONA", B.NOMBRE_VENDEDOR AS "VENDEDOR",
-                    B.NOMBRE_COND_PAGO AS "CONDICION_PAGO", C.RFC_CURP AS "RFC", A.CONTACTO1 AS "COMPRADOR", C.TELEFONO1 AS "TELEFONO", C.EMAIL AS "CORREO",
-                    C.NOMBRE_CALLE AS "CALLE", C.NUM_EXTERIOR AS "NUM_EXT", C.NUM_INTERIOR AS "NUM_INT", C.COLONIA, C.CODIGO_POSTAL, D.NOMBRE AS "CIUDAD", E.NOMBRE AS "ESTADO", F.NOMBRE AS "PAIS",
-                    C.TIPO_PERSONA, C.CLAVE_REGIMEN_FISCAL, G.LATITUD, G.LONGITUD, G.ORDEN, G.CLASIFICACION, B.CLAVE_CLIENTE AS "CLAVE", A.LIMITE_CREDITO, I.NOMBRE AS "RUTA"
-                    FROM CLIENTES A
-                    INNER JOIN ORSP_LISTA_CLIENTES('S') B
-                    ON A.CLIENTE_ID = B.CLIENTE_ID
-                    INNER JOIN DIRS_CLIENTES C
-                    ON A.CLIENTE_ID = C.CLIENTE_ID
-                    INNER JOIN CIUDADES D
-                    ON C.CIUDAD_ID = D.CIUDAD_ID
-                    INNER JOIN ESTADOS E
-                    ON C.ESTADO_ID = E.ESTADO_ID
-                    INNER JOIN PAISES F
-                    ON C.PAIS_ID = F.PAIS_ID
-                    INNER JOIN LIBRES_CLIENTES G
-                    ON A.CLIENTE_ID = G.CLIENTE_ID
-                    LEFT JOIN RUTAS_DET H
-                    ON A.CLIENTE_ID = H.CLIENTE_ID
-                    INNER JOIN RUTAS I
-                    ON H.RUTA_ID = I.RUTA_ID
-                    WHERE C.ES_DIR_PPAL = 'S'
+                select
+                    ve.folio,
+                    ve.fecha,
+                    ve.importe_neto + ve.total_impuestos as importe_total,
+                    alm.nombre as almacen,
+                    c.nombre AS nombre_cliente,
+                    ve.estatus
+                from doctos_ve ve
+                left join almacenes alm
+                on alm.almacen_id = ve.almacen_id
+                left join clientes c
+                on c.cliente_id = ve.cliente_id
+                where ve.tipo_docto = 'D'
+                and ve.cfdi_certificado = 'N'
                     ` ,
                 function (err, doctosVeDetDB) {
-                    console.log(doctosVeDetDB);
                     if (err) {
                        return reject(err)
                     }
 
-                    let doctosVeDet = doctosVeDetDB.map(docto => {
-                        
+                    console.log(doctosVeDetDB);
+                    
+
+                    let devoluciones = doctosVeDetDB.map(docto => {
                         return {
-                            cliente: docto.CLIENTE !== null ? docto.CLIENTE.toString('latin1') : '',
-                            contacto1: docto.CONTACTO1 !== null ? docto.CONTACTO1.toString('latin1') : '',
-                            cliente_id: docto.CLIENTE_ID !== null ? docto.CLIENTE_ID : 0,
+                            folio: docto.FOLIO !== null ? docto.FOLIO.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(docto.FECHA),
+                            nombre_cliente: docto.NOMBRE_CLIENTE,
                             estatus: docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
-                            tipo: docto.TIPO !== null ? docto.TIPO.toString('latin1') : '',
-                            zona: docto.ZONA !== null ? docto.ZONA.toString('latin1') : '',
-                            vendedor: docto.VENDEDOR !== null ? docto.VENDEDOR.toString('latin1') : '',
-                            condicion_pago: docto.CONDICION_PAGO !== null ? docto.CONDICION_PAGO.toString('latin1') : '',
-                            rfc: docto.RFC !== null ? docto.RFC.toString('latin1') : '',
-                            comprador: docto.COMPRADOR !== null ? docto.COMPRADOR.toString('latin1') : '',
-                            telefono: docto.TELEFONO !== null ? docto.TELEFONO.toString('latin1') : '',
-                            correo: docto.CORREO !== null ? docto.CORREO.toString('latin1') : '',
-                            calle: docto.CALLE !== null ? docto.CALLE.toString('latin1') : '',
-                            num_exterior: docto.NUM_EXT !== null ? docto.NUM_EXT.toString('latin1') : '',
-                            num_interior: docto.NUM_INT !== null ? docto.NUM_INT.toString('latin1') : '',
-                            colonia: docto.COLONIA !== null ? docto.COLONIA.toString('latin1') : '',
-                            codigo_postal: docto.CODIGO_POSTAL !== null ? docto.CODIGO_POSTAL.toString('latin1') : '',
-                            ciudad: docto.CIUDAD !== null ? docto.CIUDAD.toString('latin1') : '',
-                            estado: docto.ESTADO !== null ? docto.ESTADO : '',
-                            pais: docto.PAIS !== null ? docto.PAIS.toString('latin1') : '',
-                            tipo_persona: docto.TIPO_PERSONA !== null ? docto.TIPO_PERSONA.toString('latin1') : '',
-                            clave_regimen_fiscal: docto.CLAVE_REGIMEN_FISCAL !== null ? docto.CLAVE_REGIMEN_FISCAL.toString('latin1') : '',
-                            latitud: docto.LATITUD !== null ? docto.LATITUD : 0.00,
-                            longitud: docto.LONGITUD !== null ? docto.LONGITUD : 0.00,
-                            orden: docto.ORDEN !== null ? docto.ORDEN : 0,
-                            clasificacion: docto.CLASIFICACION !== null ? docto.CLASIFICACION: '',
-                            clave: docto.CLAVE !== null ? docto.CLAVE : '',
-                            limite_credito: docto.LIMITE_CREDITO !== null ? docto.LIMITE_CREDITO : 0.00,
-                            ruta: docto.RUTA !== null ? docto.RUTA.toString('latin1') : '',
-                            sucursal: connection
-                            
+                            almacen: docto.ALMACEN,
+                            importe_neto: docto.IMPORTE_NETO,
+                            db : connection
                         }
                     })
 
                     db.detach();
-                    resolve(doctosVeDet)
+                    resolve(devoluciones)
+                });
+        });
+    });
+}
+
+const obtenerTicketsNoFacturados = (connection, fechaInicio, fechaFin) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {     
+                console.log(err);      
+                return reject(err)
+            }
+            db.query(
+                `
+                        Select
+                            pv.folio,
+                            pv.fecha,
+                            pv.importe_neto + pv.total_impuestos as importe_neto,
+                            c.nombre AS nombre_cliente,
+                            alm.nombre as almacen,
+                            trim(coalesce(factura.folio,'')) as folio_factura,
+                            pv.estatus,
+                            trim(coalesce(factura.cfdi_certificado,'')) as cfdi_certificado,
+                            pv.usuario_cancelacion,
+                            pvd.clave_articulo,
+                            a.nombre,
+                            pvd.precio_total_neto,
+                            Sum(ipvd.importe_impuesto_bruto) as importe_impuesto_bruto
+                        from doctos_pv_ligas liga
+                        right join  doctos_PV pv
+                        on liga.docto_pv_fte_id = pv.docto_pv_id
+                        inner join doctos_pv_det pvd
+                        on pv.docto_pv_id = pvd.docto_pv_id
+                        inner join impuestos_doctos_pv_det ipvd
+                        on ipvd.docto_pv_det_id = pvd.docto_pv_det_id
+                        inner join articulos a
+                        on a.articulo_id = pvd.articulo_id
+                        inner join clientes c
+                        on c.cliente_id = pv.cliente_id
+                        inner join almacenes alm
+                        on alm.almacen_id = pv.almacen_id
+                        left join doctos_pv factura
+                        on factura.docto_pv_id = liga.docto_pv_dest_id
+                        where pv.tipo_docto = 'V'
+                        and pv.FECHA BETWEEN '${fechaInicio}' AND '${fechaFin}'
+                        group by
+                            pv.folio,
+                            pv.fecha,
+                            pv.importe_neto + pv.total_impuestos,
+                            c.nombre,
+                            alm.nombre,
+                            trim(coalesce(factura.folio,'')),
+                            pv.estatus,
+                            trim(coalesce(factura.cfdi_certificado,'')),
+                            pv.usuario_cancelacion,
+                            pvd.clave_articulo,
+                            a.nombre,
+                            pvd.precio_total_neto,
+                            ipvd.docto_pv_det_id
+
+                ` ,
+                function (err, doctosVeDetDB) {
+                    if (err) {
+                        console.log(err);
+                       return reject(err)
+                    }
+
+                    let devoluciones = doctosVeDetDB.map(docto => {
+                        return {
+                            folio: docto.FOLIO !== null ? docto.FOLIO.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(docto.FECHA),
+                            nombre_cliente: docto.NOMBRE_CLIENTE,
+                            almacen: docto.ALMACEN,
+                            estatus: docto.ESTATUS.toString('latin1'),
+                            importe_neto: docto.IMPORTE_NETO,
+                            folio_factura: docto.FOLIO_FACTURA,
+                            cfdi_certificado: docto.CFDI_CERTIFICADO,
+                            usuario_cancelacion: docto.USUARIO_CANCELACION !== null ? docto.USUARIO_CANCELACION.toString('latin1') : '',
+                            articulo : docto.NOMBRE !== null ? docto.NOMBRE.toString('latin1') : '',
+                            clave_articulo: docto.CLAVE_ARTICULO !== null ? docto.CLAVE_ARTICULO.toString('latin1') : '',
+                            precio_total_neto: docto.PRECIO_TOTAL_NETO,
+                            importe_impuesto_bruto: docto.IMPORTE_IMPUESTO_BRUTO,
+                            db : connection
+                        }
+                    })
+
+                    db.detach();
+                    resolve(devoluciones)
+                });
+        });
+    });
+}
+
+const obtenerComplementos = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {  
+                console.log(err);
+                              
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                        cc.folio,
+                        concep.nombre,
+                        cc.fecha,
+                        cc.cfdi_certificado,
+                        cc.estatus,
+                        sum(icc.importe) as importe,
+                        sum(coalesce(iva.importe,0)) as iva,
+                        sum(coalesce(ieps.importe,0)) as ieps
+                    from doctos_cc cc
+                    left join conceptos_cc concep
+                    on concep.concepto_cc_id = cc.concepto_cc_id
+                    left join importes_doctos_cc icc
+                    on icc.docto_cc_id = cc.docto_cc_id
+                    left join (
+                        select
+                            ccimp.impte_docto_cc_id,
+                            Sum(ccimp.impuesto) as importe
+                        from importes_doctos_cc_imptos ccimp
+                        left join impuestos imp
+                        on ccimp.impuesto_id = imp.impuesto_id
+                        where imp.tipo_impto_id = 44
+                        group by ccimp.impte_docto_cc_id
+                        ) iva
+                    on iva.impte_docto_cc_id = icc.impte_docto_cc_id
+                    left join (
+                        select
+                            ccimp.impte_docto_cc_id,
+                            Sum(ccimp.impuesto) as importe
+                        from importes_doctos_cc_imptos ccimp
+                        left join impuestos imp
+                        on ccimp.impuesto_id = imp.impuesto_id
+                        where imp.tipo_impto_id = 45
+                        group by ccimp.impte_docto_cc_id
+                        ) ieps
+                    on ieps.impte_docto_cc_id = icc.impte_docto_cc_id
+                    where concep.nombre = 'Pagos' and
+                    cc.fecha between '01.01.2024' and  current_date
+                    and cc.modalidad_facturacion = 'CFDI'
+                    group by cc.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.estatus
+                    ` ,
+                function (err, complementosDb) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    console.log(complementosDb);
+                    
+                    let complementos = complementosDb.map(complemento => {
+                        return {
+                            folio: complemento.FOLIO !== null ? complemento.FOLIO.toString('latin1') : '',
+                            importe : complemento.IMPORTE,
+                            iva : complemento.IVA,
+                            ieps : complemento.IEPS,
+                            cfdi_certificado: complemento.CFDI_CERTIFICADO !== null ? complemento.CFDI_CERTIFICADO.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(complemento.FECHA),
+                            estatus: complemento.ESTATUS !== null ? complemento.ESTATUS.toString('latin1') : '',
+                            db : connection
+                        }
+                    });
+
+                    db.detach();
+                    resolve(complementos)
+                });
+        });
+    });
+}
+
+const obtenerNombreArticuloPorClave = (connection, clave) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                Select a.nombre from claves_articulos ca
+                    left join articulos a
+                    on a.articulo_id = ca.articulo_id
+                where ca.clave_articulo = '${clave}'
+                ` ,
+                function (err, articulo ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    if (articulo.length === 0) {
+                        return reject({msg: 'Clave no encontrada', claveError : 404});
+                    }
+  
+                    
+                    db.detach();
+                    resolve(articulo[0].NOMBRE !== null ? {nombre: articulo[0].NOMBRE.toString('latin1') }: {nombre: ''})
+                });
+        });
+    });
+}
+
+const obtenerArticulosReq = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                        trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50)) as folio, 
+                        a.nombre AS nombre_articulo, 
+                        erd.clave_articulo as claveArticulo,
+                        erd.solicitado,
+                        ceil(erd.solicitado/ a.contenido_unidad_compra) as cajas,
+                        exi.existencia,
+                        a.unidad_compra,
+                        a.contenido_unidad_compra
+                    from exp_requerimientos er
+                    left join  exp_requerimientos_det erd
+                    on erd.exp_req_id = er.exp_req_id
+                    left join articulos a
+                    on a.articulo_id = erd.articulo_id
+                    inner join EXIVAL_ART_UR2('ALMACEN GENERAL CEDIS', current_date, 'N', 'S', 'S', 'S') exi
+                    on exi.articulo_id  = erd.articulo_id
+                    where  trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50))
+                    = '${folio}'
+                    order by a.nombre
+
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+
+
+                    let articulos = arts.map(art => {
+                        return {
+                            folio: art.FOLIO !== null ? art.FOLIO.toString('latin1') : '',
+                            nombreArticulo: art.NOMBRE_ARTICULO,
+                            claveArticulo : art.CLAVEARTICULO !== null ? art.CLAVEARTICULO : 0,
+                            solicitado: art.SOLICITADO !== null ? art.SOLICITADO : 0,
+                            surtido: 0,
+                            partida: 0,
+                            cajas : art.CAJAS !== null ? art.CAJAS : 0,
+                            existencia : art.EXISTENCIA !== null ? art.EXISTENCIA : 0,
+                            nota : ''
+                        }
+                    });
+                    db.detach();
+                    resolve(articulos)
+                });
+        });
+    });
+}
+
+const obtenerRequerimiento = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                        trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50)) as folio,
+                        so.nombre as origen, sd.nombre as destino, er.fecha
+                    from exp_requerimientos er
+                    left join exp_sync_sucursales so
+                    on so.sucursal_id = er.origen
+                    left join exp_sync_sucursales sd
+                    on sd.sucursal_id = er.destino
+                    where  trim(replace(substring(er.folio from 1 for 3), '0', '')) || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50))
+                    = '${folio}'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let articulos = arts.map(r => {
+                        return {
+                            folio : r.FOLIO !== null ? r.FOLIO.toString('latin1') : '',
+                            origen : r.ORIGEN !== null ? r.ORIGEN.toString('latin1') : '',
+                            destino : r.DESTINO !== null ? r.DESTINO.toString('latin1') : '',
+                            fecha: r.FECHA 
+                        }
+                    })
+                    db.detach();
+                    resolve(articulos[0])
+                });
+        });
+    });
+}
+
+const obtenerTraspaso = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                        trim(replace(substring(et.folio from 1 for 3), '0', ''))  || cast(cast(substring(et.folio from 4 for 9) as int) as varchar(50)) as folio,
+                        so.nombre as origen, sd.nombre as destino, et.fecha
+                    from exp_traspasos et
+                    left join exp_sync_sucursales so
+                    on so.sucursal_id = et.origen
+                    left join exp_sync_sucursales sd
+                    on sd.sucursal_id = et.destino
+                    where  trim(replace(substring(et.folio from 1 for 3), '0', '')) || cast(cast(substring(et.folio from 4 for 9) as int) as varchar(50))
+                    = '${folio}'
+                    and et.tipo = 'E'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let articulos = arts.map(r => {
+                        return {
+                            folio : r.FOLIO !== null ? r.FOLIO.toString('latin1') : '',
+                            origen : r.ORIGEN !== null ? r.ORIGEN.toString('latin1') : '',
+                            destino : r.DESTINO !== null ? r.DESTINO.toString('latin1') : '',
+                            fecha: r.FECHA 
+                        }
+                    })
+                    db.detach();
+                    resolve(articulos[0])
+                });
+        });
+    });
+}
+
+const obtenerArticulosTraspaso = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                select
+                    trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50)) as folio, 
+                    a.nombre AS nombre_articulo, 
+                    erd.clave_articulo as claveArticulo,
+                    erd.cantidad as solicitado,
+                    ceil(erd.cantidad/ a.contenido_unidad_compra) as cajas,
+                    exi.existencia,
+                    a.unidad_compra,
+                    a.contenido_unidad_compra
+                from exp_traspasos er
+                left join  exp_traspasos_det erd
+                on erd.exp_trasp_id = er.exp_trasp_id
+                left join articulos a
+                on a.articulo_id = erd.articulo_id
+                inner join EXIVAL_ART_UR2('1-ALMACEN CENTRO', current_date, 'N', 'S', 'S', 'S') exi
+                on exi.articulo_id  = erd.articulo_id
+                where  trim(replace(substring(er.folio from 1 for 3), '0', ''))  || cast(cast(substring(er.folio from 4 for 9) as int) as varchar(50))
+                = '${folio}'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let articulos = arts.map(art => {
+                        return {
+                            folio: art.FOLIO !== null ? art.FOLIO.toString('latin1') : '',
+                            nombreArticulo: art.NOMBRE_ARTICULO,
+                            claveArticulo : art.CLAVEARTICULO !== null ? art.CLAVEARTICULO : 0,
+                            solicitado: art.SOLICITADO !== null ? art.SOLICITADO : 0,
+                            surtido: 0,
+                            cajas : art.CAJAS !== null ? art.CAJAS : 0,
+                            existencia : art.EXISTENCIA !== null ? art.EXISTENCIA : 0,
+                            nota : ''
+                        }
+                    });
+                    db.detach();
+                    resolve(articulos)
+                });
+        });
+    });
+}
+
+const existenciaCedisYRuta = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    SELECT 
+                        cedis.nombre, 
+                        cedis.existencia, 
+                        ruta.existencia
+                    from
+                    (
+                        select * FROM EXIVAL_ART_UR2('ALMACEN GENERAL CEDIS', '10-DEC-2024', 'N', 'S', 'S', 'S')   exi
+                        where EXI.nombre IN ('GALL. CRACKETS 135 GR 1 PZA (20/22) GAMESA', 'AZUCAR STANDAR EMPACADA 1 KG (50/25)')
+                    ) cedis
+
+                    left join (
+                    SELECT * FROM EXIVAL_ART_UR2('ALMACEN GENERAL CEDIS', '10-DEC-2024', 'N', 'S', 'S', 'S') exi
+                    where EXI.nombre IN ('GALL. CRACKETS 135 GR 1 PZA (20/22) GAMESA', 'AZUCAR STANDAR EMPACADA 1 KG (50/25)')
+                    )  ruta
+                    on ruta.nombre = cedis.nombre
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let articulos = arts.map(art => {
+                        return {
+                            folio: art.FOLIO !== null ? art.FOLIO.toString('latin1') : '',
+                            nombreArticulo: art.NOMBRE_ARTICULO,
+                            claveArticulo : art.CLAVEARTICULO !== null ? art.CLAVEARTICULO : 0,
+                            solicitado: art.SOLICITADO !== null ? art.SOLICITADO : 0,
+                            surtido: 0,
+                            cajas : art.CAJAS !== null ? art.CAJAS : 0,
+                            existencia : art.EXISTENCIA !== null ? art.EXISTENCIA : 0,
+                            nota : ''
+                        }
+                    });
+                    db.detach();
+                    resolve(arts)
+                });
+        });
+    });
+}
+
+const obtenerTotalesVenta = (connection, folio) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                        r.fecha,
+                        r.almacen,
+                        sum(r.PV_Efectivo + R.VE_EFECTIVO) AS TOTAL_EFECTIVO,
+                        sum(R.PV_Digital + R.VE_DIGITAL) AS TOTAL_digital,
+                        sum(r.PV_Efectivo) AS PV_Efectivo,
+                        sum(R.PV_Digital) AS PV_Digital,
+                        sum(R.VE_EFECTIVO)AS VE_EFECTIVO,
+                        sum(R.VE_DIGITAL) AS VE_DIGITAL
+                    from (
+                            Select
+                                pv.fecha, 
+                                coalesce( sum ( case when fc.tipo = 'E' and cobro.tipo='C' then (cobro.importe) end) ,0 ) - coalesce( sum ( case when fc.tipo = 'E' and cobro.tipo='A' then (cobro.importe) end) ,0 ) as PV_Efectivo,
+                                coalesce (sum ( case when fc.tipo <> 'E' then cobro.importe end),0) as PV_Digital,
+                                0 AS VE_EFECTIVO,
+                                0 AS VE_DIGITAL,
+                                alm.nombre as almacen,
+                                fc.nombre
+                            from doctos_pv pv
+                            left join doctos_pv_cobros cobro
+                            on cobro.docto_pv_id = pv.docto_pv_id
+                            left join formas_cobro fc
+                            on fc.forma_cobro_id = cobro.forma_cobro_id
+                            left join almacenes alm
+                            on alm.almacen_id = pv.almacen_id
+                            where pv.fecha between '01.09.2024' and '15.02.2025'
+                            and pv.tipo_docto = 'V'
+                            and pv.estatus = 'N'
+                            group by alm.nombre, pv.fecha, fc.nombre
+
+                        )  r
+                    group by r.fecha, r.almacen
+                    order  by r.fecha
+
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let ventas = arts.map(ven => {
+                        return {
+                            fecha: formatDate.formatDateToString(ven.FECHA),
+                            almacen: ven.ALMACEN !== null ? ven.ALMACEN.toString('latin1') : '',
+                            totalEfectivo: ven.TOTAL_EFECTIVO,
+                            totalDigital: ven.TOTAL_DIGITAL,
+                            pv_efectivo: ven.PV_EFECTIVO,
+                            pv_digital: ven.PV_DIGITAL,
+                            ve_efectivo: ven.VE_EFECTIVO,
+                            ve_digital: ven.VE_DIGITAL
+    
+                        }
+                    });
+                    db.detach();
+                    resolve(ventas)
+                });
+        });
+    });
+}
+
+const obtenerRemisiones = (connection, fechaInicio, fechaFin) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                        ve.folio,
+                        ve.fecha,
+                        c.nombre as cliente ,
+                        alm.nombre almacen,
+                        factura.folio as folio_factura,
+                        ve.importe_neto,
+                        ve.orden_compra,
+                        ve.descripcion,
+                        cond.nombre as condicion_pago,
+                        vend.nombre as vendedor,
+                        emb.nombre,
+                        ve.estatus
+                    from doctos_ve ve
+                    left join doctos_ve_ligas liga
+                    on liga.docto_ve_fte_id = ve.docto_ve_id
+                    inner join clientes c
+                    on c.cliente_id = ve.cliente_id
+                    inner join almacenes alm
+                    on alm.almacen_id = ve.almacen_id
+                    inner join condiciones_pago cond
+                    on cond.cond_pago_id = ve.cond_pago_id
+                    left join vendedores vend
+                    on vend.vendedor_id = ve.vendedor_id
+                    left join vias_embarque emb
+                    on emb.via_embarque_id = ve.via_embarque_id
+                    left join doctos_ve factura
+                    on factura.docto_ve_id = liga.docto_ve_dest_id
+                    where ve.tipo_docto = 'R'
+                    and ve.fecha between '${fechaInicio}' and '${fechaFin}'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let ventas = arts.map(ven => {
+                        return {
+                            fecha: formatDate.formatDateToString(ven.FECHA),
+                            folio: ven.FOLIO !== null ? ven.FOLIO.toString('latin1') : '',
+                            cliente: ven.CLIENTE !== null ? ven.CLIENTE.toString('latin1') : '',
+                            almacen: ven.ALMACEN !== null ? ven.ALMACEN.toString('latin1') : '',
+                            folio_factura: ven.FOLIO_FACTURA !== null ? ven.FOLIO_FACTURA.toString('latin1') : '',
+                            importe_neto: ven.IMPORTE_NETO,
+                            orden_compra: ven.ORDEN_COMPRA !== null ? ven.ORDEN_COMPRA.toString('latin1') : '',
+                            descripcion: ven.DESCRIPCION !== null ? ven.DESCRIPCION.toString('latin1') : '',
+                            condicion_pago: ven.CONDICION_PAGO !== null ? ven.CONDICION_PAGO.toString('latin1') : '',
+                            vendedor: ven.VENDEDOR !== null ? ven.VENDEDOR.toString('latin1') : '',
+                            via_embarque: ven.NOMBRE !== null ? ven.NOMBRE.toString('latin1') : '',
+                            estatus: ven.ESTATUS !== null ? ven.ESTATUS.toString('latin1') : '',
+                            db : connection
+
+    
+                        }
+                    });
+                    db.detach();
+                    resolve(ventas)
+                });
+        });
+    });
+}
+
+const obtenerVentasPorImpuesto = (connection) => {
+    
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                    pv.folio,
+                    a.nombre
+                from impuestos_doctos_pv_det ipv
+                inner join doctos_pv_det pvd
+                on pvd.docto_pv_det_id = ipv.docto_pv_det_id
+                inner join impuestos i
+                on i.impuesto_id = ipv.impuesto_id
+                inner join articulos a
+                on a.articulo_id = pvd.articulo_id
+                left join doctos_pv pv
+                on pv.docto_pv_id = ipv.docto_pv_id
+                where i.nombre = 'EXENTO'
+                and pv.fecha > '01.01.2025'
+                union all
+                select
+                    ve.folio,
+                    a.nombre
+                from impuestos_doctos_ve_det ipv
+                inner join doctos_ve_det pvd
+                on pvd.docto_ve_det_id = ipv.docto_ve_det_id
+                inner join impuestos i
+                on i.impuesto_id = ipv.impuesto_id
+                inner join articulos a
+                on a.articulo_id = pvd.articulo_id
+                left join doctos_ve ve
+                on ve.docto_ve_id = ipv.docto_ve_id
+                where i.nombre = 'EXENTO'
+                and ve.fecha > '01.01.2025'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let ventas = arts.map(ve => {
+                        return {
+                            folio: ve.FOLIO !== null ? ve.FOLIO.toString('latin1') : '',
+                            nombre: ve.NOMBRE !== null ? ve.NOMBRE.toString('latin1') : '',
+                            db : connection
+                        }
+                    });
+                    db.detach();
+                    resolve(ventas)
+                });
+        });
+    });
+}
+
+
+const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
+    
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    
+                SELECT
+                    cm.folio,
+                    cm.fecha,
+                    cm.importe_neto,
+                    compra.folio as compra,
+                    compra.importe_neto as importe_compra,
+                    cm.estatus
+                FROM DOCTOS_CM CM
+                left join doctos_cm_ligas liga
+                on liga.docto_cm_fte_id = cm.docto_cm_id
+                left join doctos_cm compra
+                on compra.docto_cm_id = liga.docto_cm_dest_id
+                where CM.tipo_docto = 'R'
+                and cm.fecha between '${fechaInicio}' and '${fechaFin}'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let ventas = arts.map(ve => {
+                        return {
+                            folio: ve.FOLIO !== null ? ve.FOLIO.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(ve.FECHA),
+                            importe_neto: ve.IMPORTE_NETO,
+                            compra: ve.COMPRA !== null ? ve.COMPRA.toString('latin1') : '',
+                            importe_compra: ve.IMPORTE_COMPRA,
+                            estatus: ve.ESTATUS !== null ? ve.ESTATUS.toString('latin1') : '',
+                            db : connection
+                        }
+                    });
+                    db.detach();
+                    resolve(ventas)
+                });
+        });
+    });
+}
+
+
+const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                     SELECT
+                        d.folio,
+                        d.fecha,
+                        d.orden_compra,
+                        a.nombre,
+                        SUM(CASE WHEN i.nombre = 'TASA CERO' THEN idv.importe_impuesto_bruto ELSE 0 END) AS tasa_0,
+                        SUM(CASE WHEN i.nombre = 'IEPS 6%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS ieps_6,
+                        SUM(CASE WHEN i.nombre = 'IEPS 8%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS ieps_8,
+                        SUM(CASE WHEN i.nombre = 'IVA TASA 16%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS iva_16,
+                        SUM(CASE WHEN i.nombre = 'IESP 30%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS ieps_30
+                    FROM (
+                        select  VE.docto_ve_id, VE.folio, VE.fecha, VE.tipo_docto, VE.orden_compra  FROM libres_devfac_ve DEV
+                            INNER JOIN doctos_ve VE
+                            ON VE.docto_ve_id = DEV.docto_ve_id
+                    )d
+                    JOIN doctos_ve_det ved ON ved.docto_ve_id = d.docto_ve_id
+                    JOIN articulos a ON a.articulo_id = ved.articulo_id
+                    JOIN impuestos_doctos_ve_det idv ON idv.docto_ve_det_id = ved.docto_ve_det_id
+                    JOIN impuestos i ON i.impuesto_id = idv.impuesto_id
+                    WHERE d.tipo_docto = 'D'
+                    AND d.fecha between '${fechaInicio}'  and '${fechaFin}'
+                    AND i.nombre IN ('TASA CERO', 'IEPS 6%', 'IEPS 8%', 'IVA TASA 16%', 'IESP 30%' )
+                    GROUP BY d.folio, d.fecha, d.orden_compra, a.nombre
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let devoluciones = arts.map(dev => {
+                        return {
+                            folio: dev.FOLIO !== null ? dev.FOLIO.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(dev.FECHA),
+                            orden_compra: dev.ORDEN_COMPRA !== null ? dev.ORDEN_COMPRA.toString('latin1') : '',
+                            nombre: dev.NOMBRE !== null ? dev.NOMBRE.toString('latin1') : '',
+                            tasa_0: dev.TASA_0,
+                            ieps_6: dev.IEPS_6,
+                            ieps_8: dev.IEPS_8,
+                            iva_16: dev.IVA_16,
+                            ieps_30: dev.IEPS_30,
+                            db : connection
+                        }
+                    });
+                    db.detach();
+                    resolve(devoluciones)
                 });
         });
     });
@@ -3150,7 +3896,23 @@ module.exports = {
     obtenerDoctosVe,
     obtenerDoctosPagos,
     obtenerDoctosVeDet,
-    obtenerClientes
+    obtenerDevoluciones,
+    obtenerTicketsNoFacturados,
+    obtenerComplementos,
+    obtenerTotalesVenta,
+    obtenerRemisiones,
+    obtenerVentasPorImpuesto,
+    obtenerRecepciones,
+    obtenerDevolucionesDet,
+    
+    // Mvtos
+    obtenerNombreArticuloPorClave,
+    obtenerArticulosReq,
+    obtenerRequerimiento,
+    obtenerTraspaso,
+    obtenerArticulosTraspaso,
+    existenciaCedisYRuta,
+    getProvidersChargesCxpDate
 
 }
 

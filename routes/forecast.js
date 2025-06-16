@@ -15,11 +15,8 @@ router.post('/updateSupplierArticles', controller._update_supplier_articles );
 router.post('/updateVisualMin', controller._update_visual_min );
 router.post('/updateSupplierImported', controller._update_supplier_imported );
 router.post('/deleteArticleSupplier', controller._delete_article_supplier);
-
 router.put('/:id', controller._update_provedores_config );
 router.post('/OrdenCompra', controller.frkOrdenCompra);
 router.post('/OrdenCompraDet', controller.frkOrdenCompraDet);
-
-
 
 module.exports = router;

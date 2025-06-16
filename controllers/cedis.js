@@ -724,8 +724,6 @@ const getJecInventarioMovil = (req, res) => {
            return res.json({
                inventarios
            })
-
-
         });
     });
 }
@@ -746,7 +744,7 @@ const getJecInventariosMovil = (req, res) => {
                     consecutivo : element.CONSECUTIVO.toString('utf8'),
                 }
                 inventarios.push(newElement);
-            })
+            }); 
 
            return res.json({
             inventarios
@@ -823,7 +821,11 @@ const updateJecInventarioArticuloCantidad = (req, res) => {
 
 const getExistencias = (req, res) => {
     const microsipName = req.params.microsipName;
-    const conectionName = req.params.conectionName;
+    let conectionName = req.params.conectionName;
+    if (conectionName === 'CHAVEZ') {
+        conectionName = 'CHAVEZC'
+    }
+    
     const date = `${new Date().getDate()}.${new Date().getMonth() + 1 }.${new Date().getFullYear()}`
     console.log(date);
     firebird.attach(conections[conectionName], function(err, db) {
@@ -1007,7 +1009,8 @@ const getFullCatalog3 = (req, res) => {
                                 console.log('err',err);
                             }
                             console.log("[ GETFULLCATALOG3 ] CATALOG WAS REQUEST SUCCESSFULL " + new Date() );
-            
+                            console.log('data',data);
+                            
                             let catalogo = []
                             if(data){
                                 data.forEach(element => {
@@ -1099,7 +1102,7 @@ const getCatalogForPriceChecker = (req, res) => {
                     db.execute(`
                                     select getArtImpt.articulo_id, getArtImpt.clave_articulo, getArtImpt.nombre_articulo,  round(getArtImpt.precio_lista,2),
                                     round( getArtImpt.precio_mayoreo, 2), articulos.unidad_compra, articulos.unidad_venta, articulos.linea_articulo_id,
-                                    claves_articulos.rol_clave_art_id   ,  cap.clave_articulo
+                                    claves_articulos.rol_clave_art_id   ,  cap.clave_articulo,  articulos.contenido_unidad_compra
                                     from get_precios_articulos_con_impto as getArtImpt
                                     left join articulos on getArtImpt.articulo_id = articulos.articulo_id
                                     left join claves_articulos on getArtImpt.clave_articulo = claves_articulos.clave_articulo
@@ -1107,6 +1110,8 @@ const getCatalogForPriceChecker = (req, res) => {
                                     where claves_articulos.rol_clave_art_id in (17, 18, 288) 
                                 `,
                         function(err, data) {
+                            console.log(data);
+                            
                             if(err){
                                 console.log('err',err);
                             }
@@ -1123,6 +1128,7 @@ const getCatalogForPriceChecker = (req, res) => {
                                         purchaseUnit: element[5] = element[5] !== null ? element[5].toString('utf8') : 'Null',
                                         saleUnit: element[6] = element[6] !== null ? element[6].toString('utf8') : 'Null',
                                         principal: element[9],
+                                        contenido: element[10],
                                     }
                                     
                                     catalogo.push(newElement)
@@ -1139,7 +1145,7 @@ const getCatalogForPriceChecker = (req, res) => {
             db.execute(`
                             select getArtImpt.articulo_id, getArtImpt.clave_articulo, getArtImpt.nombre_articulo, getArtImpt.precio_lista,
                             getArtImpt.precio_mayoreo, articulos.unidad_compra, articulos.unidad_venta, articulos.linea_articulo_id,
-                            claves_articulos.rol_clave_art_id   ,  cap.clave_articulo
+                            claves_articulos.rol_clave_art_id   ,  cap.clave_articulo, articulos.contenido_unidad_compra
                             from get_precios_articulos_con_impto as getArtImpt
                             left join articulos on getArtImpt.articulo_id = articulos.articulo_id
                             left join claves_articulos on getArtImpt.clave_articulo = claves_articulos.clave_articulo
@@ -1170,6 +1176,7 @@ const getCatalogForPriceChecker = (req, res) => {
                                 // location: '------------',
                                 // category: element[7] = element[7] !== null ? element[7] : 'Null',
                                 principal: element[9],
+                                contenido: element[10],
                             }
                             
                             catalogo.push(newElement)
@@ -1658,7 +1665,6 @@ const getCustomersBalancesToday = (req = request, res = response) => {
 const getDataToPolicyByDay = (req = request, res = response) => {
     const date1 = req.params.date1;
     const date2 = req.params.date2;
-
     const all = Promise.allSettled([
         firebirdQuerys.getDataToPolicyByDay('AC', date1, date2),
         firebirdQuerys.getDataToPolicyByDay('G32', date1, date2),
@@ -2014,6 +2020,7 @@ const getMarks = (req, res) => {
             });
         });
     }
+
     const updateArticleToHealer = (req, res=response) => {
         const {article, user} = req.body;
         const conection = req.params.conection;
@@ -2037,19 +2044,18 @@ const getMarks = (req, res) => {
             firebirdQuerys.getArticleStockByWarehouse('G32', articleCode, 359002, 'insumos'),
             //CIMA
             firebirdQuerys.getArticleStockByWarehouse('CIMA', articleCode, 31862487, 'cima'),
-    
             // CEDIS
             firebirdQuerys.getArticleStockByWarehouse('AC', articleCode, 181613, 'cedis'),
             firebirdQuerys.getArticleStockByWarehouse('AC', articleCode, 181614, 'ac'),
             firebirdQuerys.getArticleStockByWarehouse('AC', articleCode, 662747, 'ruta'),
             firebirdQuerys.getArticleStockByWarehouse('AC', articleCode, 1043639, 'empaque'),
             //TURCIO
-            firebirdQuerys.getArticleStockByWarehouse('TURCIO', articleCode, 179263, 'turcio'),
+            firebirdQuerys.getArticleStockByWarehouse('TURCIOM', articleCode, 179263, 'turcio_mayoreo'),
             //TIANGUIS
-            firebirdQuerys.getArticleStockByWarehouse('TIANGUIS', articleCode, 37698592, 'adi_1'),
-            firebirdQuerys.getArticleStockByWarehouse('TIANGUIS', articleCode, 31906795, 'adi_2'),
-            firebirdQuerys.getArticleStockByWarehouse('TIANGUIS', articleCode, 31906794, 'cima_2'),
-            firebirdQuerys.getArticleStockByWarehouse('TIANGUIS', articleCode, 31907026, 'rf'),
+            firebirdQuerys.getArticleStockByWarehouse('TURCIO', articleCode, 615894, 'adi_1'),
+            firebirdQuerys.getArticleStockByWarehouse('TURCIO', articleCode, 615895, 'adi_2'),
+            firebirdQuerys.getArticleStockByWarehouse('TURCIO', articleCode, 615892, 'cima_2'),
+            firebirdQuerys.getArticleStockByWarehouse('TURCIO', articleCode, 615893, 'rf'),
             //PAEZ
             firebirdQuerys.getArticleStockByWarehouse('PAEZ', articleCode, 186107, 'paez'),
             //COLIMA
@@ -2205,6 +2211,18 @@ const getMarks = (req, res) => {
                 emptys: emptys.trim()
             });
         })
+    }
+
+    const existenciaCedisYRuta = (req, res=response) => {
+        const conection = req.params.conection;
+        const subcategoriesData = req.body;
+        console.log('insert subcategories', subcategoriesData);
+        firebirdQuerys.existenciaCedisYRuta(conection, subcategoriesData).then( msg => {
+            return res.json({
+                ok: true,
+                msg
+            });
+        });
     }
 
 module.exports = {

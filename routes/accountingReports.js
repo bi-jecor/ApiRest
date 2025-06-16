@@ -11,7 +11,17 @@ const { getAllProvidersCharges,
     obtenerPagos,
     obtenerDoctosVe,
     obtenerDoctosPagos,
-    obtenerDoctosVeDet,   
+    obtenerDoctosVeDet, 
+    obtenerDevoluciones,
+    obtenerTicketsNoFacturados,
+    obtenerComplementos,
+    obtenerTotalesVenta,
+    getAllProvidersChargesCxpDate,
+    obtenerCargosClientes,
+    obtenerRemisiones,
+    obtenerVentasPorImpuesto,
+    obtenerRecepciones ,
+    obtenerDevolucionesDet
 } = require('../controllers/accountingReports')
 
 const router = Router();
@@ -26,12 +36,22 @@ router.get('/getCustomersBalances/', getCustomersBalances );
 router.get('/getCustomersBalances/', getCustomersBalances );
 router.get('/pagos/', obtenerPagos );
 router.get('/doctosVe/', obtenerDoctosVe );
-router.get('/doctosPagos/', obtenerDoctosPagos );
-
+router.get('/doctosPagos/:fecha/:fechaFin', obtenerDoctosPagos );
+router.get('/obtenerComplementos', obtenerComplementos );
+router.get('/obtenerTotalesVenta', obtenerTotalesVenta );
 
 router.get('/doctosVeDet/', obtenerDoctosVeDet );
+router.get('/obtenerDevoluciones/', obtenerDevoluciones );
+router.get('/obtenerTicketsNoFacturados/:fechaInicio/:fechaFin', obtenerTicketsNoFacturados );
+router.get('/obtenerCargosClientes/:date/', obtenerCargosClientes );
+router.get('/obtenerRemisiones/:fechaInicio/:fechaFin', obtenerRemisiones );
+router.get('/obtenerVentasPorImpuesto/', obtenerVentasPorImpuesto );
+router.get('/obtenerRecepciones/:fechaInicio/:fechaFin', obtenerRecepciones );
+router.get('/obtenerDevolucionesDet/:fechaInicio/:fechaFin', obtenerDevolucionesDet );
 
 router.get('/getCustomersBalancesHis/', getCustomersBalancesHis );
 router.get('/getAllProvidersChargesCxpHis/', getAllProvidersChargesCxpHis );
+router.get('/getAllProvidersChargesCxpDate/:date/', getAllProvidersChargesCxpDate );
+router.get('/obtenerCargosClientes/:date/', obtenerCargosClientes );
 
 module.exports = router;

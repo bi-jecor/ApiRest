@@ -34,7 +34,13 @@ obtenerSucursalPorFolio = (folio = 'FA') => {
         FQ:'1103 REPOSTERIA MADERO',
         FQP:'1103 REPOSTERIA MADERO',
         FR:'EXPO AGRICOLA 2024',
-        FF:'ESTACIONAMIENTO'
+        FF:'ESTACIONAMIENTO',
+        AC:'1007 REPOSTERIA ADI 1',
+        AD:'1008 DULCERIA ADI 2',
+        AE:'1009 CEREALES RF',
+        AA:'1011 PLASTICOS CIMA 2',
+        FP:'1012 RUTA GUZMAN',
+        AB:'1010 PLASTICOS CIMA 1'
     }
     return folioSucursal[folio] || 'Sin definir'
 }
@@ -42,3 +48,4 @@ obtenerSucursalPorFolio = (folio = 'FA') => {
 module.exports = {
     obtenerSucursalPorFolio
 }
+

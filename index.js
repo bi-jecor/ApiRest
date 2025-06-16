@@ -12,7 +12,7 @@ const app = express();
 app.use(cors());
 
 // Lectura y parseo del body
-app.use( express.json({ limit : '1000mb' }) );
+app.use( express.json({ limit : '2000mb' }) );
 
 // Conexion Base de Datos
 // dbConnection();
@@ -100,6 +100,10 @@ app.use('/jecor/api/ventasRetiros', require('./routes/ventasRetiros'));
 // Configuracion de sistema JECOR BI
 app.use('/jecor/api/sistemaTiendas', require('./routes/sistemaTiendas'));
 app.use('/jecor/api/resportesOperativos', require('./routes/reportes'));
+
+
+app.use('/jecor/api/mvtos', require('./routes/mvtos'));
+
 
 
 

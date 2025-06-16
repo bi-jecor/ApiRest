@@ -95,7 +95,7 @@ const G32H = {
 
 const TURCIO = {
     user: 'SYSDBA',
-    password: 'masterkey',
+    password: 'J8wL#2pR!t',
     //host: '192.168.15.202',
     host: '192.168.40.200',
     
@@ -116,14 +116,37 @@ const TURCIO = {
     keysArticlesIds : '17,18,288',
     companyPriceId:16326
 }
+const TURCIOM = {
+    user: 'SYSDBA',
+    password: 'J8wL#2pR!t',
+    //host: '192.168.15.202',
+    host: '192.168.40.200',
+    
+    port: 3053,
+    database: 'E:/Bases de datos/JECOR MAYOREO.FDB',
+    lowercase_keys: false, 
+    role: null,
+    pageSize: 4096,
+        // POLIZA DATA
+    roleKeyProviderId : 49,
+    conceptCpId : 51,
+    iva16: 922,
+    tasa0: 917,
+    ieps8: 925,
+    ieps6: 342776,
+    ieps30: 543614,
+    exento: 926,
+    keysArticlesIds : '17,18,288',
+    companyPriceId:16326
+}
 
 const TIANGUIS = {
     user: 'SYSDBA',
-    password: 'masterkey',   
+    password: 'J8wL#2pR!t',   
     //host: '192.168.15.202',
     host: '192.168.40.200',
     port: 3053,
-    database: 'E:/Bases de datos/ADI 2019.FDB',
+    database: 'E:/Bases de datos/JECOR 2018.FDB',
     lowercase_keys: false, 
     role: null,
     pageSize: 4096,
@@ -136,8 +159,8 @@ const TIANGUIS = {
     ieps6: 342776,
     ieps30: 37732487,
     exento: 33323230,
-    keysArticlesIds : '17,12465,25863515',
-    // keysArticlesIds : '17,18,288',
+    // keysArticlesIds : '17,12465,25863515',
+    keysArticlesIds : '17,18,288',
     companyPriceId:28548960
 }
 
@@ -209,7 +232,7 @@ const COLIMAH = {
 
 const VILLA = {
     user: 'SYSDBA',
-    password: 'masterkey',
+    password: 'J8wL#2pR!t',
     host: '192.168.60.200',
     // host: '192.168.60.200',
     port: 3055,
@@ -277,7 +300,7 @@ const test = {
     port : 3050,
     database : 'C:/Microsip Datos/JECOR_PRUEBAS.FDB',
     user : 'SYSDBA',
-    password : 'masterkey',
+    password : 'J8wL#2pR!t',
     lowercase_keys : false, // set to true to lowercase key,
     role : null, // defaul,
     pageSize : 4096,
@@ -377,6 +400,7 @@ module.exports = {
     G32,
     G32H,
     TURCIO,
+    TURCIOM,
     TIANGUIS,   
     PAEZ,
     COLIMA,
