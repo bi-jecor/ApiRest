@@ -7,7 +7,7 @@ const fir_password = process.env.FIR_PASSWORD
 const AC = {
     // FIREBIRD CONFIG
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.20.200',
     port: 3050,
     database: 'E:/Bases de Datos/JECOR 2020.FDB',
@@ -30,7 +30,7 @@ const AC = {
 const ACH = {
     // FIREBIRD CONFIG
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.20.200',
     port: 3050,
     database: 'E:/Bases de Datos/JECOR SA DE CV 2013.FDB',
@@ -52,7 +52,7 @@ const ACH = {
 
 const G32 = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/JECOR 2020.FDB',
@@ -73,7 +73,7 @@ const G32 = {
 }
 const G32H = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/JECOR 2022 HISTORICA.FDB',
@@ -143,7 +143,7 @@ const TIANGUIS = {
 
 const PAEZ = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.30.200',
     //host: '192.168.15.203',    
     port: 3052,
@@ -165,7 +165,7 @@ const PAEZ = {
 
 const COLIMA = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     // host: 'colima-jrczrpbtpk.dynamic-m.com',
     host: '192.168.50.201',
     port: 3054,
@@ -187,7 +187,7 @@ const COLIMA = {
 
 const COLIMAH = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     // host: 'colima-jrczrpbtpk.dynamic-m.com',
     host: '192.168.50.201',
     port: 3054,
@@ -230,7 +230,7 @@ const VILLA = {
 }
 const VILLAH = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.60.200',
     // host: '192.168.60.200',
     port: 3055,
@@ -252,7 +252,7 @@ const VILLAH = {
 
 const COLINAS = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     // host: 'colima-jrczrpbtpk.dynamic-m.com',
     host: '192.168.80.200',
     port: 3056,
@@ -293,7 +293,7 @@ const test = {
 
 const VIVERO = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/VIVERO 2020.FDB',
@@ -311,7 +311,7 @@ const VIVERO = {
 
 const CIMA = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/ADI 2020.FDB',
@@ -330,7 +330,7 @@ const CIMA = {
 
 const CHAVEZC = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.70.200',
     //port: 3051,
     database: 'E:/Bases de datos/JECOR CHAVEZ CARRILLO.FDB',
@@ -351,7 +351,7 @@ const CHAVEZC = {
 
 const ESTACIONAMIENTO = {
     user: 'SYSDBA',
-    password: 'B0l@g3t1tJ',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.10.200',
     port: 3051,
     database: 'E:/Bases Datos/ESTACIONAMIENTO 2020.FDB',

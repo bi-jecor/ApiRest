@@ -1,7 +1,7 @@
 const express = require('express');
 const expressFileUpload = require('express-fileupload');
 require('dotenv').config();
-const { dbConnection } = require('./database/config');
+// const { dbConnection } = require('./database/config');
 // const { startRutines } = require('./schedule/schedule');
 const cors = require('cors');
 
@@ -15,7 +15,7 @@ app.use(cors());
 app.use( express.json({ limit : '1000mb' }) );
 
 // Conexion Base de Datos
-dbConnection();
+// dbConnection();
 
 // ============================================================
 // Rutas
@@ -99,6 +99,7 @@ app.use('/jecor/api/ventasRetiros', require('./routes/ventasRetiros'));
 
 // Configuracion de sistema JECOR BI
 app.use('/jecor/api/sistemaTiendas', require('./routes/sistemaTiendas'));
+app.use('/jecor/api/resportesOperativos', require('./routes/reportes'));
 
 
 
