@@ -99,6 +99,7 @@ app.use('/jecor/api/ventasRetiros', require('./routes/ventasRetiros'));
 
 // Configuracion de sistema JECOR BI
 app.use('/jecor/api/sistemaTiendas', require('./routes/sistemaTiendas'));
+app.use('/jecor/api/resportesOperativos', require('./routes/reportes'));
 
 
 app.use('/jecor/api/mvtos', require('./routes/mvtos'));

@@ -3837,6 +3837,80 @@ const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
     });
 }
 
+const obtenerClientes = (connection, fechaInicio, fechaFin) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `SELECT B.NOMBRE_CLIENTE AS "CLIENTE", A.CONTACTO1, A.CLIENTE_ID, B.ESTATUS, B.NOMBRE_TIPO AS "TIPO", B.NOMBRE_ZONA AS "ZONA", B.NOMBRE_VENDEDOR AS "VENDEDOR",
+                    B.NOMBRE_COND_PAGO AS "CONDICION_PAGO", C.RFC_CURP AS "RFC", A.CONTACTO1 AS "COMPRADOR", C.TELEFONO1 AS "TELEFONO", C.EMAIL AS "CORREO",
+                    C.NOMBRE_CALLE AS "CALLE", C.NUM_EXTERIOR AS "NUM_EXT", C.NUM_INTERIOR AS "NUM_INT", C.COLONIA, C.CODIGO_POSTAL, D.NOMBRE AS "CIUDAD", E.NOMBRE AS "ESTADO", F.NOMBRE AS "PAIS",
+                    C.TIPO_PERSONA, C.CLAVE_REGIMEN_FISCAL, G.LATITUD, G.LONGITUD, G.ORDEN, G.CLASIFICACION, B.CLAVE_CLIENTE AS "CLAVE", A.LIMITE_CREDITO, I.NOMBRE AS "RUTA"
+                    FROM CLIENTES A
+                    INNER JOIN ORSP_LISTA_CLIENTES('S') B
+                    ON A.CLIENTE_ID = B.CLIENTE_ID
+                    INNER JOIN DIRS_CLIENTES C
+                    ON A.CLIENTE_ID = C.CLIENTE_ID
+                    INNER JOIN CIUDADES D
+                    ON C.CIUDAD_ID = D.CIUDAD_ID
+                    INNER JOIN ESTADOS E
+                    ON C.ESTADO_ID = E.ESTADO_ID
+                    INNER JOIN PAISES F
+                    ON C.PAIS_ID = F.PAIS_ID
+                    INNER JOIN LIBRES_CLIENTES G
+                    ON A.CLIENTE_ID = G.CLIENTE_ID
+                    LEFT JOIN RUTAS_DET H
+                    ON A.CLIENTE_ID = H.CLIENTE_ID
+                    INNER JOIN RUTAS I
+                    ON H.RUTA_ID = I.RUTA_ID
+                    WHERE C.ES_DIR_PPAL = 'S' ` ,
+                function (err, doctos ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let clientes = doctos.map(docto => {
+                        return {
+
+                            cliente: docto.CLIENTE !== null ? docto.CLIENTE.toString('latin1') : '',
+                            contacto1: docto.CONTACTO1 !== null ? docto.CONTACTO1.toString('latin1') : '',
+                            cliente_id: docto.CLIENTE_ID !== null ? docto.CLIENTE_ID : 0,
+                            estatus: docto.ESTATUS !== null ? docto.ESTATUS.toString('latin1') : '',
+                            tipo: docto.TIPO !== null ? docto.TIPO.toString('latin1') : '',
+                            zona: docto.ZONA !== null ? docto.ZONA.toString('latin1') : '',
+                            vendedor: docto.VENDEDOR !== null ? docto.VENDEDOR.toString('latin1') : '',
+                            condicion_pago: docto.CONDICION_PAGO !== null ? docto.CONDICION_PAGO.toString('latin1') : '',
+                            rfc: docto.RFC !== null ? docto.RFC.toString('latin1') : '',
+                            comprador: docto.COMPRADOR !== null ? docto.COMPRADOR.toString('latin1') : '',
+                            telefono: docto.TELEFONO !== null ? docto.TELEFONO.toString('latin1') : '',
+                            correo: docto.CORREO !== null ? docto.CORREO.toString('latin1') : '',
+                            calle: docto.CALLE !== null ? docto.CALLE.toString('latin1') : '',
+                            num_exterior: docto.NUM_EXT !== null ? docto.NUM_EXT.toString('latin1') : '',
+                            num_interior: docto.NUM_INT !== null ? docto.NUM_INT.toString('latin1') : '',
+                            colonia: docto.COLONIA !== null ? docto.COLONIA.toString('latin1') : '',
+                            codigo_postal: docto.CODIGO_POSTAL !== null ? docto.CODIGO_POSTAL.toString('latin1') : '',
+                            ciudad: docto.CIUDAD !== null ? docto.CIUDAD.toString('latin1') : '',
+                            estado: docto.ESTADO !== null ? docto.ESTADO : '',
+                            pais: docto.PAIS !== null ? docto.PAIS.toString('latin1') : '',
+                            tipo_persona: docto.TIPO_PERSONA !== null ? docto.TIPO_PERSONA.toString('latin1') : '',
+                            clave_regimen_fiscal: docto.CLAVE_REGIMEN_FISCAL !== null ? docto.CLAVE_REGIMEN_FISCAL.toString('latin1') : '',
+                            latitud: docto.LATITUD !== null ? docto.LATITUD : 0.00,
+                            longitud: docto.LONGITUD !== null ? docto.LONGITUD : 0.00,
+                            orden: docto.ORDEN !== null ? docto.ORDEN : 0,
+                            clasificacion: docto.CLASIFICACION !== null ? docto.CLASIFICACION: '',
+                            clave: docto.CLAVE !== null ? docto.CLAVE : '',
+                            limite_credito: docto.LIMITE_CREDITO !== null ? docto.LIMITE_CREDITO : 0.00,
+                            ruta: docto.RUTA !== null ? docto.RUTA.toString('latin1') : '',
+                            sucursal: connection
+                        }
+                    });
+                    db.detach();
+                    resolve(clientes)
+                });
+        });
+    });
+}
 
 
 module.exports = {
@@ -3912,7 +3986,8 @@ module.exports = {
     obtenerTraspaso,
     obtenerArticulosTraspaso,
     existenciaCedisYRuta,
-    getProvidersChargesCxpDate
+    getProvidersChargesCxpDate,
+    obtenerClientes
 
 }
 
