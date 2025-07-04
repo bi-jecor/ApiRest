@@ -3270,7 +3270,8 @@ select
                             ieps : complemento.IEPS,
                             cfdi_certificado: complemento.CFDI_CERTIFICADO !== null ? complemento.CFDI_CERTIFICADO.toString('latin1') : '',
                             fecha: formatDate.formatDateToString(complemento.FECHA),
-                            estatus: complemento.ESTATUS !== null ? complemento.ESTATUS.toString('latin1') : '',
+                            cancelado: complemento.CANCELADO !== null ? complemento.CANCELADO.toString('latin1') : '',
+                            contabilizado: complemento.CONTABILIZADO !== null ? complemento.CONTABILIZADO.toString('latin1') : '',
                             db : connection
                         }
                     });
