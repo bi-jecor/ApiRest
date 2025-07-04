@@ -3213,12 +3213,13 @@ const obtenerComplementos = (connection) => {
             }
             db.query(
                 `
-                    select
+select
                         cc.folio,
                         concep.nombre,
                         cc.fecha,
                         cc.cfdi_certificado,
-                        cc.estatus,
+                        cc.cancelado,
+                        cc.contabilizado,
                         sum(icc.importe) as importe,
                         sum(coalesce(iva.importe,0)) as iva,
                         sum(coalesce(ieps.importe,0)) as ieps
@@ -3252,7 +3253,8 @@ const obtenerComplementos = (connection) => {
                     where concep.nombre = 'Pagos' and
                     cc.fecha between '01.01.2024' and  current_date
                     and cc.modalidad_facturacion = 'CFDI'
-                    group by cc.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.estatus
+                    group by cc.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.cancelado, cc.contabilizado
+
                     ` ,
                 function (err, complementosDb) {
                     if (err) {

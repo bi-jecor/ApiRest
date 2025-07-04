@@ -2,7 +2,7 @@ const { response, request } = require('express');
 const Inventory = require('../models/inventory');
 
 const createInventory = async (req, res) => {
-    
+
     const body = req.body;
     const data = new Inventory({
         ...body
@@ -18,13 +18,13 @@ const createInventory = async (req, res) => {
         console.log(error);
         return res.status(500).json({
             ok: false,
-            msg: 'Error to create inventory'
+            msg: `error to create inventory, ${error.message}`
         })
     }
-    
+
 }
 
-const getInventories= async (req, res) => {
+const getInventories = async (req, res) => {
     try {
         const inventoriesDB = await Inventory.find();
         return res.json({
@@ -44,7 +44,7 @@ const getInventoriesByWarehouseAndUser = async (req, res) => {
     const userId = req.params.user
 
     try {
-        const inventoriesDB = await Inventory.find({'warehouse': warehouse, 'elaborated': userId});
+        const inventoriesDB = await Inventory.find({ 'warehouse': warehouse, 'elaborated': userId });
         return res.json({
             ok: true,
             inventories: inventoriesDB
@@ -56,16 +56,22 @@ const getInventoriesByWarehouseAndUser = async (req, res) => {
         })
     }
 }
-const getInventoriesByWarehouse = async (req, res) => {
-    const warehouse = req.params.warehouse
-    const userId = req.params.user
 
+const getInventoriesByWarehouse = async (req, res) => {
+    // Obtener los parámetros de la solicitud
+    const { warehouse, concept } = req.params;
+    // Obtener la fecha de hace 30 días
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    console.log(warehouse, concept, thirtyDaysAgo);
     try {
-        const inventoriesDB = await Inventory.find({'warehouse': warehouse})
+        const inventoriesDB = await Inventory.find({
+            warehouse: warehouse,
+            concept: concept,
+            date: { $gte: thirtyDaysAgo }
+        })
         .populate('elaborated', 'user')
         return res.json({
-
-
             ok: true,
             inventories: inventoriesDB
         })
@@ -73,7 +79,7 @@ const getInventoriesByWarehouse = async (req, res) => {
         return res.status(500).json({
             ok: false,
             msg: 'error to get inventoriesDB'
-        })
+        });
     }
 }
 
@@ -81,7 +87,7 @@ const getInventoriesByStatus = async (req, res) => {
     const status = req.params.status
 
     try {
-        const inventoriesDB = await Inventory.find({'status': status});
+        const inventoriesDB = await Inventory.find({ 'status': status });
         return res.json({
             ok: true,
             inventories: inventoriesDB
@@ -97,7 +103,7 @@ const getInventoriesByStatus = async (req, res) => {
 const getInventory = async (req, res) => {
     const inventoryId = req.params.inventoryId
     try {
-        const inventoryDB = await Inventory.findOne({_id: inventoryId});
+        const inventoryDB = await Inventory.findOne({ _id: inventoryId });
         return res.json({
             ok: true,
             inventory: inventoryDB
@@ -108,7 +114,7 @@ const getInventory = async (req, res) => {
             ok: false,
             msg: 'error to get inventory'
         })
-    } 
+    }
 }
 
 const updateInventory = async (req, res) => {
@@ -117,7 +123,7 @@ const updateInventory = async (req, res) => {
         ...req.body
     }
     try {
-        const inventoryDB = await Inventory.findOneAndUpdate({_id: inventoryId}, data, {new: true});
+        const inventoryDB = await Inventory.findOneAndUpdate({ _id: inventoryId }, data, { new: true });
         return res.json({
             ok: true,
             inventory: inventoryDB
@@ -128,13 +134,11 @@ const updateInventory = async (req, res) => {
             ok: false,
             msg: 'error to get inventory'
         })
-    } 
+    }
 }
 
-
-
 module.exports = {
-    createInventory, 
+    createInventory,
     getInventory,
     getInventories,
     getInventoriesByWarehouseAndUser,
@@ -142,3 +146,4 @@ module.exports = {
     getInventoriesByStatus,
     updateInventory
 }
+
