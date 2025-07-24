@@ -37,7 +37,7 @@ router.get('/getCustomersBalances/', getCustomersBalances );
 router.get('/pagos/', obtenerPagos );
 router.get('/doctosVe/', obtenerDoctosVe );
 router.get('/doctosPagos/:fecha/:fechaFin', obtenerDoctosPagos );
-router.get('/obtenerComplementos', obtenerComplementos );
+router.get('/obtenerComplementos/:fechaInicial/:fechaFinal', obtenerComplementos );
 router.get('/obtenerTotalesVenta', obtenerTotalesVenta );
 
 router.get('/doctosVeDet/', obtenerDoctosVeDet );

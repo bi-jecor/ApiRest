@@ -2683,7 +2683,7 @@ const getProvidersChargesCxpHis = (connection) => {
     });
 }
 
-const obtenerPagos = (connection) => {
+const obtenerPagos = (connection,fechaInicial, fechaFinal) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {                
@@ -2716,7 +2716,8 @@ const obtenerPagos = (connection) => {
                     where cc.fecha >= '01.08.2024'
                     and c.nombre in ('Pagos', 'Abonos')
                     and cc.estatus = 'N'
-                    and cc.cancelado <> 'S'
+                    and cc.cancelado <> 'S
+                   '
                     ` ,
                 function (err, pagosDB) {
                     if (err) {
@@ -3203,7 +3204,8 @@ const obtenerTicketsNoFacturados = (connection, fechaInicio, fechaFin) => {
     });
 }
 
-const obtenerComplementos = (connection) => {
+const obtenerComplementos = (connection, fechaInicial, fechaFinal) => {
+    console.log('obtenerComplementos', connection, fechaInicial, fechaFinal);
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {  
@@ -3251,13 +3253,15 @@ select
                         ) ieps
                     on ieps.impte_docto_cc_id = icc.impte_docto_cc_id
                     where concep.nombre = 'Pagos' and
-                    cc.fecha between '01.01.2024' and  current_date
+                    cc.fecha between '${fechaInicial}' and '${fechaFinal}'
                     and cc.modalidad_facturacion = 'CFDI'
                     group by cc.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.cancelado, cc.contabilizado
+                    
 
                     ` ,
                 function (err, complementosDb) {
                     if (err) {
+                        console.log(err);
                        return reject(err)
                     }
                     console.log(complementosDb);
@@ -3745,18 +3749,20 @@ const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
             db.query(
                 `
                     
-                SELECT
+                 SELECT
                     cm.folio,
                     cm.fecha,
-                    cm.importe_neto,
+                    cm.importe_neto + compra.total_impuestos as importe_neto,
                     compra.folio as compra,
                     compra.importe_neto as importe_compra,
+                    pv.nombre,
                     cm.estatus
                 FROM DOCTOS_CM CM
                 left join doctos_cm_ligas liga
                 on liga.docto_cm_fte_id = cm.docto_cm_id
                 left join doctos_cm compra
                 on compra.docto_cm_id = liga.docto_cm_dest_id
+                inner join proveedores pv on pv.proveedor_id = cm.proveedor_id
                 where CM.tipo_docto = 'R'
                 and cm.fecha between '${fechaInicio}' and '${fechaFin}'
                 ` ,
@@ -3772,6 +3778,7 @@ const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
                             compra: ve.COMPRA !== null ? ve.COMPRA.toString('latin1') : '',
                             importe_compra: ve.IMPORTE_COMPRA,
                             estatus: ve.ESTATUS !== null ? ve.ESTATUS.toString('latin1') : '',
+                            proveedor: ve.NOMBRE !== null ? ve.NOMBRE.toString('latin1') : '',
                             db : connection
                         }
                     });

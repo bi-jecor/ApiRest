@@ -547,16 +547,17 @@ const obtenerTicketsNoFacturados = (req = request, res = response) => {
 }
 
 const obtenerComplementos = (req = request, res = response) => {
-    const date = req.params.date
+    const {fechaInicial, fechaFinal} = req.params
+    console.log(fechaInicial, fechaFinal);
     const all = Promise.all([
-        firebirdQuerys.obtenerComplementos('AC', date),
-        firebirdQuerys.obtenerComplementos('G32', date),
-        firebirdQuerys.obtenerComplementos('CHAVEZC', date),
-        firebirdQuerys.obtenerComplementos('TURCIO', date),
-        firebirdQuerys.obtenerComplementos('PAEZ', date),
-        firebirdQuerys.obtenerComplementos('COLIMA', date),
-        firebirdQuerys.obtenerComplementos('VILLA', date),
-        firebirdQuerys.obtenerComplementos('COLINAS', date),
+        firebirdQuerys.obtenerComplementos('AC', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('G32', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('CHAVEZC', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('TURCIO', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('PAEZ',fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('COLIMA',fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('VILLA',fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('COLINAS',fechaInicial, fechaFinal),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
