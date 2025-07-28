@@ -3287,6 +3287,101 @@ select
     });
 }
 
+const obtenerComplementos2 = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {  
+                console.log(err);
+                              
+                return reject(err)
+            }
+            db.query(
+                `
+                    select
+                        cc.folio,
+                        cc.docto_cc_id,
+                        ve.folio as folio_origen,
+                        concep.nombre,
+                        cc.fecha,
+                        cc.cfdi_certificado,
+                        cc.estatus,
+                        sum(icc.importe) as importe,
+                        sum(coalesce(iva.importe,0)) as iva,
+                        sum(coalesce(ieps.importe,0)) as ieps
+                    from doctos_cc cc
+                    left join conceptos_cc concep
+                        on concep.concepto_cc_id = cc.concepto_cc_id
+                    left join importes_doctos_cc icc
+                        on icc.docto_cc_id = cc.docto_cc_id
+                    inner join (
+                        SELECT
+                            a.docto_cc_id,
+                            a.docto_cc_acr_id
+                        FROM importes_doctos_cc A
+                        group by a.docto_cc_id, a.docto_cc_acr_id
+                    ) a on a.docto_cc_id = cc.docto_cc_id
+                    inner join (
+                        select
+                            d.docto_dest_id,
+                            d.docto_fte_id
+                        from doctos_entre_sis d
+                        where d.clave_sis_dest = 'CC'
+                    ) b on b.docto_dest_id = a.docto_cc_acr_id
+                    inner join doctos_ve ve 
+                        on ve.docto_ve_id = b.docto_fte_id
+                    left join (
+                        select
+                            ccimp.impte_docto_cc_id,
+                            Sum(ccimp.impuesto) as importe
+                        from importes_doctos_cc_imptos ccimp
+                        left join impuestos imp
+                            on ccimp.impuesto_id = imp.impuesto_id
+                        where imp.tipo_impto_id = 44
+                        group by ccimp.impte_docto_cc_id
+                    ) iva on iva.impte_docto_cc_id = icc.impte_docto_cc_id
+                    left join (
+                        select
+                            ccimp.impte_docto_cc_id,
+                            Sum(ccimp.impuesto) as importe
+                        from importes_doctos_cc_imptos ccimp
+                        left join impuestos imp
+                            on ccimp.impuesto_id = imp.impuesto_id
+                        where imp.tipo_impto_id = 45
+                        group by ccimp.impte_docto_cc_id
+                    ) ieps on ieps.impte_docto_cc_id = icc.impte_docto_cc_id
+                    where concep.nombre = 'Pagos' 
+                    and cc.fecha between '01.01.2024' and current_date
+                    and cc.modalidad_facturacion = 'CFDI'
+                    group by cc.folio, cc.docto_cc_id, ve.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.estatus
+                    ` ,
+                function (err, complementosDb) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    console.log(complementosDb);
+                    
+                    let complementos = complementosDb.map(complemento => {
+                        return {
+                            folio: complemento.FOLIO !== null ? complemento.FOLIO.toString('latin1') : '',
+                            docto_cc_id: complemento.DOCTO_CC_ID,
+                            folio_origen: complemento.FOLIO_ORIGEN !== null ? complemento.FOLIO_ORIGEN.toString('latin1') : '',
+                            importe : complemento.IMPORTE,
+                            iva : complemento.IVA,
+                            ieps : complemento.IEPS,
+                            cfdi_certificado: complemento.CFDI_CERTIFICADO !== null ? complemento.CFDI_CERTIFICADO.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(complemento.FECHA),
+                            estatus: complemento.ESTATUS !== null ? complemento.ESTATUS.toString('latin1') : '',
+                            db : connection
+                        }
+                    });
+
+                    db.detach();
+                    resolve(complementos)
+                });
+        });
+    });
+}
+
 const obtenerNombreArticuloPorClave = (connection, clave) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
@@ -3997,7 +4092,8 @@ module.exports = {
     obtenerArticulosTraspaso,
     existenciaCedisYRuta,
     getProvidersChargesCxpDate,
-    obtenerClientes
+    obtenerClientes,
+    obtenerComplementos2
 
 }
 

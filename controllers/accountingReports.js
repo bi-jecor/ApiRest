@@ -575,6 +575,33 @@ const obtenerComplementos = (req = request, res = response) => {
         })
 }
 
+const obtenerComplementos2 = (req = request, res = response) => {
+    const all = Promise.all([
+        firebirdQuerys.obtenerComplementos2('AC'),
+        firebirdQuerys.obtenerComplementos2('G32'),
+        firebirdQuerys.obtenerComplementos2('CHAVEZC'),
+        firebirdQuerys.obtenerComplementos2('TURCIO'),
+        firebirdQuerys.obtenerComplementos2('PAEZ'),
+        firebirdQuerys.obtenerComplementos2('COLIMA'),
+        firebirdQuerys.obtenerComplementos2('VILLA'),
+        firebirdQuerys.obtenerComplementos2('COLINAS'),
+
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            complementos: doctos
+        });
+    })
+        .catch(error => {
+            return res.status(500).json({
+                error
+            });
+        })
+}
+
 const obtenerTotalesVenta = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
@@ -744,6 +771,7 @@ module.exports = {
     obtenerDevoluciones,
     obtenerTicketsNoFacturados,
     obtenerComplementos,
+    obtenerComplementos2,
     obtenerTotalesVenta,
     getAllProvidersChargesCxpDate,
     obtenerCargosClientes,
