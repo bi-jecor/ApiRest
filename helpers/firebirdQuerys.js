@@ -3350,7 +3350,7 @@ const obtenerComplementos2 = (connection, fechaInicio, fechaFinal) => {
                         group by ccimp.impte_docto_cc_id
                     ) ieps on ieps.impte_docto_cc_id = icc.impte_docto_cc_id
                     where concep.nombre = 'Pagos' 
-                    cc.fecha between '${fechaInicial}' and '${fechaFinal}'
+                    cc.fecha between '${fechaInicio}' and '${fechaFinal}'
                     and cc.modalidad_facturacion = 'CFDI'
                     group by cc.folio, cc.docto_cc_id, ve.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.estatus
                     ` ,
