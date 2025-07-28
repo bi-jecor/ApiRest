@@ -576,6 +576,7 @@ const obtenerComplementos = (req = request, res = response) => {
 }
 
 const obtenerComplementos2 = (req = request, res = response) => {
+    const { fechaInicio, fechaFin } = req.params;
     const all = Promise.all([
         firebirdQuerys.obtenerComplementos2('AC', fechaInicio, fechaFin),
         firebirdQuerys.obtenerComplementos2('G32',fechaInicio, fechaFin),
