@@ -576,16 +576,17 @@ const obtenerComplementos = (req = request, res = response) => {
 }
 
 const obtenerComplementos2 = (req = request, res = response) => {
-    const { fechaInicio, fechaFin } = req.params;
+    const { fechaInicio, fechaFinal } = req.params;
+    console.log(fechaInicio, fechaFinal);
     const all = Promise.all([
-        firebirdQuerys.obtenerComplementos2('AC', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerComplementos2('G32',fechaInicio, fechaFin),
-        firebirdQuerys.obtenerComplementos2('CHAVEZC',fechaInicio, fechaFin),
-        firebirdQuerys.obtenerComplementos2('TURCIO',fechaInicio, fechaFin),
-        firebirdQuerys.obtenerComplementos2('PAEZ',fechaInicio, fechaFin),
-        firebirdQuerys.obtenerComplementos2('COLIMA',fechaInicio, fechaFin),
-        firebirdQuerys.obtenerComplementos2('VILLA',fechaInicio, fechaFin),
-        firebirdQuerys.obtenerComplementos2('COLINAS',fechaInicio, fechaFin),
+        firebirdQuerys.obtenerComplementos2('AC', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('G32',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('CHAVEZC',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('TURCIO',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('PAEZ',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('COLIMA',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('VILLA',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('COLINAS',fechaInicio, fechaFinal),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
