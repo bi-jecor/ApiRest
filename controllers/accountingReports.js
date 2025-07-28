@@ -577,14 +577,14 @@ const obtenerComplementos = (req = request, res = response) => {
 
 const obtenerComplementos2 = (req = request, res = response) => {
     const all = Promise.all([
-        firebirdQuerys.obtenerComplementos2('AC'),
-        firebirdQuerys.obtenerComplementos2('G32'),
-        firebirdQuerys.obtenerComplementos2('CHAVEZC'),
-        firebirdQuerys.obtenerComplementos2('TURCIO'),
-        firebirdQuerys.obtenerComplementos2('PAEZ'),
-        firebirdQuerys.obtenerComplementos2('COLIMA'),
-        firebirdQuerys.obtenerComplementos2('VILLA'),
-        firebirdQuerys.obtenerComplementos2('COLINAS'),
+        firebirdQuerys.obtenerComplementos2('AC', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerComplementos2('G32',fechaInicio, fechaFin),
+        firebirdQuerys.obtenerComplementos2('CHAVEZC',fechaInicio, fechaFin),
+        firebirdQuerys.obtenerComplementos2('TURCIO',fechaInicio, fechaFin),
+        firebirdQuerys.obtenerComplementos2('PAEZ',fechaInicio, fechaFin),
+        firebirdQuerys.obtenerComplementos2('COLIMA',fechaInicio, fechaFin),
+        firebirdQuerys.obtenerComplementos2('VILLA',fechaInicio, fechaFin),
+        firebirdQuerys.obtenerComplementos2('COLINAS',fechaInicio, fechaFin),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
