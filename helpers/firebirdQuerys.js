@@ -3287,7 +3287,7 @@ select
     });
 }
 
-const obtenerComplementos2 = (connection) => {
+const obtenerComplementos2 = (connection, fechaInicio, fechaFinal) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {  
@@ -3350,7 +3350,7 @@ const obtenerComplementos2 = (connection) => {
                         group by ccimp.impte_docto_cc_id
                     ) ieps on ieps.impte_docto_cc_id = icc.impte_docto_cc_id
                     where concep.nombre = 'Pagos' 
-                    and cc.fecha between '01.01.2024' and current_date
+                    cc.fecha between '${fechaInicial}' and '${fechaFinal}'
                     and cc.modalidad_facturacion = 'CFDI'
                     group by cc.folio, cc.docto_cc_id, ve.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.estatus
                     ` ,
