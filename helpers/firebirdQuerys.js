@@ -3361,15 +3361,17 @@ GROUP BY
                     
                     let complementos = complementosDb.map(complemento => {
                         return {
-                            folio: complemento.FOLIO !== null ? complemento.FOLIO.toString('latin1') : '',
+                            folio: complemento.FOLIO_CC !== null ? complemento.FOLIO_CC.toString('latin1') : '',
                             docto_cc_id: complemento.DOCTO_CC_ID,
-                            folio_origen: complemento.FOLIO_ORIGEN !== null ? complemento.FOLIO_ORIGEN.toString('latin1') : '',
+                            folio_origen: complemento.FOLIO_VENTA !== null ? complemento.FOLIO_VENTA.toString('latin1') : '',
                             importe : complemento.IMPORTE,
                             iva : complemento.IVA,
                             ieps : complemento.IEPS,
                             cfdi_certificado: complemento.CFDI_CERTIFICADO !== null ? complemento.CFDI_CERTIFICADO.toString('latin1') : '',
                             fecha: formatDate.formatDateToString(complemento.FECHA),
-                            estatus: complemento.ESTATUS !== null ? complemento.ESTATUS.toString('latin1') : '',
+                            nombre: complemento.NOMBRE !== null ? complemento.NOMBRE.toString('latin1') : '',
+                            cancelado: complemento.CANCELADO !== null ? complemento.CANCELADO.toString('latin1') : '',
+                            contabilizado: complemento.CONTABILIZADO !== null ? complemento.CONTABILIZADO.toString('latin1') : '',
                             db : connection
                         }
                     });
