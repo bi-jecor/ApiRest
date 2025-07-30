@@ -512,19 +512,19 @@ const obtenerDevoluciones = (req = request, res = response) => {
 
 const obtenerTicketsNoFacturados = (req = request, res = response) => {
     const fechaInicio = req.params.fechaInicio;
-    const fechaFin = req.params.fechaFin;
-    console.log(fechaInicio,fechaFin);
+    const fechaFinal = req.params.fechaFin;
+    console.log(fechaInicio,fechaFinal);
     
     const all = Promise.all([
-        firebirdQuerys.obtenerTicketsNoFacturados('AC', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('G32', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('TURCIO', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('TURCIOM', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('PAEZ', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('CHAVEZC', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('COLIMA', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('VILLA', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('COLINAS', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('AC', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('G32', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('TURCIO', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('TURCIOM', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('PAEZ', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('CHAVEZC', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('COLIMA', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('VILLA', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('COLINAS', fechaInicio, fechaFinal),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
