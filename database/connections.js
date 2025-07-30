@@ -337,7 +337,7 @@ const CIMA = {
     password: 'J8wL#2pR!t?#',
     host: '192.168.10.200',
     port: 3051,
-    database: 'E:/Bases Datos/ADI 2020.FDB',
+    database: 'E:/Bases Datos/JECOR 2020.FDB',
     lowercase_keys: false, 
     role: null,
     pageSize: 4096,
@@ -347,7 +347,7 @@ const CIMA = {
     iva16: 694,
     tasa0: 689,
     ieps8: 698,
-    keysArticlesIds : '17,12465,25863515',
+    keysArticlesIds : '17,18,4185',
     companyPriceId: 28548960,
 }
 

@@ -2683,7 +2683,7 @@ const getProvidersChargesCxpHis = (connection) => {
     });
 }
 
-const obtenerPagos = (connection) => {
+const obtenerPagos = (connection,fechaInicial, fechaFinal) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {                
@@ -2716,7 +2716,8 @@ const obtenerPagos = (connection) => {
                     where cc.fecha >= '01.08.2024'
                     and c.nombre in ('Pagos', 'Abonos')
                     and cc.estatus = 'N'
-                    and cc.cancelado <> 'S'
+                    and cc.cancelado <> 'S
+                   '
                     ` ,
                 function (err, pagosDB) {
                     if (err) {
@@ -3203,7 +3204,8 @@ const obtenerTicketsNoFacturados = (connection, fechaInicio, fechaFin) => {
     });
 }
 
-const obtenerComplementos = (connection) => {
+const obtenerComplementos = (connection, fechaInicial, fechaFinal) => {
+    console.log('obtenerComplementos', connection, fechaInicial, fechaFinal);
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {  
@@ -3213,12 +3215,13 @@ const obtenerComplementos = (connection) => {
             }
             db.query(
                 `
-                    select
+select
                         cc.folio,
                         concep.nombre,
                         cc.fecha,
                         cc.cfdi_certificado,
-                        cc.estatus,
+                        cc.cancelado,
+                        cc.contabilizado,
                         sum(icc.importe) as importe,
                         sum(coalesce(iva.importe,0)) as iva,
                         sum(coalesce(ieps.importe,0)) as ieps
@@ -3250,12 +3253,15 @@ const obtenerComplementos = (connection) => {
                         ) ieps
                     on ieps.impte_docto_cc_id = icc.impte_docto_cc_id
                     where concep.nombre = 'Pagos' and
-                    cc.fecha between '01.01.2024' and  current_date
+                    cc.fecha between '${fechaInicial}' and '${fechaFinal}'
                     and cc.modalidad_facturacion = 'CFDI'
-                    group by cc.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.estatus
+                    group by cc.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.cancelado, cc.contabilizado
+                    
+
                     ` ,
                 function (err, complementosDb) {
                     if (err) {
+                        console.log(err);
                        return reject(err)
                     }
                     console.log(complementosDb);
@@ -3268,7 +3274,8 @@ const obtenerComplementos = (connection) => {
                             ieps : complemento.IEPS,
                             cfdi_certificado: complemento.CFDI_CERTIFICADO !== null ? complemento.CFDI_CERTIFICADO.toString('latin1') : '',
                             fecha: formatDate.formatDateToString(complemento.FECHA),
-                            estatus: complemento.ESTATUS !== null ? complemento.ESTATUS.toString('latin1') : '',
+                            cancelado: complemento.CANCELADO !== null ? complemento.CANCELADO.toString('latin1') : '',
+                            contabilizado: complemento.CONTABILIZADO !== null ? complemento.CONTABILIZADO.toString('latin1') : '',
                             db : connection
                         }
                     });
@@ -3280,7 +3287,7 @@ const obtenerComplementos = (connection) => {
     });
 }
 
-const obtenerComplementos2 = (connection) => {
+const obtenerComplementos2 = (connection, fechaInicio, fechaFinal) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {  
@@ -3290,62 +3297,68 @@ const obtenerComplementos2 = (connection) => {
             }
             db.query(
                 `
-                             SELECT 
-    cc.folio as folio_cc,
-    ve.folio as folio_venta,
-    concep.nombre,
-    cc.fecha,
-    cc.cfdi_certificado,
-    cc.cancelado,
-    cc.contabilizado,
-    SUM(icc.importe) as importe,
-    SUM(COALESCE(iva.importe,0)) as iva,
-    SUM(COALESCE(ieps.importe,0)) as ieps
-FROM doctos_cc cc
-    LEFT JOIN conceptos_cc concep ON concep.concepto_cc_id = cc.concepto_cc_id
-    LEFT JOIN importes_doctos_cc icc ON icc.docto_cc_id = cc.docto_cc_id
-    LEFT JOIN (
-        SELECT
-            ccimp.impte_docto_cc_id,
-            SUM(ccimp.impuesto) as importe
-        FROM importes_doctos_cc_imptos ccimp
-        LEFT JOIN impuestos imp ON ccimp.impuesto_id = imp.impuesto_id
-        WHERE imp.tipo_impto_id = 44
-        GROUP BY ccimp.impte_docto_cc_id
-    ) iva ON iva.impte_docto_cc_id = icc.impte_docto_cc_id
-    LEFT JOIN (
-        SELECT
-            ccimp.impte_docto_cc_id,
-            SUM(ccimp.impuesto) as importe
-        FROM importes_doctos_cc_imptos ccimp
-        LEFT JOIN impuestos imp ON ccimp.impuesto_id = imp.impuesto_id
-        WHERE imp.tipo_impto_id = 45
-        GROUP BY ccimp.impte_docto_cc_id
-    ) ieps ON ieps.impte_docto_cc_id = icc.impte_docto_cc_id
-    LEFT JOIN (
-        SELECT 
-            d.docto_dest_id,
-            d.docto_fte_id
-        FROM doctos_entre_sis d
-        WHERE d.clave_sis_dest = 'CC'
-    ) des ON des.docto_dest_id = icc.docto_cc_acr_id
-    LEFT JOIN doctos_ve ve ON ve.docto_ve_id = des.docto_fte_id
-WHERE concep.nombre = 'Pagos'
-    and cc.fecha between '${fechaInicio}' and '${fechaFinal}'
-    AND cc.modalidad_facturacion = 'CFDI'
-
-GROUP BY 
-    cc.folio, 
-    ve.folio,
-    concep.nombre, 
-    cc.fecha, 
-    cc.cfdi_certificado, 
-    cc.cancelado, 
-    cc.contabilizado
+                    select
+                        cc.folio,
+                        cc.docto_cc_id,
+                        ve.folio as folio_origen,
+                        concep.nombre,
+                        cc.fecha,
+                        cc.cfdi_certificado,
+                        cc.estatus,
+                        sum(icc.importe) as importe,
+                        sum(coalesce(iva.importe,0)) as iva,
+                        sum(coalesce(ieps.importe,0)) as ieps
+                    from doctos_cc cc
+                    left join conceptos_cc concep
+                        on concep.concepto_cc_id = cc.concepto_cc_id
+                    left join importes_doctos_cc icc
+                        on icc.docto_cc_id = cc.docto_cc_id
+                    inner join (
+                        SELECT
+                            a.docto_cc_id,
+                            a.docto_cc_acr_id
+                        FROM importes_doctos_cc A
+                        group by a.docto_cc_id, a.docto_cc_acr_id
+                    ) a on a.docto_cc_id = cc.docto_cc_id
+                    inner join (
+                        select
+                            d.docto_dest_id,
+                            d.docto_fte_id
+                        from doctos_entre_sis d
+                        where d.clave_sis_dest = 'CC'
+                    ) b on b.docto_dest_id = a.docto_cc_acr_id
+                    inner join doctos_ve ve 
+                        on ve.docto_ve_id = b.docto_fte_id
+                    left join (
+                        select
+                            ccimp.impte_docto_cc_id,
+                            Sum(ccimp.impuesto) as importe
+                        from importes_doctos_cc_imptos ccimp
+                        left join impuestos imp
+                            on ccimp.impuesto_id = imp.impuesto_id
+                        where imp.tipo_impto_id = 44
+                        group by ccimp.impte_docto_cc_id
+                    ) iva on iva.impte_docto_cc_id = icc.impte_docto_cc_id
+                    left join (
+                        select
+                            ccimp.impte_docto_cc_id,
+                            Sum(ccimp.impuesto) as importe
+                        from importes_doctos_cc_imptos ccimp
+                        left join impuestos imp
+                            on ccimp.impuesto_id = imp.impuesto_id
+                        where imp.tipo_impto_id = 45
+                        group by ccimp.impte_docto_cc_id
+                    ) ieps on ieps.impte_docto_cc_id = icc.impte_docto_cc_id
+                    where concep.nombre = 'Pagos' 
+                    and cc.fecha between '01.01.2024' and current_date
+                    and cc.modalidad_facturacion = 'CFDI'
+                    group by cc.folio, cc.docto_cc_id, ve.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.estatus
                     ` ,
                 function (err, complementosDb) {
                     if (err) {
+                        console.log(err);
                        return reject(err)
+
                     }
                     console.log(complementosDb);
                     
@@ -3833,18 +3846,20 @@ const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
             db.query(
                 `
                     
-                SELECT
+                 SELECT
                     cm.folio,
                     cm.fecha,
-                    cm.importe_neto,
+                    cm.importe_neto + compra.total_impuestos as importe_neto,
                     compra.folio as compra,
                     compra.importe_neto as importe_compra,
+                    pv.nombre,
                     cm.estatus
                 FROM DOCTOS_CM CM
                 left join doctos_cm_ligas liga
                 on liga.docto_cm_fte_id = cm.docto_cm_id
                 left join doctos_cm compra
                 on compra.docto_cm_id = liga.docto_cm_dest_id
+                inner join proveedores pv on pv.proveedor_id = cm.proveedor_id
                 where CM.tipo_docto = 'R'
                 and cm.fecha between '${fechaInicio}' and '${fechaFin}'
                 ` ,
@@ -3860,6 +3875,7 @@ const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
                             compra: ve.COMPRA !== null ? ve.COMPRA.toString('latin1') : '',
                             importe_compra: ve.IMPORTE_COMPRA,
                             estatus: ve.ESTATUS !== null ? ve.ESTATUS.toString('latin1') : '',
+                            proveedor: ve.NOMBRE !== null ? ve.NOMBRE.toString('latin1') : '',
                             db : connection
                         }
                     });

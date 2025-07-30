@@ -547,16 +547,17 @@ const obtenerTicketsNoFacturados = (req = request, res = response) => {
 }
 
 const obtenerComplementos = (req = request, res = response) => {
-    const date = req.params.date
+    const {fechaInicial, fechaFinal} = req.params
+    console.log(fechaInicial, fechaFinal);
     const all = Promise.all([
-        firebirdQuerys.obtenerComplementos('AC', date),
-        firebirdQuerys.obtenerComplementos('G32', date),
-        firebirdQuerys.obtenerComplementos('CHAVEZC', date),
-        firebirdQuerys.obtenerComplementos('TURCIO', date),
-        firebirdQuerys.obtenerComplementos('PAEZ', date),
-        firebirdQuerys.obtenerComplementos('COLIMA', date),
-        firebirdQuerys.obtenerComplementos('VILLA', date),
-        firebirdQuerys.obtenerComplementos('COLINAS', date),
+        firebirdQuerys.obtenerComplementos('AC', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('G32', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('CHAVEZC', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('TURCIO', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('PAEZ',fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('COLIMA',fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('VILLA',fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('COLINAS',fechaInicial, fechaFinal),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
@@ -575,15 +576,17 @@ const obtenerComplementos = (req = request, res = response) => {
 }
 
 const obtenerComplementos2 = (req = request, res = response) => {
+    const { fechaInicio, fechaFinal } = req.params;
+    console.log(fechaInicio, fechaFinal);
     const all = Promise.all([
-        firebirdQuerys.obtenerComplementos2('AC'),
-        firebirdQuerys.obtenerComplementos2('G32'),
-        firebirdQuerys.obtenerComplementos2('CHAVEZC'),
-        firebirdQuerys.obtenerComplementos2('TURCIO'),
-        firebirdQuerys.obtenerComplementos2('PAEZ'),
-        firebirdQuerys.obtenerComplementos2('COLIMA'),
-        firebirdQuerys.obtenerComplementos2('VILLA'),
-        firebirdQuerys.obtenerComplementos2('COLINAS'),
+        firebirdQuerys.obtenerComplementos2('AC', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('G32',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('CHAVEZC',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('TURCIO',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('PAEZ',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('COLIMA',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('VILLA',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('COLINAS',fechaInicio, fechaFinal),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
