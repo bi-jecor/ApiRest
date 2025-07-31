@@ -3848,9 +3848,9 @@ const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
                  SELECT
                     cm.folio,
                     cm.fecha,
-                    cm.importe_neto + compra.total_impuestos as importe_neto,
+                    cm.importe_neto + cm.total_impuestos as importe_neto,
                     compra.folio as compra,
-                    compra.importe_neto as importe_compra,
+                    compra.importe_neto + compra.total_impuestos as importe_compra,
                     pv.nombre,
                     cm.estatus
                 FROM DOCTOS_CM CM
