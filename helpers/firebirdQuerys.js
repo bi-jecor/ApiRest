@@ -3384,6 +3384,7 @@ GROUP BY
 }
 
 const pagosCompras = (connection) => {
+    // Obtener los pagos de compras del día anterior
     let fechaInicio = formatDate.formatDateToMicrosip(new Date().setDate(new Date().getDate() - 1));      
     const fechaFinal = formatDate.formatDateToMicrosip(new Date().setDate(new Date().getDate() - 1)); 
     
