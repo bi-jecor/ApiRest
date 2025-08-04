@@ -3383,6 +3383,68 @@ GROUP BY
     });
 }
 
+const pagosCompras = (connection) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                 Select
+                    cm.folio_prov,
+                    cm.folio,
+                    prov.nombre,
+                    pcp.nombre,
+                    recp.folio,
+                    recp.fecha,
+                   lcm.prioridad,
+                    lcm.importe ,
+                    lcm.descuento_pp,
+                    lcm.descuento_com,
+                    lcm.fecha_pp
+                from doctos_cm cm
+                inner join proveedores prov
+                on prov.proveedor_id = cm.proveedor_id
+                inner join condiciones_pago_cp pcp
+                on pcp.cond_pago_id = cm.cond_pago_id
+                inner join doctos_cm_ligas liga
+                on liga.docto_cm_dest_id = cm.docto_cm_id
+                inner join doctos_cm recp
+                on recp.docto_cm_id = liga.docto_cm_fte_id
+                inner join libres_com_cm lcm
+                on lcm.docto_cm_id = cm.docto_cm_id
+                where cm.fecha = current_date
+                and cm.tipo_docto = 'C'
+                and cm.estatus = 'N'
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let ventas = arts.map(ve => {
+                        return {
+                            folio_prov: ve.FOLIO_PROV !== null ? ve.FOLIO_PROV.toString('latin1') : '',
+                            folio: ve.FOLIO !== null ? ve.FOLIO.toString('latin1') : '',
+                            nombre_prov: ve.NOMBRE !== null ? ve.NOMBRE.toString('latin1') : '',
+                            condicion_pago: ve.NOMBRE_1 !== null ? ve.NOMBRE_1.toString('latin1') : '',
+                            folio_recp: ve.FOLIO_REC !== null ? ve.FOLIO_REC.toString('latin1') : '',
+                            fecha_recp: formatDate.formatDateToString(ve.FECHA_REC),
+                            prioridad: ve.PRIORIDAD !== null ? ve.PRIORIDAD : 0,
+                            importe: ve.IMPORTE !== null ? ve.IMPORTE : 0,
+                            descuento_pp: ve.DESCUETO_PP !== null ? ve.DESCUETO_PP : 0,
+                            descuento_com: ve.DESCUENTO_COM !== null ? ve.DESCUENTO_COM : 0,
+                            fecha_pp: formatDate.formatDateToString(ve.FECHA_PP),                            
+                            db : connection
+                        }
+                    });
+                    db.detach();
+                    resolve(ventas)
+                });
+        });
+    });
+}
+
 const obtenerNombreArticuloPorClave = (connection, clave) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
@@ -4094,7 +4156,8 @@ module.exports = {
     existenciaCedisYRuta,
     getProvidersChargesCxpDate,
     obtenerClientes,
-    obtenerComplementos2
+    obtenerComplementos2,
+    pagosCompras
 
 }
 
