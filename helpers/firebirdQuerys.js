@@ -3384,6 +3384,16 @@ GROUP BY
 }
 
 const pagosCompras = (connection) => {
+    let fechaInicio = formatDate.formatDateToMicrosip(new Date().setDate(new Date().getDate() - 1));      
+    const fechaFinal = formatDate.formatDateToMicrosip(new Date().setDate(new Date().getDate() - 1)); 
+    
+    
+    if (new Date().getDay() === 1) {        
+       fechaInicio = formatDate.formatDateToMicrosip(new Date().setDate(new Date().getDate() - 3)); 
+        
+    } 
+    console.log('pagosCompras', connection, fechaInicio, fechaFinal);
+
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {                
@@ -3393,11 +3403,11 @@ const pagosCompras = (connection) => {
                 `
                  Select
                     cm.folio_prov,
-                    cm.folio,
+                    cm.folio ,
                     prov.nombre,
-                    pcp.nombre,
-                    recp.folio,
-                    recp.fecha,
+                    pcp.nombre as cond_Pago,
+                    recp.folio AS folio_recp,
+                    recp.fecha as fecha_rec,
                    lcm.prioridad,
                     lcm.importe ,
                     lcm.descuento_pp,
@@ -3414,9 +3424,10 @@ const pagosCompras = (connection) => {
                 on recp.docto_cm_id = liga.docto_cm_fte_id
                 inner join libres_com_cm lcm
                 on lcm.docto_cm_id = cm.docto_cm_id
-                where cm.fecha = current_date
+                where cm.fecha_hora_creacion between '${fechaInicio}' and '${fechaFinal}'
                 and cm.tipo_docto = 'C'
                 and cm.estatus = 'N'
+              
                 ` ,
                 function (err, arts ) {
                     if (err) {
@@ -3427,14 +3438,14 @@ const pagosCompras = (connection) => {
                             folio_prov: ve.FOLIO_PROV !== null ? ve.FOLIO_PROV.toString('latin1') : '',
                             folio: ve.FOLIO !== null ? ve.FOLIO.toString('latin1') : '',
                             nombre_prov: ve.NOMBRE !== null ? ve.NOMBRE.toString('latin1') : '',
-                            condicion_pago: ve.NOMBRE_1 !== null ? ve.NOMBRE_1.toString('latin1') : '',
-                            folio_recp: ve.FOLIO_REC !== null ? ve.FOLIO_REC.toString('latin1') : '',
-                            fecha_recp: formatDate.formatDateToString(ve.FECHA_REC),
+                            condicion_pago: ve.COND_PAGO !== null ? ve.COND_PAGO.toString('latin1') : '',
+                            folio_recp: ve.FOLIO_RECP !== null ? ve.FOLIO_RECP.toString('latin1') : '',
+                            fecha_recp: ve.FECHA_REC !== null ? formatDate.formatDateToString(ve.FECHA_REC) : '',
                             prioridad: ve.PRIORIDAD !== null ? ve.PRIORIDAD : 0,
                             importe: ve.IMPORTE !== null ? ve.IMPORTE : 0,
                             descuento_pp: ve.DESCUETO_PP !== null ? ve.DESCUETO_PP : 0,
                             descuento_com: ve.DESCUENTO_COM !== null ? ve.DESCUENTO_COM : 0,
-                            fecha_pp: formatDate.formatDateToString(ve.FECHA_PP),                            
+                            fecha_pp: ve.FECHA_PP !== null ? formatDate.formatDateToString(ve.FECHA_PP) : '',                            
                             db : connection
                         }
                     });
