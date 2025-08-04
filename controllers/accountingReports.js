@@ -604,6 +604,34 @@ const obtenerComplementos2 = (req = request, res = response) => {
         })
 }
 
+const pagosCompras = (req = request, res = response) => {
+    const all = Promise.all([
+        firebirdQuerys.pagosCompras('AC'),
+        firebirdQuerys.pagosCompras('G32'),
+        firebirdQuerys.pagosCompras('CHAVEZC'),
+        firebirdQuerys.pagosCompras('TURCIO'),
+        firebirdQuerys.pagosCompras('PAEZ'),
+        firebirdQuerys.pagosCompras('COLIMA'),
+        firebirdQuerys.pagosCompras('VILLA'),
+        firebirdQuerys.pagosCompras('COLINAS'),
+        firebirdQuerys.pagosCompras('TURCIOM'),
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            complementos: doctos
+        });
+    })
+        .catch(error => {
+            console.log(error);
+            return res.status(500).json({
+                error
+            });
+        })
+}
+
 const obtenerTotalesVenta = (req = request, res = response) => {
     const date = req.params.date
     const all = Promise.all([
@@ -781,4 +809,5 @@ module.exports = {
     obtenerVentasPorImpuesto,
     obtenerRecepciones,
     obtenerDevolucionesDet,
+    pagosCompras
 }
