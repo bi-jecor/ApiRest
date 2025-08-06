@@ -2708,12 +2708,12 @@ const obtenerPagos = (connection,fechaInicial, fechaFinal) => {
                     inner join
                         (
                         Select ve.folio, ve.cond_pago_id from doctos_ve  ve
-                            where ve.fecha >= '01.08.2024'
+                            where ve.fecha >= '01.01.2025'
                         )  ve
                     on ve.folio = f.folio
                     left join condiciones_pago cp
                     on cp.cond_pago_id = ve.cond_pago_id
-                    where cc.fecha >= '01.08.2024'
+                    where cc.fecha >= '01.01.2025'
                     and c.nombre in ('Pagos', 'Abonos')
                     and cc.estatus = 'N'
                     and cc.cancelado <> 'S
@@ -3402,18 +3402,19 @@ const pagosCompras = (connection) => {
             }
             db.query(
                 `
-                 Select
+                Select
                     cm.folio_prov,
                     cm.folio ,
                     prov.nombre,
                     pcp.nombre as cond_Pago,
                     recp.folio AS folio_recp,
                     recp.fecha as fecha_rec,
-                   lcm.prioridad,
+                    la.valor_desplegado as prioridad,
                     lcm.importe ,
                     lcm.descuento_pp,
                     lcm.descuento_com,
-                    lcm.fecha_pp
+                    lcm.fecha_pp,
+                    vcm.fecha_vencimiento
                 from doctos_cm cm
                 inner join proveedores prov
                 on prov.proveedor_id = cm.proveedor_id
@@ -3425,7 +3426,11 @@ const pagosCompras = (connection) => {
                 on recp.docto_cm_id = liga.docto_cm_fte_id
                 inner join libres_com_cm lcm
                 on lcm.docto_cm_id = cm.docto_cm_id
-                where cm.fecha_hora_creacion between '${fechaInicio}' and '${fechaFinal}'
+                inner join listas_atributos la
+                on la.lista_atrib_id =   lcm.prioridad
+                inner join vencimientos_cargos_cm vcm
+                on vcm.docto_cm_id = cm.docto_cm_id
+                where cast( cm.fecha_hora_creacion as date) between'${fechaInicio}' and '${fechaFinal}'
                 and cm.tipo_docto = 'C'
                 and cm.estatus = 'N'
               
@@ -3434,6 +3439,7 @@ const pagosCompras = (connection) => {
                     if (err) {
                        return reject(err)
                     }
+                    console.log(arts);
                     let ventas = arts.map(ve => {
                         return {
                             folio_prov: ve.FOLIO_PROV !== null ? ve.FOLIO_PROV.toString('latin1') : '',
@@ -3442,10 +3448,11 @@ const pagosCompras = (connection) => {
                             condicion_pago: ve.COND_PAGO !== null ? ve.COND_PAGO.toString('latin1') : '',
                             folio_recp: ve.FOLIO_RECP !== null ? ve.FOLIO_RECP.toString('latin1') : '',
                             fecha_recp: ve.FECHA_REC !== null ? formatDate.formatDateToString(ve.FECHA_REC) : '',
-                            prioridad: ve.PRIORIDAD !== null ? ve.PRIORIDAD : 0,
+                            prioridad: ve.PRIORIDAD !== null ? ve.PRIORIDAD.toString('latin1')  : '',
                             importe: ve.IMPORTE !== null ? ve.IMPORTE : 0,
                             descuento_pp: ve.DESCUETO_PP !== null ? ve.DESCUETO_PP : 0,
                             descuento_com: ve.DESCUENTO_COM !== null ? ve.DESCUENTO_COM : 0,
+                            fecha_vencimiento: ve.FECHA_VENCIMIENTO !== null ? formatDate.formatDateToString(ve.FECHA_VENCIMIENTO) : '',
                             fecha_pp: ve.FECHA_PP !== null ? formatDate.formatDateToString(ve.FECHA_PP) : '',                            
                             db : connection
                         }
