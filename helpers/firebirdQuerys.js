@@ -3450,7 +3450,7 @@ const pagosCompras = (connection) => {
                             fecha_recp: ve.FECHA_REC !== null ? formatDate.formatDateToString(ve.FECHA_REC) : '',
                             prioridad: ve.PRIORIDAD !== null ? ve.PRIORIDAD.toString('latin1')  : '',
                             importe: ve.IMPORTE !== null ? ve.IMPORTE : 0,
-                            descuento_pp: ve.DESCUETO_PP !== null ? ve.DESCUETO_PP : 0,
+                            descuento_pp: ve.DESCUENTO_PP !== null ? ve.DESCUENTO_PP : 0,
                             descuento_com: ve.DESCUENTO_COM !== null ? ve.DESCUENTO_COM : 0,
                             fecha_vencimiento: ve.FECHA_VENCIMIENTO !== null ? formatDate.formatDateToString(ve.FECHA_VENCIMIENTO) : '',
                             fecha_pp: ve.FECHA_PP !== null ? formatDate.formatDateToString(ve.FECHA_PP) : '',                            
