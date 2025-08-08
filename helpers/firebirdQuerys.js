@@ -2683,7 +2683,7 @@ const getProvidersChargesCxpHis = (connection) => {
     });
 }
 
-const obtenerPagos = (connection) => {
+const obtenerPagos = (connection,fechaInicial, fechaFinal) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {                
@@ -2708,15 +2708,16 @@ const obtenerPagos = (connection) => {
                     inner join
                         (
                         Select ve.folio, ve.cond_pago_id from doctos_ve  ve
-                            where ve.fecha >= '01.08.2024'
+                            where ve.fecha >= '01.01.2025'
                         )  ve
                     on ve.folio = f.folio
                     left join condiciones_pago cp
                     on cp.cond_pago_id = ve.cond_pago_id
-                    where cc.fecha >= '01.08.2024'
+                    where cc.fecha >= '01.01.2025'
                     and c.nombre in ('Pagos', 'Abonos')
                     and cc.estatus = 'N'
-                    and cc.cancelado <> 'S'
+                    and cc.cancelado <> 'S
+                   '
                     ` ,
                 function (err, pagosDB) {
                     if (err) {
@@ -3203,7 +3204,8 @@ const obtenerTicketsNoFacturados = (connection, fechaInicio, fechaFin) => {
     });
 }
 
-const obtenerComplementos = (connection) => {
+const obtenerComplementos = (connection, fechaInicial, fechaFinal) => {
+    console.log('obtenerComplementos', connection, fechaInicial, fechaFinal);
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {  
@@ -3251,13 +3253,15 @@ select
                         ) ieps
                     on ieps.impte_docto_cc_id = icc.impte_docto_cc_id
                     where concep.nombre = 'Pagos' and
-                    cc.fecha between '01.01.2024' and  current_date
+                    cc.fecha between '${fechaInicial}' and '${fechaFinal}'
                     and cc.modalidad_facturacion = 'CFDI'
                     group by cc.folio, concep.nombre, cc.fecha, cc.cfdi_certificado, cc.cancelado, cc.contabilizado
+                    
 
                     ` ,
                 function (err, complementosDb) {
                     if (err) {
+                        console.log(err);
                        return reject(err)
                     }
                     console.log(complementosDb);
@@ -3278,6 +3282,183 @@ select
 
                     db.detach();
                     resolve(complementos)
+                });
+        });
+    });
+}
+
+const obtenerComplementos2 = (connection, fechaInicio, fechaFinal) => {
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {  
+                console.log(err);
+                              
+                return reject(err)
+            }
+            db.query(
+                `
+                         SELECT 
+    cc.folio as folio_cc,
+    ve.folio as folio_venta,
+    concep.nombre,
+    cc.fecha,
+    cc.cfdi_certificado,
+    cc.cancelado,
+    cc.contabilizado,
+    SUM(icc.importe) as importe,
+    SUM(COALESCE(iva.importe,0)) as iva,
+    SUM(COALESCE(ieps.importe,0)) as ieps
+FROM doctos_cc cc
+    LEFT JOIN conceptos_cc concep ON concep.concepto_cc_id = cc.concepto_cc_id
+    LEFT JOIN importes_doctos_cc icc ON icc.docto_cc_id = cc.docto_cc_id
+    LEFT JOIN (
+        SELECT
+            ccimp.impte_docto_cc_id,
+            SUM(ccimp.impuesto) as importe
+        FROM importes_doctos_cc_imptos ccimp
+        LEFT JOIN impuestos imp ON ccimp.impuesto_id = imp.impuesto_id
+        WHERE imp.tipo_impto_id = 44
+        GROUP BY ccimp.impte_docto_cc_id
+    ) iva ON iva.impte_docto_cc_id = icc.impte_docto_cc_id
+    LEFT JOIN (
+        SELECT
+            ccimp.impte_docto_cc_id,
+            SUM(ccimp.impuesto) as importe
+        FROM importes_doctos_cc_imptos ccimp
+        LEFT JOIN impuestos imp ON ccimp.impuesto_id = imp.impuesto_id
+        WHERE imp.tipo_impto_id = 45
+        GROUP BY ccimp.impte_docto_cc_id
+    ) ieps ON ieps.impte_docto_cc_id = icc.impte_docto_cc_id
+    LEFT JOIN (
+        SELECT 
+            d.docto_dest_id,
+            d.docto_fte_id
+        FROM doctos_entre_sis d
+        WHERE d.clave_sis_dest = 'CC'
+    ) des ON des.docto_dest_id = icc.docto_cc_acr_id
+    LEFT JOIN doctos_ve ve ON ve.docto_ve_id = des.docto_fte_id
+WHERE concep.nombre = 'Pagos'
+    AND cc.fecha between '${fechaInicio}' and '${fechaFinal}'
+    AND cc.modalidad_facturacion = 'CFDI'
+
+GROUP BY 
+    cc.folio, 
+    ve.folio,
+    concep.nombre, 
+    cc.fecha, 
+    cc.cfdi_certificado, 
+    cc.cancelado, 
+    cc.contabilizado
+                   
+                    ` ,
+                function (err, complementosDb) {
+                    if (err) {
+                        console.log(err);
+                       return reject(err)
+
+                    }
+                    console.log(complementosDb);
+                    
+                    let complementos = complementosDb.map(complemento => {
+                        return {
+                            folio: complemento.FOLIO_CC !== null ? complemento.FOLIO_CC.toString('latin1') : '',
+                            docto_cc_id: complemento.DOCTO_CC_ID,
+                            folio_origen: complemento.FOLIO_VENTA !== null ? complemento.FOLIO_VENTA.toString('latin1') : '',
+                            importe : complemento.IMPORTE,
+                            iva : complemento.IVA,
+                            ieps : complemento.IEPS,
+                            cfdi_certificado: complemento.CFDI_CERTIFICADO !== null ? complemento.CFDI_CERTIFICADO.toString('latin1') : '',
+                            fecha: formatDate.formatDateToString(complemento.FECHA),
+                            nombre: complemento.NOMBRE !== null ? complemento.NOMBRE.toString('latin1') : '',
+                            cancelado: complemento.CANCELADO !== null ? complemento.CANCELADO.toString('latin1') : '',
+                            contabilizado: complemento.CONTABILIZADO !== null ? complemento.CONTABILIZADO.toString('latin1') : '',
+                            db : connection
+                        }
+                    });
+
+                    db.detach();
+                    resolve(complementos)
+                });
+        });
+    });
+}
+
+const pagosCompras = (connection) => {
+    // Obtener los pagos de compras del día anterior
+    let fechaInicio = formatDate.formatDateToMicrosip(new Date().setDate(new Date().getDate() - 1));      
+    const fechaFinal = formatDate.formatDateToMicrosip(new Date().setDate(new Date().getDate() - 1)); 
+    
+    
+    if (new Date().getDay() === 1) {        
+       fechaInicio = formatDate.formatDateToMicrosip(new Date().setDate(new Date().getDate() - 3)); 
+        
+    } 
+    console.log('pagosCompras', connection, fechaInicio, fechaFinal);
+
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                Select
+                    cm.folio_prov,
+                    cm.folio ,
+                    prov.nombre,
+                    pcp.nombre as cond_Pago,
+                    recp.folio AS folio_recp,
+                    recp.fecha as fecha_rec,
+                    la.valor_desplegado as prioridad,
+                    lcm.importe ,
+                    lcm.descuento_pp,
+                    lcm.descuento_com,
+                    lcm.fecha_pp,
+                    vcm.fecha_vencimiento
+                from doctos_cm cm
+                inner join proveedores prov
+                on prov.proveedor_id = cm.proveedor_id
+                inner join condiciones_pago_cp pcp
+                on pcp.cond_pago_id = cm.cond_pago_id
+                inner join doctos_cm_ligas liga
+                on liga.docto_cm_dest_id = cm.docto_cm_id
+                inner join doctos_cm recp
+                on recp.docto_cm_id = liga.docto_cm_fte_id
+                inner join libres_com_cm lcm
+                on lcm.docto_cm_id = cm.docto_cm_id
+                inner join listas_atributos la
+                on la.lista_atrib_id =   lcm.prioridad
+                inner join vencimientos_cargos_cm vcm
+                on vcm.docto_cm_id = cm.docto_cm_id
+                where cast( cm.fecha_hora_creacion as date) between'${fechaInicio}' and '${fechaFinal}'
+                and cm.tipo_docto = 'C'
+                and cm.estatus = 'N'
+              
+                ` ,
+                function (err, arts ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    console.log(arts);
+                    let ventas = arts.map(ve => {
+                        return {
+                            folio_prov: ve.FOLIO_PROV !== null ? ve.FOLIO_PROV.toString('latin1') : '',
+                            folio: ve.FOLIO !== null ? ve.FOLIO.toString('latin1') : '',
+                            nombre_prov: ve.NOMBRE !== null ? ve.NOMBRE.toString('latin1') : '',
+                            condicion_pago: ve.COND_PAGO !== null ? ve.COND_PAGO.toString('latin1') : '',
+                            folio_recp: ve.FOLIO_RECP !== null ? ve.FOLIO_RECP.toString('latin1') : '',
+                            fecha_recp: ve.FECHA_REC !== null ? formatDate.formatDateToString(ve.FECHA_REC) : '',
+                            prioridad: ve.PRIORIDAD !== null ? ve.PRIORIDAD.toString('latin1')  : '',
+                            importe: ve.IMPORTE !== null ? ve.IMPORTE : 0,
+                            descuento_pp: ve.DESCUENTO_PP !== null ? ve.DESCUENTO_PP : 0,
+                            descuento_com: ve.DESCUENTO_COM !== null ? ve.DESCUENTO_COM : 0,
+                            fecha_vencimiento: ve.FECHA_VENCIMIENTO !== null ? formatDate.formatDateToString(ve.FECHA_VENCIMIENTO) : '',
+                            fecha_pp: ve.FECHA_PP !== null ? formatDate.formatDateToString(ve.FECHA_PP) : '',                            
+                            db : connection
+                        }
+                    });
+                    db.detach();
+                    resolve(ventas)
                 });
         });
     });
@@ -3745,18 +3926,20 @@ const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
             db.query(
                 `
                     
-                SELECT
+                 SELECT
                     cm.folio,
                     cm.fecha,
-                    cm.importe_neto,
+                    cm.importe_neto + cm.total_impuestos as importe_neto,
                     compra.folio as compra,
-                    compra.importe_neto as importe_compra,
+                    compra.importe_neto + compra.total_impuestos as importe_compra,
+                    pv.nombre,
                     cm.estatus
                 FROM DOCTOS_CM CM
                 left join doctos_cm_ligas liga
                 on liga.docto_cm_fte_id = cm.docto_cm_id
                 left join doctos_cm compra
                 on compra.docto_cm_id = liga.docto_cm_dest_id
+                inner join proveedores pv on pv.proveedor_id = cm.proveedor_id
                 where CM.tipo_docto = 'R'
                 and cm.fecha between '${fechaInicio}' and '${fechaFin}'
                 ` ,
@@ -3772,6 +3955,7 @@ const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
                             compra: ve.COMPRA !== null ? ve.COMPRA.toString('latin1') : '',
                             importe_compra: ve.IMPORTE_COMPRA,
                             estatus: ve.ESTATUS !== null ? ve.ESTATUS.toString('latin1') : '',
+                            proveedor: ve.NOMBRE !== null ? ve.NOMBRE.toString('latin1') : '',
                             db : connection
                         }
                     });
@@ -3990,7 +4174,9 @@ module.exports = {
     obtenerArticulosTraspaso,
     existenciaCedisYRuta,
     getProvidersChargesCxpDate,
-    obtenerClientes
+    obtenerClientes,
+    obtenerComplementos2,
+    pagosCompras
 
 }
 

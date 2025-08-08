@@ -15,6 +15,8 @@ const { getAllProvidersCharges,
     obtenerDevoluciones,
     obtenerTicketsNoFacturados,
     obtenerComplementos,
+    obtenerComplementos2,
+    pagosCompras,    
     obtenerTotalesVenta,
     getAllProvidersChargesCxpDate,
     obtenerCargosClientes,
@@ -37,9 +39,10 @@ router.get('/getCustomersBalances/', getCustomersBalances );
 router.get('/pagos/', obtenerPagos );
 router.get('/doctosVe/', obtenerDoctosVe );
 router.get('/doctosPagos/:fecha/:fechaFin', obtenerDoctosPagos );
-router.get('/obtenerComplementos', obtenerComplementos );
+router.get('/obtenerComplementos/:fechaInicial/:fechaFinal', obtenerComplementos );
+router.get('/obtenerComplementos2/:fechaInicio/:fechaFinal', obtenerComplementos2 );
+router.get('/pagosCompras/', pagosCompras );
 router.get('/obtenerTotalesVenta', obtenerTotalesVenta );
-
 router.get('/doctosVeDet/', obtenerDoctosVeDet );
 router.get('/obtenerDevoluciones/', obtenerDevoluciones );
 router.get('/obtenerTicketsNoFacturados/:fechaInicio/:fechaFin', obtenerTicketsNoFacturados );

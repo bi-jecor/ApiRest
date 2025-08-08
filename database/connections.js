@@ -94,7 +94,7 @@ const G32H = {
 
 const TURCIO = {
     user: 'SYSDBA',
-    password: 'J8wL#2pR!t',
+    password: 'J8wL#2pR!t?#',
     //host: '192.168.15.202',
     host: '192.168.40.200',
     
@@ -117,7 +117,7 @@ const TURCIO = {
 }
 const TURCIOM = {
     user: 'SYSDBA',
-    password: 'J8wL#2pR!t',
+    password: 'J8wL#2pR!t?#',
     //host: '192.168.15.202',
     host: '192.168.40.200',
     
@@ -141,7 +141,7 @@ const TURCIOM = {
 
 const TIANGUIS = {
     user: 'SYSDBA',
-    password: 'J8wL#2pR!t',   
+    password: 'J8wL#2pR!t?#',   
     //host: '192.168.15.202',
     host: '192.168.40.200',
     port: 3053,
@@ -231,7 +231,7 @@ const COLIMAH = {
 
 const VILLA = {
     user: 'SYSDBA',
-    password: 'J8wL#2pR!t',
+    password: 'J8wL#2pR!t?#',
     host: '192.168.60.200',
     // host: '192.168.60.200',
     port: 3055,

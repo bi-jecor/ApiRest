@@ -512,19 +512,19 @@ const obtenerDevoluciones = (req = request, res = response) => {
 
 const obtenerTicketsNoFacturados = (req = request, res = response) => {
     const fechaInicio = req.params.fechaInicio;
-    const fechaFin = req.params.fechaFin;
-    console.log(fechaInicio,fechaFin);
+    const fechaFinal = req.params.fechaFin;
+    console.log(fechaInicio,fechaFinal);
     
     const all = Promise.all([
-        firebirdQuerys.obtenerTicketsNoFacturados('AC', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('G32', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('TURCIO', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('TURCIOM', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('PAEZ', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('CHAVEZC', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('COLIMA', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('VILLA', fechaInicio, fechaFin),
-        firebirdQuerys.obtenerTicketsNoFacturados('COLINAS', fechaInicio, fechaFin),
+        firebirdQuerys.obtenerTicketsNoFacturados('AC', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('G32', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('TURCIO', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('TURCIOM', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('PAEZ', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('CHAVEZC', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('COLIMA', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('VILLA', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerTicketsNoFacturados('COLINAS', fechaInicio, fechaFinal),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
@@ -547,16 +547,17 @@ const obtenerTicketsNoFacturados = (req = request, res = response) => {
 }
 
 const obtenerComplementos = (req = request, res = response) => {
-    const date = req.params.date
+    const {fechaInicial, fechaFinal} = req.params
+    console.log(fechaInicial, fechaFinal);
     const all = Promise.all([
-        firebirdQuerys.obtenerComplementos('AC', date),
-        firebirdQuerys.obtenerComplementos('G32', date),
-        firebirdQuerys.obtenerComplementos('CHAVEZC', date),
-        firebirdQuerys.obtenerComplementos('TURCIO', date),
-        firebirdQuerys.obtenerComplementos('PAEZ', date),
-        firebirdQuerys.obtenerComplementos('COLIMA', date),
-        firebirdQuerys.obtenerComplementos('VILLA', date),
-        firebirdQuerys.obtenerComplementos('COLINAS', date),
+        firebirdQuerys.obtenerComplementos('AC', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('G32', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('CHAVEZC', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('TURCIO', fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('PAEZ',fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('COLIMA',fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('VILLA',fechaInicial, fechaFinal),
+        firebirdQuerys.obtenerComplementos('COLINAS',fechaInicial, fechaFinal),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
@@ -568,6 +569,63 @@ const obtenerComplementos = (req = request, res = response) => {
         });
     })
         .catch(error => {
+            return res.status(500).json({
+                error
+            });
+        })
+}
+
+const obtenerComplementos2 = (req = request, res = response) => {
+    const { fechaInicio, fechaFinal } = req.params;
+    console.log(fechaInicio, fechaFinal);
+    const all = Promise.all([
+        firebirdQuerys.obtenerComplementos2('AC', fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('G32',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('CHAVEZC',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('TURCIO',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('PAEZ',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('COLIMA',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('VILLA',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('COLINAS',fechaInicio, fechaFinal),
+
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            complementos: doctos
+        });
+    })
+        .catch(error => {
+            return res.status(500).json({
+                error
+            });
+        })
+}
+
+const pagosCompras = (req = request, res = response) => {
+    const all = Promise.all([
+        firebirdQuerys.pagosCompras('AC'),
+        firebirdQuerys.pagosCompras('G32'),
+        firebirdQuerys.pagosCompras('CHAVEZC'),
+        firebirdQuerys.pagosCompras('TURCIO'),
+        firebirdQuerys.pagosCompras('PAEZ'),
+        firebirdQuerys.pagosCompras('COLIMA'),
+        firebirdQuerys.pagosCompras('VILLA'),
+        firebirdQuerys.pagosCompras('COLINAS'),
+        firebirdQuerys.pagosCompras('TURCIOM'),
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            complementos: doctos
+        });
+    })
+        .catch(error => {
+            console.log(error);
             return res.status(500).json({
                 error
             });
@@ -743,6 +801,7 @@ module.exports = {
     obtenerDevoluciones,
     obtenerTicketsNoFacturados,
     obtenerComplementos,
+    obtenerComplementos2,
     obtenerTotalesVenta,
     getAllProvidersChargesCxpDate,
     obtenerCargosClientes,
@@ -750,4 +809,5 @@ module.exports = {
     obtenerVentasPorImpuesto,
     obtenerRecepciones,
     obtenerDevolucionesDet,
+    pagosCompras
 }
