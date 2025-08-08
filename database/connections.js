@@ -24,7 +24,6 @@ const AC = {
     ieps30: 3026741,
     exento: 1018,
     keysArticlesIds : '17,18,288'
-
 }
 
 const ACH = {
@@ -300,7 +299,7 @@ const test = {
     port : 3050,
     database : 'C:/Microsip Datos/JECOR_PRUEBAS.FDB',
     user : 'SYSDBA',
-    password : 'J8wL#2pR!t',
+    password : 'J8wL#2pR!t?#',
     lowercase_keys : false, // set to true to lowercase key,
     role : null, // defaul,
     pageSize : 4096,
@@ -310,8 +309,7 @@ const test = {
     iva16: 694,
     tasa0: 689,
     ieps8: 698,
-    keysArticlesIds : '17,18,288'
-    
+    keysArticlesIds : '17,18,288' 
 }
 
 const VIVERO = {
