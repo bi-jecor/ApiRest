@@ -3979,25 +3979,36 @@ const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
                         d.folio,
                         d.fecha,
                         d.orden_compra,
+                        ca.clave_articulo,
                         a.nombre,
+                        ved.unidades as UnidadesDevueltas,
                         SUM(CASE WHEN i.nombre = 'TASA CERO' THEN idv.importe_impuesto_bruto ELSE 0 END) AS tasa_0,
                         SUM(CASE WHEN i.nombre = 'IEPS 6%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS ieps_6,
                         SUM(CASE WHEN i.nombre = 'IEPS 8%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS ieps_8,
                         SUM(CASE WHEN i.nombre = 'IVA TASA 16%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS iva_16,
-                        SUM(CASE WHEN i.nombre = 'IESP 30%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS ieps_30
+                        SUM(CASE WHEN i.nombre = 'IEPS 30%' THEN idv.importe_impuesto_bruto ELSE 0 END) AS ieps_30
                     FROM (
-                        select  VE.docto_ve_id, VE.folio, VE.fecha, VE.tipo_docto, VE.orden_compra  FROM libres_devfac_ve DEV
-                            INNER JOIN doctos_ve VE
-                            ON VE.docto_ve_id = DEV.docto_ve_id
-                    )d
+                        SELECT VE.docto_ve_id, VE.folio, VE.fecha, VE.tipo_docto, VE.orden_compra 
+                        FROM libres_devfac_ve DEV
+                        INNER JOIN doctos_ve VE ON VE.docto_ve_id = DEV.docto_ve_id
+                    ) d
                     JOIN doctos_ve_det ved ON ved.docto_ve_id = d.docto_ve_id
                     JOIN articulos a ON a.articulo_id = ved.articulo_id
+                    LEFT JOIN claves_articulos ca ON ca.articulo_id = ved.articulo_id
                     JOIN impuestos_doctos_ve_det idv ON idv.docto_ve_det_id = ved.docto_ve_det_id
                     JOIN impuestos i ON i.impuesto_id = idv.impuesto_id
                     WHERE d.tipo_docto = 'D'
-                    AND d.fecha between '${fechaInicio}'  and '${fechaFin}'
-                    AND i.nombre IN ('TASA CERO', 'IEPS 6%', 'IEPS 8%', 'IVA TASA 16%', 'IESP 30%' )
-                    GROUP BY d.folio, d.fecha, d.orden_compra, a.nombre
+                    AND d.fecha BETWEEN '${fechaInicio}' AND '${fechaFin}'
+                    AND i.nombre IN ('TASA CERO', 'IEPS 6%', 'IEPS 8%', 'IVA TASA 16%', 'IEPS 30%')
+                    GROUP BY 
+                        d.folio, 
+                        d.fecha, 
+                        d.orden_compra, 
+                        ca.clave_articulo,
+                        a.nombre, 
+                        a.articulo_id,
+                        ved.docto_ve_det_id,
+                        ved.unidades
                 ` ,
                 function (err, arts ) {
                     if (err) {
@@ -4005,10 +4016,12 @@ const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
                     }
                     let devoluciones = arts.map(dev => {
                         return {
-                            folio: dev.FOLIO !== null ? dev.FOLIO.toString('latin1') : '',
+                             folio: dev.FOLIO !== null ? dev.FOLIO.toString('latin1') : '',
                             fecha: formatDate.formatDateToString(dev.FECHA),
                             orden_compra: dev.ORDEN_COMPRA !== null ? dev.ORDEN_COMPRA.toString('latin1') : '',
+                            clave_articulo: dev.CLAVE_ARTICULO !== null ? dev.CLAVE_ARTICULO.toString('latin1') : '',
                             nombre: dev.NOMBRE !== null ? dev.NOMBRE.toString('latin1') : '',
+                            unidades_devueltas: dev.UNIDADESDEVUELTAS || 0,
                             tasa_0: dev.TASA_0,
                             ieps_6: dev.IEPS_6,
                             ieps_8: dev.IEPS_8,
@@ -4098,8 +4111,122 @@ const obtenerClientes = (connection, fechaInicio, fechaFin) => {
         });
     });
 }
+const mssql = require('mssql'); 
+const analisisPromocion = async () => {
+    console.log('analisisPromocion - SQL Server');
+    
+    const sql_connection = {
+        user: "sa",
+        password: "SqlBij3c0r",
+        database: "SVRJECORBI",
+        server: "192.168.10.206",
+        requestTimeout: 300000,
+        pool: { max: 10, min: 0, idleTimeoutMillis: 30000 },
+        options: { encrypt: true, trustServerCertificate: true }
+    };
 
+    let pool;
+    
+    try {
+        // Establecer conexión
+        pool = await mssql.connect(sql_connection);
+        
+        // Query con PIVOT
+        const query = `
+            SELECT 
+                Clave_Articulo,
+                Articulo,
+                ISNULL([1000 CEDIS], 0) AS [1000 CEDIS],
+                ISNULL([1002 DULCERIA G32], 0) AS [1002 DULCERIA G32],
+                ISNULL([1003 REPOSTERIA G10], 0) AS [1003 REPOSTERIA G10],
+                ISNULL([1004 DULCERIA AC], 0) AS [1004 DULCERIA AC],
+                ISNULL([1014 ECOMERCE], 0) AS [1014 ECOMERCE],
+                ISNULL([1204 RUTA VILLA], 0) AS [1204 RUTA VILLA],
+                ISNULL([1008 DULCERIA ADI 2], 0) AS [1008 DULCERIA ADI 2],
+                ISNULL([1201 DULCERIA BENITO JUAREZ], 0) AS [1201 DULCERIA BENITO JUAREZ],
+                ISNULL([1011 PLASTICOS CIMA 2], 0) AS [1011 PLASTICOS CIMA 2],
+                ISNULL([1010 PLASTICOS CIMA 1], 0) AS [1010 PLASTICOS CIMA 1],
+                ISNULL([1101 CEREALES MADERO], 0) AS [1101 CEREALES MADERO],
+                ISNULL([1103 REPOSTERIA MADERO], 0) AS [1103 REPOSTERIA MADERO],
+                ISNULL([1102 DULCERIA MADERO], 0) AS [1102 DULCERIA MADERO],
+                ISNULL([1006 DULCERIA TURCIO], 0) AS [1006 DULCERIA TURCIO],
+                ISNULL([1005 CEREALES PAEZ], 0) AS [1005 CEREALES PAEZ],
+                ISNULL([1009 CEREALES RF], 0) AS [1009 CEREALES RF],
+                ISNULL([1013 EMPAQUE], 0) AS [1013 EMPAQUE],
+                ISNULL([1012 RUTA GUZMAN], 0) AS [1012 RUTA GUZMAN],
+                ISNULL([1007 REPOSTERIA ADI 1], 0) AS [1007 REPOSTERIA ADI 1],
+                ISNULL([1203 DESECHABLES RCHAVEZ], 0) AS [1203 DESECHABLES RCHAVEZ]
+            FROM (
+                SELECT Clave_Articulo, Articulo, Sucursal, Exi_Pza
+                FROM rpts.xfAnalisisPromocion()
+            ) AS SourceTable
+            PIVOT (
+                SUM(Exi_Pza)
+                FOR Sucursal IN ([1000 CEDIS], [1002 DULCERIA G32], [1003 REPOSTERIA G10], [1004 DULCERIA AC],
+                [1014 ECOMERCE],[1204 RUTA VILLA],[1008 DULCERIA ADI 2],[1201 DULCERIA BENITO JUAREZ],[1011 PLASTICOS CIMA 2],
+                [1010 PLASTICOS CIMA 1],[1101 CEREALES MADERO],[1102 DULCERIA MADERO],[1103 REPOSTERIA MADERO],[1006 DULCERIA TURCIO],[1005 CEREALES PAEZ],
+                [1009 CEREALES RF],[1013 EMPAQUE],  [1012 RUTA GUZMAN], [1007 REPOSTERIA ADI 1],[1203 DESECHABLES RCHAVEZ])
+            ) AS AnalisisPromocion
+            ORDER BY Clave_Articulo`;
+        
+        console.log('Query ejecutado:', query);
+        
+        // Preparar request
+        const request = pool.request();
+        
+        // Ejecutar query
+        const result = await request.query(query);
+        
+        console.log('Resultados análisis promoción:', result.recordset.length, 'registros');
+        
 
+        const analisisData = result.recordset.map(item => ({
+            clave_articulo: item.Clave_Articulo?.trim() || '',
+            articulo: item.Articulo?.trim() || '',
+            '1000_CEDIS': parseFloat(item['1000 CEDIS']) || 0,
+            '1002_DULCERIA_G32': parseFloat(item['1002 DULCERIA G32']) || 0,
+            '1003_REPOSTERIA_G10': parseFloat(item['1003 REPOSTERIA G10']) || 0,
+            '1004_DULCERIA_AC': parseFloat(item['1004 DULCERIA AC']) || 0,
+            '1014_ECOMERCE': parseFloat(item['1014 ECOMERCE']) || 0,
+            '1204_RUTA_VILLA': parseFloat(item['1204 RUTA VILLA']) || 0,
+            '1008_DULCERIA_ADI_2': parseFloat(item['1008 DULCERIA ADI 2']) || 0,
+            '1201_DULCERIA_BENITO_JUAREZ': parseFloat(item['1201 DULCERIA BENITO JUAREZ']) || 0,
+            '1011_PLASTICOS_CIMA_2': parseFloat(item['1011 PLASTICOS CIMA 2']) || 0,
+            '1010_PLASTICOS_CIMA_1': parseFloat(item['1010 PLASTICOS CIMA 1']) || 0,
+            '1101_CEREALES_MADERO': parseFloat(item['1101 CEREALES MADERO']) || 0,
+            '1103_REPOSTERIA_MADERO': parseFloat(item['1103 REPOSTERIA MADERO']) || 0,
+            '1102_DULCERIA_MADERO': parseFloat(item['1102 DULCERIA MADERO']) || 0,
+            '1006_DULCERIA_TURCIO': parseFloat(item['1006 DULCERIA TURCIO']) || 0,
+            '1005_CEREALES_PAEZ': parseFloat(item['1005 CEREALES PAEZ']) || 0,
+            '1009_CEREALES_RF': parseFloat(item['1009 CEREALES RF']) || 0,
+            '1013_EMPAQUE': parseFloat(item['1013 EMPAQUE']) || 0,
+            '1012_RUTA_GUZMAN': parseFloat(item['1012 RUTA GUZMAN']) || 0,
+            '1007_REPOSTERIA_ADI_1': parseFloat(item['1007 REPOSTERIA ADI 1']) || 0,
+            '1203_DESECHABLES_RCHAVEZ': parseFloat(item['1203 DESECHABLES RCHAVEZ']) || 0
+        }));
+        
+        return {
+            success: true,
+            data: analisisData,
+            total: analisisData.length,
+            timestamp: new Date().toISOString()
+        };
+        
+    } catch (error) {
+        console.error('Error en análisis promoción:', error);
+        throw new Error(`Error al obtener análisis de promoción: ${error.message}`);
+    } finally {
+
+        if (pool) {
+            try {
+                await pool.close();
+                console.log('Conexión cerrada correctamente');
+            } catch (closeError) {
+                console.error('Error al cerrar conexión:', closeError);
+            }
+        }
+    }
+};
 module.exports = {
     getDataToPolicyTest,
     getDataToPolicyByDay,
@@ -4176,7 +4303,8 @@ module.exports = {
     getProvidersChargesCxpDate,
     obtenerClientes,
     obtenerComplementos2,
-    pagosCompras
+    pagosCompras,
+    analisisPromocion
 
 }
 

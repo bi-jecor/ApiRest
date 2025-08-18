@@ -23,7 +23,8 @@ const { getAllProvidersCharges,
     obtenerRemisiones,
     obtenerVentasPorImpuesto,
     obtenerRecepciones ,
-    obtenerDevolucionesDet
+    obtenerDevolucionesDet,
+    analisisPromocion
 } = require('../controllers/accountingReports')
 
 const router = Router();
@@ -42,6 +43,7 @@ router.get('/doctosPagos/:fecha/:fechaFin', obtenerDoctosPagos );
 router.get('/obtenerComplementos/:fechaInicial/:fechaFinal', obtenerComplementos );
 router.get('/obtenerComplementos2/:fechaInicio/:fechaFinal', obtenerComplementos2 );
 router.get('/pagosCompras/', pagosCompras );
+router.get('/analisisPromocion/', analisisPromocion );
 router.get('/obtenerTotalesVenta', obtenerTotalesVenta );
 router.get('/doctosVeDet/', obtenerDoctosVeDet );
 router.get('/obtenerDevoluciones/', obtenerDevoluciones );
