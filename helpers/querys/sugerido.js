@@ -23,17 +23,14 @@ function jsonToSqlValues(obj) {
             val
         )
         .join(', ');
-        console.log(r);
-        
         return r;
 }
 
 const guardarRequerimientoCompleto = async (encabezado, articulos = [] ) => {
-    console.log('Guardando requerimiento completo:', encabezado, articulos);
-    
+    let folio = '';
     return new Promise((resolve, reject) => {
         // Conexión a la base de datos Firebird
-        firebird.attach(conections.TURCIOM, async (err, db) => {
+        firebird.attach(conections.test, async (err, db) => {
             if (err) return reject(new Error('Error connecting to the database'));
             // Inicia una transacción
             db.transaction(firebird.ISOLATION_READ_COMMITTED, async (err, transaction) => {
@@ -49,6 +46,7 @@ const guardarRequerimientoCompleto = async (encabezado, articulos = [] ) => {
                         transaction.query(queryEncabezado, (err, result) => {
                             if (err) return rej(err);
                             // Asigna el ID del documento insertado al encabezado
+                            folio = result[0].FOLIO;
                             res(result[0].DOCTO_ID);
                             // console.log('Encabezado insertado',result, );
                             // err ? rej(err) : res()
@@ -57,28 +55,17 @@ const guardarRequerimientoCompleto = async (encabezado, articulos = [] ) => {
                     console.log('Encabezado insertado con ID:', docto_id);
                     // Inserta cada artículo (detalle)
                     for (const articulo of articulos) {
-                        console.log('Insertando artículo:', docto_id, articulo);
-                        
-                        
                         const queryDetalle = `EXECUTE PROCEDURE XSP_INSERTAR_ART_DET_SUGERIDO(${docto_id}, ${jsonToSqlValues(articulo)});`;
                         // const queryDetalle = `INSERT INTO EXP_REQUERIMIENTOS_DET (${Object.keys(articulo).join(', ')}) VALUES (${jsonToSqlValues(articulo)});`;
                         await new Promise((res, rej) =>
                             transaction.query(queryDetalle, (err) => {
-                                if (err) {
-                                    console.error('Error al insertar artículo:', err);
-                                    return rej(err);
-                                }
-                                // console.log('Artículo insertado:', result);
-                                // err ? rej(err) : res()
-                                res();
+                                err ? rej(err) : res()
                             })
                         );
                     }
                     transaction.commit(  () => {
-                        console.log('Requerimiento completo guardado exitosamente');
-                        
                         db.detach();
-                        resolve({ message: 'Requerimiento guardado exitosamente' });
+                        resolve({folio: folio});
                     });
                 } catch (error) {
                     // Si ocurre un error, realiza rollback

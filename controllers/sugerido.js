@@ -8,12 +8,14 @@ const guardarRequerimientoCompleto = (req = request, res = response) => {
     querys.guardarRequerimientoCompleto(encabezado, detalle).then((result) => {
         res.status(200).json({
             message: 'Requerimiento guardado exitosamente',
-            data: result
+            data: result,
+            ok: true
         });
     }).catch((error) => {
         res.status(500).json({
             message: 'Error al guardar el requerimiento',
-            error: error.message
+            error: error.message,
+            ok: false
         });
     });
 }
