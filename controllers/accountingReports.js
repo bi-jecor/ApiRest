@@ -781,33 +781,7 @@ const obtenerDevolucionesDet = (req = request, res = response) => {
         });
 }
 
-const analisisPromocion = (req = request, res = response) => {
-    req.setTimeout(600000); // 10 minutos
-    res.setTimeout(600000);
-    const filtros = {
-        page: 1,
-        limit: 'all',
-        unlimited: true
-    };
-    console.log('Iniciando análisis (sin filtros)');
-    firebirdQuerys.analisisPromocion(filtros)
-        .then(doctos => {
-            console.log('Enviando respuesta con', doctos.length, 'registros');
-            return res.json({
-                complementos: doctos,
-                total_records: doctos.length,
-                page: 'all',
-                limit: 'unlimited',
-                message: 'Todos los registros'
-            });
-        })
-        .catch(error => {
-            console.error('Error en análisis promoción:', error);
-            return res.status(500).json({
-                error: error.message || 'Error en análisis de promoción'
-            });
-        });
-};
+
 
 module.exports = {
     getAllProvidersCharges,
@@ -835,6 +809,5 @@ module.exports = {
     obtenerVentasPorImpuesto,
     obtenerRecepciones,
     obtenerDevolucionesDet,
-    pagosCompras,
-    analisisPromocion,
+    pagosCompras
 }
