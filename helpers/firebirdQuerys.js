@@ -3970,7 +3970,8 @@ const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
 const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
-            if (err) {                
+            if (err) {    
+                console.log(err);            
                 return reject(err)
             }
             db.query(
@@ -3993,8 +3994,8 @@ const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
                         INNER JOIN doctos_ve VE ON VE.docto_ve_id = DEV.docto_ve_id
                     ) d
                     JOIN doctos_ve_det ved ON ved.docto_ve_id = d.docto_ve_id
-                    JOIN articulos a ON a.articulo_id = ved.articulo_id
-                    LEFT JOIN claves_articulos ca ON ca.articulo_id = ved.articulo_id
+                    JOIN articulos a ON a.articulo_id = ved.articulo_id 
+                    LEFT JOIN claves_articulos ca ON ca.articulo_id = ved.articulo_id and ca.rol_clave_art_id = 17
                     JOIN impuestos_doctos_ve_det idv ON idv.docto_ve_det_id = ved.docto_ve_det_id
                     JOIN impuestos i ON i.impuesto_id = idv.impuesto_id
                     WHERE d.tipo_docto = 'D'
@@ -4009,9 +4010,11 @@ const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
                         a.articulo_id,
                         ved.docto_ve_det_id,
                         ved.unidades
+
                 ` ,
                 function (err, arts ) {
                     if (err) {
+                        console.log(err);
                        return reject(err)
                     }
                     let devoluciones = arts.map(dev => {
@@ -4127,8 +4130,7 @@ const analisisPromocion = async () => {
 
     let pool;
     
-    try {
-        // Establecer conexión
+    try {        
         pool = await mssql.connect(sql_connection);
         
         // Query con PIVOT
@@ -4169,12 +4171,8 @@ const analisisPromocion = async () => {
             ) AS AnalisisPromocion
             ORDER BY Clave_Articulo`;
         
-        console.log('Query ejecutado:', query);
-        
-        // Preparar request
-        const request = pool.request();
-        
-        // Ejecutar query
+        console.log('Query ejecutado:', query);                
+        const request = pool.request();        
         const result = await request.query(query);
         
         console.log('Resultados análisis promoción:', result.recordset.length, 'registros');
