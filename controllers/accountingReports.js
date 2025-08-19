@@ -792,6 +792,7 @@ const obtenerCompras = (req = request, res = response) => {
         firebirdQuerys.obtenerCompras('COLIMA',fechaInicial, fechaFinal, tipoDocto),
         firebirdQuerys.obtenerCompras('VILLA',fechaInicial, fechaFinal, tipoDocto),
         firebirdQuerys.obtenerCompras('COLINAS',fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('TURCIOM',fechaInicial, fechaFinal, tipoDocto),
 
     ]).then(doctosPorSucursal => {
         let doctos = [];
