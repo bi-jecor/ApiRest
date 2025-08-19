@@ -331,7 +331,7 @@ const getCustomersBalances = (conection, date) => {
 }
 
 const getCustomersBalances2 = (conection, date) => {
-    date = date === null ? 'current_date' : date;
+    
     return new Promise((resolve, reject) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
@@ -378,7 +378,6 @@ const getCustomersBalances2 = (conection, date) => {
                     on F.cond_pago_id = fp.cond_pago_id
                     ORDER BY CLIENTES.nombre
                     `, async function (err, cargos) {
-                console.log(err);
 
                 let cargs = cargos.map((cargo) => {
                     return {

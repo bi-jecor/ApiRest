@@ -3,7 +3,7 @@ var firebird = require('node-firebird');
 const conections = require('../database/connections');
 const firebirdQuerys = require('../helpers/firebirdQuerys');
 const accountingReports = require('../helpers/accountingReports');
-const { formatDateToString } = require('../helpers/formatDate');
+const { formatDateToString, formatDateToMicrosip } = require('../helpers/formatDate');
 
 
 const getAllProvidersCharges = (req, res) => {
@@ -317,14 +317,14 @@ const getAllProvidersChargesCxpSap = (req, res) => {
 }
 
 const getCustomersBalances = (req = request, res = response) => {
-    const date = req.params.date
+    const date = req.params.date || formatDateToMicrosip(new Date());
     const all = Promise.all([
         firebirdQuerys.getCustomersBalances2('AC', date),
         firebirdQuerys.getCustomersBalances2('G32', date),
         firebirdQuerys.getCustomersBalances2('CHAVEZC', date),
         firebirdQuerys.getCustomersBalances2('TURCIO', date),
         firebirdQuerys.getCustomersBalances2('TURCIOM', date),
-        firebirdQuerys.getCustomersBalances2('PAEZ', date),
+        // firebirdQuerys.getCustomersBalances2('PAEZ', date),
         firebirdQuerys.getCustomersBalances2('COLIMA', date),
         firebirdQuerys.getCustomersBalances2('VILLA', date),
         firebirdQuerys.getCustomersBalances2('COLINAS', date),
