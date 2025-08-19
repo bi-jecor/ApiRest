@@ -780,6 +780,35 @@ const obtenerDevolucionesDet = (req = request, res = response) => {
             });
         });
 }
+const obtenerCompras = (req = request, res = response) => {
+    const {fechaInicial, fechaFinal, tipoDocto} = req.params
+    console.log(fechaInicial, fechaFinal, tipoDocto);
+    const all = Promise.all([
+        firebirdQuerys.obtenerCompras('AC', fechaInicial, fechaFinal,tipoDocto),
+        firebirdQuerys.obtenerCompras('G32', fechaInicial, fechaFinal ,tipoDocto),
+        firebirdQuerys.obtenerCompras('CHAVEZC', fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('TURCIO', fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('PAEZ',fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('COLIMA',fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('VILLA',fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('COLINAS',fechaInicial, fechaFinal, tipoDocto),
+
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            doctosVe: doctos
+        });
+    })
+        .catch(error => {
+            return res.status(500).json({
+                error
+            });
+        })
+}
+
 
 
 
@@ -809,5 +838,6 @@ module.exports = {
     obtenerVentasPorImpuesto,
     obtenerRecepciones,
     obtenerDevolucionesDet,
-    pagosCompras
+    pagosCompras,
+    obtenerCompras
 }

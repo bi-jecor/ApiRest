@@ -4039,7 +4039,7 @@ const obtenerDevolucionesDet = (connection, fechaInicio, fechaFin) => {
     });
 }
 
-const obtenerClientes = (connection, fechaInicio, fechaFin) => {
+const obtenerClientes = (connection, fechaInicio, fechaFin, tipoDocto) => {
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection], function (err, db) {
             if (err) {                
@@ -4109,6 +4109,63 @@ const obtenerClientes = (connection, fechaInicio, fechaFin) => {
                     });
                     db.detach();
                     resolve(clientes)
+                });
+        });
+    });
+}
+const obtenerCompras = (connection, fechaInicial, fechaFinal, tipoDocto) => {
+    console.log('obtenerCompras', connection, fechaInicial, fechaFinal, tipoDocto);
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {  
+                console.log(err);
+                              
+                return reject(err)
+            }
+            db.query(
+                `
+                Select
+                    cm.fecha,
+                    cm.folio,
+                    cmd.clave_articulo,
+                    art.nombre,
+                    cmd.unidades,
+                    cmd.precio_unitario,
+                    cmd.unidades * cmd.precio_unitario as total,
+                    cm.estatus
+                    from doctos_cm cm
+                    inner join doctos_cm_det cmd
+                    on cmd.docto_cm_id = cm.docto_cm_id
+                    inner join claves_articulos ca
+                    on ca.clave_articulo = cmd.clave_articulo
+                    inner join articulos art
+                    on art.articulo_id = ca.articulo_id
+                    where cm.fecha between '${fechaInicial}' and '${fechaFinal}'
+                    and cm.tipo_docto = '${tipoDocto}'                   
+                    ` ,
+                function (err, complementosDb) {
+                    if (err) {
+                        console.log(err);
+                       return reject(err)
+                    }
+                    console.log(complementosDb);
+                    
+                    let complementos = complementosDb.map(complemento => {
+                        return {
+                            fecha: formatDate.formatDateToString(complemento.FECHA),
+                            folio: complemento.FOLIO !== null ? complemento.FOLIO.toString('latin1') : '',
+                            clave_articulo: complemento.CLAVE_ARTICULO !== null ? complemento.CLAVE_ARTICULO.toString('latin1') : '',
+                            nombre: complemento.NOMBRE !== null ? complemento.NOMBRE.toString('latin1') : '',
+                            unidades: complemento.UNIDADES !== null ? complemento.UNIDADES : 0,
+                            precio_unitario: complemento.PRECIO_UNITARIO !== null ? complemento.PRECIO_UNITARIO : 0.00,
+                            total: complemento.TOTAL !== null ? complemento.TOTAL : 0.00,
+                            estatus: complemento.ESTATUS !== null ? complemento.ESTATUS.toString('latin1') : '',
+                            db : connection
+                        }
+                    });
+
+                    db.detach();
+                    resolve(complementos)
                 });
         });
     });
@@ -4190,7 +4247,8 @@ module.exports = {
     getProvidersChargesCxpDate,
     obtenerClientes,
     obtenerComplementos2,
-    pagosCompras  
+    pagosCompras,
+    obtenerCompras
 
 }
 
