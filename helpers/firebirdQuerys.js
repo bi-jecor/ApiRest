@@ -3933,7 +3933,7 @@ const obtenerCodigosDeBarras = (connection) => {
                     INNER JOIN 
                         (SELECT ARTICULO_ID, CLAVE_ARTICULO
                         FROM claves_articulos
-                        WHERE ROL_CLAVE_ART_ID IN (18, 4189)) cb
+                        WHERE ROL_CLAVE_ART_ID IN (18, 4189, 4185)) cb
                     ON ca.ARTICULO_ID = cb.ARTICULO_ID
                 ` ,
                 function (err, codigos ) {
