@@ -22,9 +22,10 @@ const { getAllProvidersCharges,
     obtenerCargosClientes,
     obtenerRemisiones,
     obtenerVentasPorImpuesto,
+    obtenerCodigosDeBarras,
     obtenerRecepciones ,
     obtenerDevolucionesDet,
-    obtenerCompras,
+    obtenerCompras
 } = require('../controllers/accountingReports')
 
 const router = Router();
@@ -50,6 +51,7 @@ router.get('/obtenerTicketsNoFacturados/:fechaInicio/:fechaFin', obtenerTicketsN
 router.get('/obtenerCargosClientes/:date/', obtenerCargosClientes );
 router.get('/obtenerRemisiones/:fechaInicio/:fechaFin', obtenerRemisiones );
 router.get('/obtenerVentasPorImpuesto/', obtenerVentasPorImpuesto );
+router.get('/obtenerCodigosDeBarras/', obtenerCodigosDeBarras );
 router.get('/obtenerRecepciones/:fechaInicio/:fechaFin', obtenerRecepciones );
 router.get('/obtenerDevolucionesDet/:fechaInicio/:fechaFin', obtenerDevolucionesDet );
 

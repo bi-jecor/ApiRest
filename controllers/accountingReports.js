@@ -727,6 +727,29 @@ const obtenerVentasPorImpuesto = (req = request, res = response) => {
     })
 }
 
+const obtenerCodigosDeBarras = (req = request, res = response) => {
+    const all = Promise.all([
+        firebirdQuerys.obtenerCodigosDeBarras('AC'),
+        firebirdQuerys.obtenerCodigosDeBarras('G32'),
+        firebirdQuerys.obtenerCodigosDeBarras('CHAVEZC'),
+        firebirdQuerys.obtenerCodigosDeBarras('TURCIO'),
+        firebirdQuerys.obtenerCodigosDeBarras('TURCIOM'),
+        firebirdQuerys.obtenerCodigosDeBarras('PAEZ'),
+        firebirdQuerys.obtenerCodigosDeBarras('COLIMA'),
+        firebirdQuerys.obtenerCodigosDeBarras('VILLA'),
+        firebirdQuerys.obtenerCodigosDeBarras('COLINAS'),
+
+    ]).then(codigosPorSucursal => {
+        let codigos = [];
+        const s = codigosPorSucursal.forEach(codigoXC => {
+            codigos = [...codigos, ...codigoXC]
+        })
+        return res.json({
+            CodigosDeBarras: codigos
+        });
+    })
+}
+
 const obtenerRecepciones = (req = request, res = response) => {
         const { fechaInicio, fechaFin } = req.params;
     const all = Promise.all([
@@ -810,9 +833,6 @@ const obtenerCompras = (req = request, res = response) => {
         })
 }
 
-
-
-
 module.exports = {
     getAllProvidersCharges,
     getSalesCalculateIeps,
@@ -837,6 +857,7 @@ module.exports = {
     obtenerCargosClientes,
     obtenerRemisiones,
     obtenerVentasPorImpuesto,
+    obtenerCodigosDeBarras,
     obtenerRecepciones,
     obtenerDevolucionesDet,
     pagosCompras,

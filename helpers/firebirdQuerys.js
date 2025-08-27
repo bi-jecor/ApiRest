@@ -3914,6 +3914,47 @@ const obtenerVentasPorImpuesto = (connection) => {
     });
 }
 
+const obtenerCodigosDeBarras = (connection) => {
+    
+    return new Promise((resolve, reject) => {
+        firebird.attach(conections[connection], function (err, db) {
+            if (err) {                
+                return reject(err)
+            }
+            db.query(
+                `
+                    SELECT 
+                        ca.Clave_Articulo,
+                        cb.CLAVE_ARTICULO AS Codigo_Barras
+                    FROM 
+                        (SELECT ARTICULO_ID, MAX(CASE WHEN ROL_CLAVE_ART_ID = 17 THEN CLAVE_ARTICULO END) AS Clave_Articulo
+                        FROM claves_articulos
+                        GROUP BY ARTICULO_ID) ca
+                    INNER JOIN 
+                        (SELECT ARTICULO_ID, CLAVE_ARTICULO
+                        FROM claves_articulos
+                        WHERE ROL_CLAVE_ART_ID IN (18, 4189)) cb
+                    ON ca.ARTICULO_ID = cb.ARTICULO_ID
+                ` ,
+                function (err, codigos ) {
+                    if (err) {
+                       return reject(err)
+                    }
+                    let codigosBarras = codigos.map(codigo => {
+                        return {
+                            clave_articulo: codigo.CLAVE_ARTICULO !== null ? codigo.CLAVE_ARTICULO.toString('latin1') : '',
+                            codigo_barras: codigo.CODIGO_BARRAS !== null ? codigo.CODIGO_BARRAS.toString('latin1') : '',
+                            
+                        }
+                    });
+
+                    db.detach();
+                    resolve(codigosBarras)
+                });
+        });
+    });
+}
+
 
 const obtenerRecepciones = (connection,fechaInicio,fechaFin) => {
     
@@ -4171,6 +4212,7 @@ const obtenerCompras = (connection, fechaInicial, fechaFinal, tipoDocto) => {
     });
 }
 
+
 module.exports = {
     getDataToPolicyTest,
     getDataToPolicyByDay,
@@ -4234,6 +4276,7 @@ module.exports = {
     obtenerTotalesVenta,
     obtenerRemisiones,
     obtenerVentasPorImpuesto,
+    obtenerCodigosDeBarras,
     obtenerRecepciones,
     obtenerDevolucionesDet,
     
