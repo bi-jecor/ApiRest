@@ -3,7 +3,7 @@ var firebird = require('node-firebird');
 const conections = require('../database/connections');
 const firebirdQuerys = require('../helpers/firebirdQuerys');
 const accountingReports = require('../helpers/accountingReports');
-const { formatDateToString } = require('../helpers/formatDate');
+const { formatDateToString, formatDateToMicrosip } = require('../helpers/formatDate');
 
 
 const getAllProvidersCharges = (req, res) => {
@@ -317,14 +317,14 @@ const getAllProvidersChargesCxpSap = (req, res) => {
 }
 
 const getCustomersBalances = (req = request, res = response) => {
-    const date = req.params.date
+    const date = req.params.date || formatDateToMicrosip(new Date());
     const all = Promise.all([
         firebirdQuerys.getCustomersBalances2('AC', date),
         firebirdQuerys.getCustomersBalances2('G32', date),
         firebirdQuerys.getCustomersBalances2('CHAVEZC', date),
         firebirdQuerys.getCustomersBalances2('TURCIO', date),
         firebirdQuerys.getCustomersBalances2('TURCIOM', date),
-        firebirdQuerys.getCustomersBalances2('PAEZ', date),
+        // firebirdQuerys.getCustomersBalances2('PAEZ', date),
         firebirdQuerys.getCustomersBalances2('COLIMA', date),
         firebirdQuerys.getCustomersBalances2('VILLA', date),
         firebirdQuerys.getCustomersBalances2('COLINAS', date),
@@ -727,6 +727,29 @@ const obtenerVentasPorImpuesto = (req = request, res = response) => {
     })
 }
 
+const obtenerCodigosDeBarras = (req = request, res = response) => {
+    const all = Promise.all([
+        firebirdQuerys.obtenerCodigosDeBarras('AC'),
+        firebirdQuerys.obtenerCodigosDeBarras('G32'),
+        firebirdQuerys.obtenerCodigosDeBarras('CHAVEZC'),
+        firebirdQuerys.obtenerCodigosDeBarras('TURCIO'),
+        firebirdQuerys.obtenerCodigosDeBarras('TURCIOM'),
+        firebirdQuerys.obtenerCodigosDeBarras('PAEZ'),
+        firebirdQuerys.obtenerCodigosDeBarras('COLIMA'),
+        firebirdQuerys.obtenerCodigosDeBarras('VILLA'),
+        firebirdQuerys.obtenerCodigosDeBarras('COLINAS'),
+
+    ]).then(codigosPorSucursal => {
+        let codigos = [];
+        const s = codigosPorSucursal.forEach(codigoXC => {
+            codigos = [...codigos, ...codigoXC]
+        })
+        return res.json({
+            CodigosDeBarras: codigos
+        });
+    })
+}
+
 const obtenerRecepciones = (req = request, res = response) => {
         const { fechaInicio, fechaFin } = req.params;
     const all = Promise.all([
@@ -780,34 +803,35 @@ const obtenerDevolucionesDet = (req = request, res = response) => {
             });
         });
 }
+const obtenerCompras = (req = request, res = response) => {
+    const {fechaInicial, fechaFinal, tipoDocto} = req.params
+    console.log(fechaInicial, fechaFinal, tipoDocto);
+    const all = Promise.all([
+        firebirdQuerys.obtenerCompras('AC', fechaInicial, fechaFinal,tipoDocto),
+        firebirdQuerys.obtenerCompras('G32', fechaInicial, fechaFinal ,tipoDocto),
+        firebirdQuerys.obtenerCompras('CHAVEZC', fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('TURCIO', fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('PAEZ',fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('COLIMA',fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('VILLA',fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('COLINAS',fechaInicial, fechaFinal, tipoDocto),
+        firebirdQuerys.obtenerCompras('TURCIOM',fechaInicial, fechaFinal, tipoDocto),
 
-const analisisPromocion = (req = request, res = response) => {
-    req.setTimeout(600000); // 10 minutos
-    res.setTimeout(600000);
-    const filtros = {
-        page: 1,
-        limit: 'all',
-        unlimited: true
-    };
-    console.log('Iniciando análisis (sin filtros)');
-    firebirdQuerys.analisisPromocion(filtros)
-        .then(doctos => {
-            console.log('Enviando respuesta con', doctos.length, 'registros');
-            return res.json({
-                complementos: doctos,
-                total_records: doctos.length,
-                page: 'all',
-                limit: 'unlimited',
-                message: 'Todos los registros'
+    ]).then(doctosPorSucursal => {
+        let doctos = [];
+        const s = doctosPorSucursal.forEach(docto => {
+            doctos = [...doctos, ...docto]
+        })
+        return res.json({
+            doctosVe: doctos
+        });
+    })
+        .catch(error => {
+            return res.status(500).json({
+                error
             });
         })
-        .catch(error => {
-            console.error('Error en análisis promoción:', error);
-            return res.status(500).json({
-                error: error.message || 'Error en análisis de promoción'
-            });
-        });
-};
+}
 
 module.exports = {
     getAllProvidersCharges,
@@ -833,8 +857,9 @@ module.exports = {
     obtenerCargosClientes,
     obtenerRemisiones,
     obtenerVentasPorImpuesto,
+    obtenerCodigosDeBarras,
     obtenerRecepciones,
     obtenerDevolucionesDet,
     pagosCompras,
-    analisisPromocion,
+    obtenerCompras
 }
