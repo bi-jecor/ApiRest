@@ -26,11 +26,12 @@ function jsonToSqlValues(obj) {
         return r;
 }
 
-const guardarRequerimientoCompleto = async (encabezado, articulos = [] ) => {
+const guardarRequerimientoCompleto = async (encabezado, articulos = [], conexion ) => {
     let folio = '';
+    console.log('articulos', encabezado, articulos);
     return new Promise((resolve, reject) => {
         // Conexión a la base de datos Firebird
-        firebird.attach(conections.test, async (err, db) => {
+        firebird.attach(conections[conexion], async (err, db) => {
             if (err) return reject(new Error('Error connecting to the database'));
             // Inicia una transacción
             db.transaction(firebird.ISOLATION_READ_COMMITTED, async (err, transaction) => {
@@ -69,6 +70,7 @@ const guardarRequerimientoCompleto = async (encabezado, articulos = [] ) => {
                     });
                 } catch (error) {
                     // Si ocurre un error, realiza rollback
+                    console.error('Error during transaction:', error);
                     transaction.rollback(() => db.detach());
                     reject(new Error('Error en la transacción: ' + error.message));
                 }
@@ -76,6 +78,9 @@ const guardarRequerimientoCompleto = async (encabezado, articulos = [] ) => {
         });
     });
 };
+
+
+
 
 module.exports = {
     guardarRequerimientoCompleto

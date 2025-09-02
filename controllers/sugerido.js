@@ -4,8 +4,9 @@ const querys = require('../helpers/querys/sugerido');
 
 const guardarRequerimientoCompleto = (req = request, res = response) => {
     const { encabezado, detalle } = req.body;
+    const { almacen } = req.params;
     
-    querys.guardarRequerimientoCompleto(encabezado, detalle).then((result) => {
+    querys.guardarRequerimientoCompleto(encabezado, detalle, almacen).then((result) => {
         res.status(200).json({
             message: 'Requerimiento guardado exitosamente',
             data: result,

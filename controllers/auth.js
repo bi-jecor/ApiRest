@@ -9,7 +9,7 @@ const login = async(req, res = response) => {
 
     try {
         const userDB = await Usuario.findOne({user, active: true})
-        .populate('departament', 'name')
+        .populate('departament')
         .populate('store', 'name')
         .populate('role', 'name');
         

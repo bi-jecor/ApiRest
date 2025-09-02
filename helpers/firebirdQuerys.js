@@ -3437,6 +3437,8 @@ const pagosCompras = (connection) => {
                 ` ,
                 function (err, arts ) {
                     if (err) {
+                        console.log('Error en pagosCompras', db,err);
+                        
                        return reject(err)
                     }
                     console.log(arts);
