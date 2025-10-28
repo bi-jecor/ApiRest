@@ -24,7 +24,6 @@ const AC = {
     ieps30: 3026741,
     exento: 1018,
     keysArticlesIds : '17,18,288'
-
 }
 
 const ACH = {
@@ -310,8 +309,7 @@ const test = {
     iva16: 694,
     tasa0: 689,
     ieps8: 698,
-    keysArticlesIds : '17,18,288'
-    
+    keysArticlesIds : '17,18,288' 
 }
 
 const VIVERO = {
