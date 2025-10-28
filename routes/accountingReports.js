@@ -26,7 +26,7 @@ const { getAllProvidersCharges,
     obtenerRecepciones ,
     obtenerDevolucionesDet,
     obtenerCompras
-} = require('../controllers/accountingReports')
+} = require('../controllers/accountingReports');
 
 const router = Router();
 router.get('/getAllProvidersCharges/:date', getAllProvidersCharges );

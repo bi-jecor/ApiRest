@@ -4212,7 +4212,6 @@ const obtenerCompras = (connection, fechaInicial, fechaFinal, tipoDocto) => {
     });
 }
 
-
 module.exports = {
     getDataToPolicyTest,
     getDataToPolicyByDay,
@@ -4291,7 +4290,6 @@ module.exports = {
     obtenerClientes,
     obtenerComplementos2,
     pagosCompras,
-    obtenerCompras
-
+    obtenerCompras,
 }
 

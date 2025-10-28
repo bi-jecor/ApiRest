@@ -355,7 +355,7 @@ const CHAVEZC = {
     user: 'SYSDBA',
     password: 'J8wL#2pR!t?#',
     host: '192.168.70.200',
-    //port: 3051,
+    port: 3050,
     database: 'E:/Bases de datos/JECOR CHAVEZ CARRILLO.FDB',
     lowercase_keys: false, 
     role: null,
