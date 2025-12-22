@@ -369,7 +369,7 @@ const obtenerPagos = (req = request, res = response) => {
     console.log('Entro');
     
     const date = req.params.date
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerPagos('AC', date),
         firebirdQuerys.obtenerPagos('G32', date),
         firebirdQuerys.obtenerPagos('CHAVEZC', date),
@@ -380,25 +380,36 @@ const obtenerPagos = (req = request, res = response) => {
         firebirdQuerys.obtenerPagos('VILLA', date),
         firebirdQuerys.obtenerPagos('COLINAS', date),
 
-    ]).then(cargosPorSucursal => {
+    ]).then((values) => {
         let cargos = [];
-        const s = cargosPorSucursal.forEach(cargoXC => {
-            cargos = [...cargos, ...cargoXC]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                cargos = [...cargos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            CustomersBalances: cargos
+            ok: true,
+            CustomersBalances: cargos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
 
 const obtenerDoctosVe = (req = request, res = response) => {
     const date = req.params.date
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerDoctosVe('AC', date),
         firebirdQuerys.obtenerDoctosVe('G32', date),
         firebirdQuerys.obtenerDoctosVe('CHAVEZC', date),
@@ -409,18 +420,29 @@ const obtenerDoctosVe = (req = request, res = response) => {
         firebirdQuerys.obtenerDoctosVe('VILLA', date),
         firebirdQuerys.obtenerDoctosVe('COLINAS', date),
         firebirdQuerys.obtenerDoctosVe('ESTACIONAMIENTO', date),
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            doctosVe: doctos
+            ok: true,
+            doctosVe: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
@@ -428,7 +450,7 @@ const obtenerDoctosVe = (req = request, res = response) => {
 const obtenerDoctosPagos = (req = request, res = response) => {
     const {fecha, fechaFin} = req.params
     console.log(formatDateToString(fecha),formatDateToString(fecha))
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerDoctosPagos('AC',fecha,fechaFin),
         // firebirdQuerys.obtenerDoctosPagos('G32', date),
         // firebirdQuerys.obtenerDoctosPagos('CHAVEZC', date),
@@ -438,25 +460,36 @@ const obtenerDoctosPagos = (req = request, res = response) => {
         // firebirdQuerys.obtenerDoctosPagos('VILLA', date),
         // firebirdQuerys.obtenerDoctosPagos('COLINAS', date),
 
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            cargos_clientes: doctos
+            ok: true,
+            cargos_clientes: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
 
 const obtenerDoctosVeDet = (req = request, res = response) => {
     const date = req.params.date
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerDoctosVeDet('AC', date),
         firebirdQuerys.obtenerDoctosVeDet('G32', date),
         firebirdQuerys.obtenerDoctosVeDet('CHAVEZC', date),
@@ -466,25 +499,36 @@ const obtenerDoctosVeDet = (req = request, res = response) => {
         firebirdQuerys.obtenerDoctosVeDet('VILLA', date),
         firebirdQuerys.obtenerDoctosVeDet('COLINAS', date),
 
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            doctosVe: doctos
+            ok: true,
+            doctosVe: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
 
 const obtenerDevoluciones = (req = request, res = response) => {
     const date = req.params.date
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerDevoluciones('AC', date),
         firebirdQuerys.obtenerDevoluciones('G32', date),
         firebirdQuerys.obtenerDevoluciones('CHAVEZC', date),
@@ -494,18 +538,29 @@ const obtenerDevoluciones = (req = request, res = response) => {
         firebirdQuerys.obtenerDevoluciones('VILLA', date),
         firebirdQuerys.obtenerDevoluciones('COLINAS', date),
 
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            doctosVe: doctos
+            ok: true,
+            doctosVe: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
@@ -513,9 +568,9 @@ const obtenerDevoluciones = (req = request, res = response) => {
 const obtenerTicketsNoFacturados = (req = request, res = response) => {
     const fechaInicio = req.params.fechaInicio;
     const fechaFinal = req.params.fechaFin;
-    console.log(fechaInicio,fechaFinal);
+    console.log(fechaInicio, fechaFinal);
     
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerTicketsNoFacturados('AC', fechaInicio, fechaFinal),
         firebirdQuerys.obtenerTicketsNoFacturados('G32', fechaInicio, fechaFinal),
         firebirdQuerys.obtenerTicketsNoFacturados('TURCIO', fechaInicio, fechaFinal),
@@ -526,22 +581,33 @@ const obtenerTicketsNoFacturados = (req = request, res = response) => {
         firebirdQuerys.obtenerTicketsNoFacturados('VILLA', fechaInicio, fechaFinal),
         firebirdQuerys.obtenerTicketsNoFacturados('COLINAS', fechaInicio, fechaFinal),
 
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
         });
-        console.log(doctos);
+        
+        console.log('Total tickets:', doctos.length);
         
         return res.json({
-            doctosVe: doctos
+            ok: true,
+            doctosVe: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
-            console.log(error);
+            console.log('Error general:', error);
             
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
@@ -549,7 +615,7 @@ const obtenerTicketsNoFacturados = (req = request, res = response) => {
 const obtenerComplementos = (req = request, res = response) => {
     const {fechaInicial, fechaFinal} = req.params
     console.log(fechaInicial, fechaFinal);
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerComplementos('AC', fechaInicial, fechaFinal),
         firebirdQuerys.obtenerComplementos('G32', fechaInicial, fechaFinal),
         firebirdQuerys.obtenerComplementos('CHAVEZC', fechaInicial, fechaFinal),
@@ -559,18 +625,29 @@ const obtenerComplementos = (req = request, res = response) => {
         firebirdQuerys.obtenerComplementos('VILLA',fechaInicial, fechaFinal),
         firebirdQuerys.obtenerComplementos('COLINAS',fechaInicial, fechaFinal),
 
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            doctosVe: doctos
+            ok: true,
+            doctosVe: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
@@ -578,7 +655,7 @@ const obtenerComplementos = (req = request, res = response) => {
 const obtenerComplementos2 = (req = request, res = response) => {
     const { fechaInicio, fechaFinal } = req.params;
     console.log(fechaInicio, fechaFinal);
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerComplementos2('AC', fechaInicio, fechaFinal),
         firebirdQuerys.obtenerComplementos2('G32',fechaInicio, fechaFinal),
         firebirdQuerys.obtenerComplementos2('CHAVEZC',fechaInicio, fechaFinal),
@@ -588,24 +665,35 @@ const obtenerComplementos2 = (req = request, res = response) => {
         firebirdQuerys.obtenerComplementos2('VILLA',fechaInicio, fechaFinal),
         firebirdQuerys.obtenerComplementos2('COLINAS',fechaInicio, fechaFinal),
 
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            complementos: doctos
+            ok: true,
+            complementos: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
 
 const pagosCompras = (req = request, res = response) => {
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.pagosCompras('AC'),
         firebirdQuerys.pagosCompras('G32'),
         firebirdQuerys.pagosCompras('CHAVEZC'),
@@ -615,41 +703,63 @@ const pagosCompras = (req = request, res = response) => {
         firebirdQuerys.pagosCompras('VILLA'),
         firebirdQuerys.pagosCompras('COLINAS'),
         firebirdQuerys.pagosCompras('TURCIOM'),
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            complementos: doctos
+            ok: true,
+            complementos: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             console.log(error);
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
 
 const obtenerTotalesVenta = (req = request, res = response) => {
     const date = req.params.date
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerTotalesVenta('COLIMA',),
 
 
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            doctosVe: doctos
+            ok: true,
+            doctosVe: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
@@ -657,7 +767,7 @@ const obtenerTotalesVenta = (req = request, res = response) => {
 
 const obtenerCargosClientes = (req = request, res = response) => {
     const date = req.params.date
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.getCustomersBalances2('AC', date),
         firebirdQuerys.getCustomersBalances2('G32', date),
         firebirdQuerys.getCustomersBalances2('CHAVEZC', date),
@@ -668,20 +778,36 @@ const obtenerCargosClientes = (req = request, res = response) => {
         firebirdQuerys.getCustomersBalances2('VILLA', date),
         firebirdQuerys.getCustomersBalances2('COLINAS', date),
 
-    ]).then(cargosPorSucursal => {
+    ]).then((values) => {
         let cargos = [];
-        const s = cargosPorSucursal.forEach(cargoXC => {
-            cargos = [...cargos, ...cargoXC]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                cargos = [...cargos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            CustomersBalances: cargos
+            ok: true,
+            CustomersBalances: cargos,
+            fails: fails.trim()
         });
     })
+        .catch(error => {
+            return res.status(500).json({
+                ok: false,
+                error: error.message
+            });
+        })
 }
 
 const obtenerRemisiones = (req = request, res = response) => {
     const { fechaInicio, fechaFin } = req.params;
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerRemisiones('AC', fechaInicio, fechaFin),
         firebirdQuerys.obtenerRemisiones('G32', fechaInicio, fechaFin),
         firebirdQuerys.obtenerRemisiones('CHAVEZC', fechaInicio, fechaFin),
@@ -692,20 +818,36 @@ const obtenerRemisiones = (req = request, res = response) => {
         firebirdQuerys.obtenerRemisiones('VILLA', fechaInicio, fechaFin),
         firebirdQuerys.obtenerRemisiones('COLINAS', fechaInicio, fechaFin),
 
-    ]).then(cargosPorSucursal => {
+    ]).then((values) => {
         let cargos = [];
-        const s = cargosPorSucursal.forEach(cargoXC => {
-            cargos = [...cargos, ...cargoXC]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                cargos = [...cargos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            CustomersBalances: cargos
+            ok: true,
+            CustomersBalances: cargos,
+            fails: fails.trim()
         });
     })
+        .catch(error => {
+            return res.status(500).json({
+                ok: false,
+                error: error.message
+            });
+        })
 }
 
 const obtenerVentasPorImpuesto = (req = request, res = response) => {
     const { fechaInicio, fechaFin } = req.params;
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerVentasPorImpuesto('AC'),
         firebirdQuerys.obtenerVentasPorImpuesto('G32'),
         firebirdQuerys.obtenerVentasPorImpuesto('CHAVEZC'),
@@ -716,19 +858,35 @@ const obtenerVentasPorImpuesto = (req = request, res = response) => {
         firebirdQuerys.obtenerVentasPorImpuesto('VILLA'),
         firebirdQuerys.obtenerVentasPorImpuesto('COLINAS'),
 
-    ]).then(cargosPorSucursal => {
+    ]).then((values) => {
         let cargos = [];
-        const s = cargosPorSucursal.forEach(cargoXC => {
-            cargos = [...cargos, ...cargoXC]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                cargos = [...cargos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            CustomersBalances: cargos
+            ok: true,
+            CustomersBalances: cargos,
+            fails: fails.trim()
         });
     })
+        .catch(error => {
+            return res.status(500).json({
+                ok: false,
+                error: error.message
+            });
+        })
 }
 
 const obtenerCodigosDeBarras = (req = request, res = response) => {
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerCodigosDeBarras('AC'),
         firebirdQuerys.obtenerCodigosDeBarras('G32'),
         firebirdQuerys.obtenerCodigosDeBarras('CHAVEZC'),
@@ -739,20 +897,36 @@ const obtenerCodigosDeBarras = (req = request, res = response) => {
         firebirdQuerys.obtenerCodigosDeBarras('VILLA'),
         firebirdQuerys.obtenerCodigosDeBarras('COLINAS'),
 
-    ]).then(codigosPorSucursal => {
+    ]).then((values) => {
         let codigos = [];
-        const s = codigosPorSucursal.forEach(codigoXC => {
-            codigos = [...codigos, ...codigoXC]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                codigos = [...codigos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            CodigosDeBarras: codigos
+            ok: true,
+            CodigosDeBarras: codigos,
+            fails: fails.trim()
         });
     })
+        .catch(error => {
+            return res.status(500).json({
+                ok: false,
+                error: error.message
+            });
+        })
 }
 
 const obtenerRecepciones = (req = request, res = response) => {
         const { fechaInicio, fechaFin } = req.params;
-    const all = Promise.all([
+    const all = Promise.allSettled([
     firebirdQuerys.obtenerRecepciones('AC', fechaInicio,fechaFin),
         firebirdQuerys.obtenerRecepciones('G32', fechaInicio,fechaFin),
         firebirdQuerys.obtenerRecepciones('CHAVEZC', fechaInicio,fechaFin),
@@ -763,22 +937,38 @@ const obtenerRecepciones = (req = request, res = response) => {
         firebirdQuerys.obtenerRecepciones('VILLA', fechaInicio,fechaFin),
         firebirdQuerys.obtenerRecepciones('COLINAS', fechaInicio,fechaFin),
 
-    ]).then(cargosPorSucursal => {
+    ]).then((values) => {
         let cargos = [];
-        const s = cargosPorSucursal.forEach(cargoXC => {
-            cargos = [...cargos, ...cargoXC]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                cargos = [...cargos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            CustomersBalances: cargos
+            ok: true,
+            CustomersBalances: cargos,
+            fails: fails.trim()
         });
     })
+        .catch(error => {
+            return res.status(500).json({
+                ok: false,
+                error: error.message
+            });
+        })
 }
 
 
 const obtenerDevolucionesDet = (req = request, res = response) => {
     const fechaInicio = req.params.fechaInicio;
     const fechaFin = req.params.fechaFin;
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerDevolucionesDet('AC', fechaInicio, fechaFin),
         firebirdQuerys.obtenerDevolucionesDet('G32', fechaInicio, fechaFin),
         firebirdQuerys.obtenerDevolucionesDet('CHAVEZC', fechaInicio, fechaFin),
@@ -788,25 +978,36 @@ const obtenerDevolucionesDet = (req = request, res = response) => {
         firebirdQuerys.obtenerDevolucionesDet('VILLA', fechaInicio, fechaFin),
         firebirdQuerys.obtenerDevolucionesDet('COLINAS', fechaInicio, fechaFin),
 
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            doctosVe: doctos
+            ok: true,
+            doctosVe: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         });
 }
 const obtenerCompras = (req = request, res = response) => {
     const {fechaInicial, fechaFinal, tipoDocto} = req.params
     console.log(fechaInicial, fechaFinal, tipoDocto);
-    const all = Promise.all([
+    const all = Promise.allSettled([
         firebirdQuerys.obtenerCompras('AC', fechaInicial, fechaFinal,tipoDocto),
         firebirdQuerys.obtenerCompras('G32', fechaInicial, fechaFinal ,tipoDocto),
         firebirdQuerys.obtenerCompras('CHAVEZC', fechaInicial, fechaFinal, tipoDocto),
@@ -817,18 +1018,29 @@ const obtenerCompras = (req = request, res = response) => {
         firebirdQuerys.obtenerCompras('COLINAS',fechaInicial, fechaFinal, tipoDocto),
         firebirdQuerys.obtenerCompras('TURCIOM',fechaInicial, fechaFinal, tipoDocto),
 
-    ]).then(doctosPorSucursal => {
+    ]).then((values) => {
         let doctos = [];
-        const s = doctosPorSucursal.forEach(docto => {
-            doctos = [...doctos, ...docto]
-        })
+        let fails = '';
+        
+        values.forEach(element => {
+            if (element.status === 'fulfilled') {
+                doctos = [...doctos, ...element.value];
+            } else {
+                console.log('Error en conexión:', element.reason);
+                fails = fails + ' ' + (element.reason.connection || 'unknown');
+            }
+        });
+        
         return res.json({
-            doctosVe: doctos
+            ok: true,
+            doctosVe: doctos,
+            fails: fails.trim()
         });
     })
         .catch(error => {
             return res.status(500).json({
-                error
+                ok: false,
+                error: error.message
             });
         })
 }
