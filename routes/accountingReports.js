@@ -39,7 +39,7 @@ router.get('/getAllProvidersChargesCxpSap/', getAllProvidersChargesCxpSap );
 router.get('/getCustomersBalances/', getCustomersBalances );
 router.get('/getCustomersBalances/', getCustomersBalances );
 router.get('/pagos/', obtenerPagos );
-router.get('/doctosVe/', obtenerDoctosVe );
+router.get('/doctosVe/:fechaInicio/:fechaFin/:sucursal?', obtenerDoctosVe );
 router.get('/doctosPagos/:fecha/:fechaFin', obtenerDoctosPagos );
 router.get('/obtenerComplementos/:fechaInicial/:fechaFinal', obtenerComplementos );
 router.get('/obtenerComplementos2/:fechaInicio/:fechaFinal', obtenerComplementos2 );
@@ -48,7 +48,7 @@ router.get('/obtenerTotalesVenta', obtenerTotalesVenta );
 router.get('/doctosVeDet/', obtenerDoctosVeDet );
 router.get('/obtenerDevoluciones/', obtenerDevoluciones );
 router.get('/obtenerTicketsNoFacturados/:fechaInicio/:fechaFin', obtenerTicketsNoFacturados );
-router.get('/obtenerCargosClientes/:date/', obtenerCargosClientes );
+router.get('/obtenerCargosClientes/:date?', obtenerCargosClientes );
 router.get('/obtenerRemisiones/:fechaInicio/:fechaFin', obtenerRemisiones );
 router.get('/obtenerVentasPorImpuesto/', obtenerVentasPorImpuesto );
 router.get('/obtenerCodigosDeBarras/', obtenerCodigosDeBarras );
@@ -58,7 +58,6 @@ router.get('/obtenerDevolucionesDet/:fechaInicio/:fechaFin', obtenerDevoluciones
 router.get('/getCustomersBalancesHis/', getCustomersBalancesHis );
 router.get('/getAllProvidersChargesCxpHis/', getAllProvidersChargesCxpHis );
 router.get('/getAllProvidersChargesCxpDate/:date/', getAllProvidersChargesCxpDate );
-router.get('/obtenerCargosClientes/:date/', obtenerCargosClientes );
 router.get('/obtenerCompras/:fechaInicial/:fechaFinal/:tipoDocto', obtenerCompras );
 
 module.exports = router;

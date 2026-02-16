@@ -408,19 +408,29 @@ const obtenerPagos = (req = request, res = response) => {
 }
 
 const obtenerDoctosVe = (req = request, res = response) => {
-    const date = req.params.date
-    const all = Promise.allSettled([
-        firebirdQuerys.obtenerDoctosVe('AC', date),
-        firebirdQuerys.obtenerDoctosVe('G32', date),
-        firebirdQuerys.obtenerDoctosVe('CHAVEZC', date),
-        firebirdQuerys.obtenerDoctosVe('TURCIO', date),
-        firebirdQuerys.obtenerDoctosVe('TURCIOM', date),
-        firebirdQuerys.obtenerDoctosVe('PAEZ', date),
-        firebirdQuerys.obtenerDoctosVe('COLIMA', date),
-        firebirdQuerys.obtenerDoctosVe('VILLA', date),
-        firebirdQuerys.obtenerDoctosVe('COLINAS', date),
-        firebirdQuerys.obtenerDoctosVe('ESTACIONAMIENTO', date),
-    ]).then((values) => {
+    const fechaInicio = req.params.fechaInicio;
+    const fechaFin = req.params.fechaFin;
+    const sucursal = req.params.sucursal;
+    
+    // Si se especifica sucursal, solo consultar esa sucursal
+    let sucursales = ['AC', 'G32', 'CHAVEZC', 'TURCIO', 'TURCIOM', 'PAEZ', 'COLIMA', 'VILLA', 'COLINAS', 'ESTACIONAMIENTO'];
+    
+    if (sucursal) {
+        // Validar que la sucursal existe
+        const sucursalUpper = sucursal.toUpperCase();
+        if (sucursales.includes(sucursalUpper)) {
+            sucursales = [sucursalUpper];
+        } else {
+            return res.status(400).json({
+                ok: false,
+                error: `Sucursal '${sucursal}' no válida. Sucursales disponibles: ${sucursales.join(', ')}`
+            });
+        }
+    }
+    
+    const promises = sucursales.map(suc => firebirdQuerys.obtenerDoctosVe(suc, fechaInicio, fechaFin));
+    
+    const all = Promise.allSettled(promises).then((values) => {
         let doctos = [];
         let fails = '';
         
@@ -436,6 +446,10 @@ const obtenerDoctosVe = (req = request, res = response) => {
         return res.json({
             ok: true,
             doctosVe: doctos,
+            totalRegistros: doctos.length,
+            sucursalesConsultadas: sucursales,
+            fechaInicio: fechaInicio,
+            fechaFin: fechaFin,
             fails: fails.trim()
         });
     })
@@ -660,6 +674,7 @@ const obtenerComplementos2 = (req = request, res = response) => {
         firebirdQuerys.obtenerComplementos2('G32',fechaInicio, fechaFinal),
         firebirdQuerys.obtenerComplementos2('CHAVEZC',fechaInicio, fechaFinal),
         firebirdQuerys.obtenerComplementos2('TURCIO',fechaInicio, fechaFinal),
+        firebirdQuerys.obtenerComplementos2('TURCIOM',fechaInicio, fechaFinal),
         firebirdQuerys.obtenerComplementos2('PAEZ',fechaInicio, fechaFinal),
         firebirdQuerys.obtenerComplementos2('COLIMA',fechaInicio, fechaFinal),
         firebirdQuerys.obtenerComplementos2('VILLA',fechaInicio, fechaFinal),
@@ -766,7 +781,7 @@ const obtenerTotalesVenta = (req = request, res = response) => {
 
 
 const obtenerCargosClientes = (req = request, res = response) => {
-    const date = req.params.date
+    const date = req.params.date || formatDateToMicrosip(new Date());
     const all = Promise.allSettled([
         firebirdQuerys.getCustomersBalances2('AC', date),
         firebirdQuerys.getCustomersBalances2('G32', date),
