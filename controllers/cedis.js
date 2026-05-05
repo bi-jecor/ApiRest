@@ -1439,7 +1439,7 @@ const getDataToPolicy = (req, res) => {
     const all = Promise.allSettled([
         firebirdQuerys.getDataToPolicyTest('AC', date1, date2),
         firebirdQuerys.getDataToPolicyTest('G32', date1, date2),
-        firebirdQuerys.getDataToPolicyTest('G32H', date1, date2),
+        // firebirdQuerys.getDataToPolicyTest('G32H', date1, date2),
         firebirdQuerys.getDataToPolicyTest('TURCIO', date1, date2),
         firebirdQuerys.getDataToPolicyTest('PAEZ', date1, date2),
         firebirdQuerys.getDataToPolicyTest('COLIMA', date1, date2),
@@ -1496,7 +1496,7 @@ const getTotalCm = (req, res) => {
     const all = Promise.allSettled([
         firebirdQuerys.getCmTotal('AC', date1, date2),
         firebirdQuerys.getCmTotal('G32', date1, date2),
-        firebirdQuerys.getCmTotal('G32H', date1, date2),
+        // firebirdQuerys.getCmTotal('G32H', date1, date2),
         firebirdQuerys.getCmTotal('TURCIO', date1, date2),
         firebirdQuerys.getCmTotal('PAEZ', date1, date2),
         firebirdQuerys.getCmTotal('COLIMA', date1, date2),
