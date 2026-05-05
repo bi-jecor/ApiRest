@@ -1066,11 +1066,11 @@ module.exports = {
     getCustomersCharges,
     getCustomersToSap,
     getProvidersToSap,
-    getAllProvidersChargesCxp,
-    getAllProvidersChargesCxpHis,
-    getAllProvidersChargesCxpSap,
+    getAllProvidersChargesCxp, // Se desconoce el poposito de la funcion
+    getAllProvidersChargesCxpHis, // Se desconoce el poposito de la funcion
+    getAllProvidersChargesCxpSap, // Se desconoce el poposito de la funcion
     getCustomersBalances,
-    getCustomersBalancesHis,
+    getCustomersBalancesHis, // Se desconoce el poposito de la funcion
     obtenerPagos,
     obtenerDoctosVe,
     obtenerDoctosPagos,
@@ -1080,7 +1080,7 @@ module.exports = {
     obtenerComplementos,
     obtenerComplementos2,
     obtenerTotalesVenta,
-    getAllProvidersChargesCxpDate,
+    getAllProvidersChargesCxpDate, // Se desconoce el poposito de la funcion
     obtenerCargosClientes,
     obtenerRemisiones,
     obtenerVentasPorImpuesto,

@@ -258,6 +258,8 @@ const getCustomersBalances = (conection, date) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
                 console.log(err);
+                reject(err);
+                return;
             }
             db.query(
                 `
@@ -535,6 +537,8 @@ const getCustomersBalancesToday = (conection) => {
             console.log('db', db);
             if (err) {
                 console.log(err);
+                reject(err);
+                return;
             }
             db.query(
                 `
@@ -615,6 +619,8 @@ const getCmTotal = (conection, date1, date2) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
                 console.log('err1', err);
+                reject(err);
+                return;
             }
             db.query(
                 `
@@ -627,6 +633,9 @@ const getCmTotal = (conection, date1, date2) => {
                     `, async function (err, cargos) {
                 if (err) {
                     console.log('err2', err);
+                    db.detach();
+                    reject(err);
+                    return;
                 }
 
                 const total = {
@@ -635,6 +644,7 @@ const getCmTotal = (conection, date1, date2) => {
                 }
 
                 console.log(total);
+                db.detach();
                 resolve(total);
                 return
             }
@@ -650,6 +660,7 @@ const getLastFolioVe = (conection, serie) => {
             if (err) {
                 console.log('error1');
                 reject(err)
+                return;
             }
             console.log(serie, conection);
             db.query(
@@ -678,6 +689,7 @@ const updateLastFolioP = (conection, folioId, consecutive) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
                 reject(err)
+                return;
             }
 
             db.transaction(firebird.ISOLATION_READ_COMMITED, function (err, transaction) {
@@ -713,6 +725,7 @@ const createDoctoVe = (conection, data) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
                 reject(err)
+                return;
             }
             db.query(
                 `
@@ -741,6 +754,7 @@ const insertDoctoVeDet = (conection, docto_ve_id, data) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
                 reject(err)
+                return;
             }
             data.forEach(element => {
                 const queryOptional = conection == 'test' ? ', UMED, NOMBRE_ARTICULO' : ' ';
@@ -780,6 +794,7 @@ const getArticlesByFolioVe = (conection, folio) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
                 reject(err)
+                return;
             }
             db.query(
                 `
@@ -824,6 +839,7 @@ const getLastFolioCm = (conection, type, serie) => {
             if (err) {
                 console.log(err);
                 reject(err)
+                return;
             }
             db.query(
                 `
@@ -855,6 +871,7 @@ const insertDoctoCm = (conection, data) => {
             if (err) {
                 console.log(err);
                 reject(err)
+                return;
             }
             db.transaction(firebird.ISOLATION_READ_COMMITED, function (err, transaction) {
                 transaction.query(
@@ -890,6 +907,7 @@ const updateLastFolioCm = (conection, folioId, consecutive) => {
         firebird.attach(conections[conection], async function (err, db) {
             if (err) {
                 reject(err)
+                return;
             }
 
             db.transaction(firebird.ISOLATION_READ_COMMITED, function (err, transaction) {
@@ -926,6 +944,7 @@ const insertDoctoCmDet = (conection, docId, data) => {
             if (err) {
                 console.log('Error', err);
                 reject(err)
+                return;
             }
             data.forEach(element => {
                 db.query(

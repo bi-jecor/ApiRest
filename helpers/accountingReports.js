@@ -7,7 +7,11 @@ const getProvidersCharges = (connection, date) => {
     console.log(connection);
     return new Promise((resolve, reject) => {
         firebird.attach(conections[connection] , function(err, db) {
-            console.log('err1',err);
+            if (err) {
+                console.log('err1', err);
+                reject(err);
+                return;
+            }
             db.execute(
             ` 
             SELECT dcp.proveedor_id, prov.nombre, condiciones_pago_CP.nombre, dcp.fecha , dcp.folio, cprov.fecha_vencimiento, cprov.atraso, cprov.importe_cargo, cprov.saldo_cargo, claves_proveedores.clave_prov
@@ -26,6 +30,9 @@ const getProvidersCharges = (connection, date) => {
                 function(err, data) {
                     if(err){
                         console.log('err',err);
+                        db.detach();
+                        reject(err);
+                        return;
                     }
                     console.log('DATA',data);
                     let catalogo = []

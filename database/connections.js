@@ -75,7 +75,7 @@ const G32H = {
     password: 'J8wL#2pR!t?#',
     host: '192.168.10.200',
     port: 3051,
-    database: 'E:/Bases Datos/JECOR 2022 HISTORICA.FDB',
+    database: 'E:/Bases Datos/JECOR 2020.FDB',
     lowercase_keys: false, 
     role: null,
     pageSize: 4096,

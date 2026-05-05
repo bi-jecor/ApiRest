@@ -1,4 +1,4 @@
-﻿var firebird = require('node-firebird');
+var firebird = require('node-firebird');
 const {response, request} = require('express');
 const Cryptr = require('cryptr');
 const cryptr = new Cryptr('myTotalySecretKey');
@@ -1439,13 +1439,13 @@ const getDataToPolicy = (req, res) => {
     const all = Promise.allSettled([
         firebirdQuerys.getDataToPolicyTest('AC', date1, date2),
         firebirdQuerys.getDataToPolicyTest('G32', date1, date2),
-        // firebirdQuerys.getDataToPolicyTest('G32H', date1, date2),
+        firebirdQuerys.getDataToPolicyTest('G32H', date1, date2),
         firebirdQuerys.getDataToPolicyTest('TURCIO', date1, date2),
         firebirdQuerys.getDataToPolicyTest('PAEZ', date1, date2),
         firebirdQuerys.getDataToPolicyTest('COLIMA', date1, date2),
         firebirdQuerys.getDataToPolicyTest('VILLA', date1, date2),
         firebirdQuerys.getDataToPolicyTest('COLINAS', date1, date2),
-        firebirdQuerys.getDataToPolicyTest('CHAVEZC', date1, date2)
+        // firebirdQuerys.getDataToPolicyTest('CHAVEZC', date1, date2)
     ]).then((values) => {
         let data = [];
         let fails =  ''
@@ -1506,7 +1506,15 @@ const getTotalCm = (req, res) => {
         console.log(values);
         values.forEach(e => console.log(e.value))
         values = values.map( element => {
-            return element.value
+            if (element.status === 'fulfilled') {
+                return element.value;
+            } else {
+                return {
+                    conection: element.reason.conection || 'Unknown',
+                    error: true,
+                    msg: element.reason.msg || 'Error de conexión'
+                };
+            }
         });
 
         return res.json({
@@ -1650,7 +1658,7 @@ const getCustomersBalancesToday = (req = request, res = response) => {
         firebirdQuerys.getCustomersBalancesToday('COLIMA'),
         firebirdQuerys.getCustomersBalancesToday('VILLA'),
         firebirdQuerys.getCustomersBalancesToday('COLINAS'),
-        firebirdQuerys.getCustomersBalancesToday('CHAVEZC'),
+        // firebirdQuerys.getCustomersBalancesToday('CHAVEZC'),
     ]).then(
         cargosPorCliente =>{
             cargosPorCliente.forEach(clienteBalance => {
@@ -1673,7 +1681,7 @@ const getDataToPolicyByDay = (req = request, res = response) => {
         firebirdQuerys.getDataToPolicyByDay('COLIMA', date1, date2),
         firebirdQuerys.getDataToPolicyByDay('VILLA', date1, date2),
         firebirdQuerys.getDataToPolicyByDay('COLINAS', date1, date2),
-        firebirdQuerys.getDataToPolicyByDay('CHAVEZC', date1, date2)
+        // firebirdQuerys.getDataToPolicyByDay('CHAVEZC', date1, date2)
     ]).then((values) => {
         console.log(values);
         let data = [];
