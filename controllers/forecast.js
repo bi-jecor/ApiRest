@@ -71,22 +71,13 @@ const _get_forecast_by_supplier = async (req, res) => {
         });
 
         const request = new mssql.Request();
-        request.bulk(table, (err, result) => {
-            console.log('result', result);
-            console.log('err', err);
-            if (result) {
-                return res.json({
-                    ok: true,
-                    msg: 'Detalle de forecast guardado correctamente',
-                    res: table
-                })
-            } else {
-                return res.json({
-                    ok: false,
-                    err: `${err}`
-                })
-            }
-        });        
+        const result = await request.bulk(table);
+
+        return res.json({
+            ok: true,
+            msg: 'Detalle de forecast guardado correctamente',
+            rowsAffected: result.rowsAffected
+        });
 
     } catch (error) {
         console.log(error);

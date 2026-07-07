@@ -62,7 +62,7 @@ const getInventoriesByWarehouse = async (req, res) => {
     const { warehouse, concept } = req.params;
     // Obtener la fecha de hace 30 días
     const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 365);
     console.log(warehouse, concept, thirtyDaysAgo);
     try {
         const inventoriesDB = await Inventory.find({
