@@ -1964,14 +1964,18 @@ const frkOrdenCompra = (connection, data) => {
                     select prov.proveedor_id, c.clave_prov from proveedores prov
                     left join claves_proveedores c
                     on c.proveedor_id = prov.proveedor_id and c.rol_clave_prov_id=49
-                    where prov.nombre = '${data.claveProveedor}';
+                    where prov.nombre = '${String(data.claveProveedor).replace(/'/g, "''")}';
                     ` ,
                 function (err, data) {
                     if (err) {
-                        reject(err)
+                        db.detach();
+                        return reject(err)
                     }
                     console.log('tax', data);
                     db.detach();
+                    if (!data || data.length === 0) {
+                        return reject(new Error(`Proveedor no encontrado: ${claveProveedor}`))
+                    }
                     proveedorId = data[0].PROVEEDOR_ID;
                     firebird.attach(conections[connection], function (err, db) {
                         db.execute(
